@@ -87,8 +87,6 @@ def f_odczyt_pliku_nmap(plik):
     raport_html = open('/home/nano/data.hml', 'w')
     raport_html = json2html.convert(json = data, build_direction=build_direction, table_attributes=table_attributes)
 
-
-    
     otwarty_plik_nmap.close()
 
 def f_socat(ip,port,protokol):
