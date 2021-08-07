@@ -114,23 +114,23 @@ def f_odczyt_pliku_nmap(plik):
             # robienie screen shota-a            
             try:
                 if(" 200 " in str(output_curl1) or " 302 " in str(output_curl1) or " 404 " in str(output_curl1)):
-                    nazwa_pliku_http = f_screen_shot_web(ip,port,"http")
+                    output_screen_shot_web_http = f_screen_shot_web(ip,port,"http")
             except Exception as er:
                 f_zapis_log("skrypt - f_screen_shot_web", f"Wyjatek scr shot http://{ip}:{port} {str(er)}", "error")
 
             try:
                 if(" 200 " in str(output_curl2) or " 302 " in str(output_curl2) or " 404 " in str(output_curl2)):
-                    nazwa_pliku_https = f_screen_shot_web(ip,port,"https")
+                    output_screen_shot_web_https = f_screen_shot_web(ip,port,"https")
             except Exception as er:
                 f_zapis_log("skrypt - f_screen_shot_web", f"Wyjatek scr shot https://{ip}:{port} {str(er)}", "error")
-                
+
             #############
             #output_screen_shot_web = "---"
             #if(" 200 " in str(output_curl) or " 302 " in str(output_curl) or " 404 " in str(output_curl)):
             #    output_screen_shot_web = f_screen_shot_web(ip,port,protokol)
 
             # zapis do pliku *.json
-            data['host'].append({'ip':f'{ip}','port':f'{port}','protokol':f'{protokol}','usluga':f'{usluga}','opis':f'{opis_nmap}','socat':f'{output_socat}','curl':f'{output_curl}','screen_shot':f'{output_screen_shot_web}'})
+            data['host'].append({'ip':f'{ip}','port':f'{port}','protokol':f'{protokol}','usluga':f'{usluga}','opis':f'{opis_nmap}','socat':f'{output_socat}','curl_http':f'{output_curl1}','curl_https':f'{output_curl2}','screen_shot_http':f'{output_screen_shot_web_http}','screen_shot_https':f'{output_screen_shot_web_https}'})
         
     with open(path_plik_json, 'w') as outfile:
         json.dump(data, outfile)
@@ -165,9 +165,9 @@ def f_socat(ip,port,protokol):
 
     return output
 
-#######################
-# CURL 
-#######################
+#############
+# CURL      #
+#############
 def f_curl(ip,port,protokol, h_prot):
     if(protokol == "tcp"):
         # budujemy sklanie polecenie curl dla http
@@ -196,12 +196,13 @@ def f_curl(ip,port,protokol, h_prot):
 ############################
 # pobiera linki ze strony
 ############################
-def f_get_links_from_web(ip,port,protokol):
+def f_get_links_from_web(ip,port,protokol,h_prot, curl_output):
     spis_linkow = ""
     # zrzut linkow
-    if(" 200 " in str(curl1_output)):
+    if(h_prot == "http"):
         try:
             addrHTTP = f"http://{ip}:{port}/"
+            f_zapis_log("skrypt/f_get_links_from_web", addrHTTP,"info")
             parser = 'html.parser'
             resp = urllib.request.urlopen(addrHTTP)
             soup = BeautifulSoup(resp, parser, from_encoding=resp.info().get_param('charset'))
@@ -210,16 +211,19 @@ def f_get_links_from_web(ip,port,protokol):
                 spis_linkow += "\n" + link['href'] 
                 nowy_adres = parsuje_addr(link['href'])
 
-            print(f"spis_linkow1: {spis_linkow}")
+            #print(f"spis_linkow1: {spis_linkow}")
+            f_zapis_log("skrypt/f_get_links_from_web", spis_linkow, "info")
         except Exception as e:
-            print(f"Wyjatek: {e}")
+            #print(f"Wyjatek: {e}")
+            f_zapis_log("skrypt/f_get_links_from_web", e, "error")
 
-    if(" 200 " in str(curl2_output)):
+    elif(h_prot == "https"):
         ctx = ssl.create_default_context()
         ctx.check_hostname = False
         ctx.verify_mode = ssl.CERT_NONE
         try:
             addrHTTP = f"https://{ip}:{port}/"
+            f_zapis_log("skrypt/f_get_links_from_web", addrHTTP,"info")
             parser = 'html.parser'
             
             resp = urllib.request.urlopen(addrHTTP, context=ctx)
@@ -229,9 +233,10 @@ def f_get_links_from_web(ip,port,protokol):
                 spis_linkow += "\n" + link['href']
                 nowy_adres = parsuje_addr(link['href'])
 
-            print(f"spis_linkow2: {spis_linkow}")
+            #print(f"spis_linkow2: {spis_linkow}")
+            f_zapis_log("skrypt/f_get_links_from_web", spis_linkow, "info")
         except Exception as e:
-            print(f"Wyjatek: {e}")
+            f_zapis_log("skrypt/f_get_links_from_web", e, "error")
 
 #######################
 # DIRB
