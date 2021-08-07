@@ -46,7 +46,7 @@ path_plik_nmap_msfconsole = ""
 path_plik_logu = ""
 
 ##########################################
-# plik logu - generowany automatycznie 
+# plik json - generowany automatycznie 
 # jak nie istnije to zostanie stworzony
 # nazywa się jak [path_plik_nmap_msfconsole]
 #  z ta roznica, ze rozszerzenie jest *.json
@@ -54,6 +54,13 @@ path_plik_logu = ""
 path_plik_json = ""
 # dane do zrzutu danych zwiazane wlasnie z plikiem *.json
 data = {}
+
+##########################################
+# plik html - generowany z pliku *.json 
+# nazywa się jak [path_plik_nmap_msfconsole]
+#  z ta roznica, ze rozszerzenie jest *.html
+##########################################
+path_plik_html = ""
 
 ##########################################
 # banner aplikacji
@@ -115,12 +122,16 @@ def f_odczyt_pliku_nmap(plik):
             try:
                 if(" 200 " in str(output_curl1) or " 302 " in str(output_curl1) or " 404 " in str(output_curl1)):
                     output_screen_shot_web_http = f_screen_shot_web(ip,port,"http")
+                else:
+                    output_screen_shot_web_http = "none"
             except Exception as er:
                 f_zapis_log("skrypt - f_screen_shot_web", f"Wyjatek scr shot http://{ip}:{port} {str(er)}", "error")
 
             try:
                 if(" 200 " in str(output_curl2) or " 302 " in str(output_curl2) or " 404 " in str(output_curl2)):
                     output_screen_shot_web_https = f_screen_shot_web(ip,port,"https")
+                else:
+                    output_screen_shot_web_https = "none"
             except Exception as er:
                 f_zapis_log("skrypt - f_screen_shot_web", f"Wyjatek scr shot https://{ip}:{port} {str(er)}", "error")
 
@@ -130,20 +141,39 @@ def f_odczyt_pliku_nmap(plik):
             #    output_screen_shot_web = f_screen_shot_web(ip,port,protokol)
 
             # zapis do pliku *.json
-            data['host'].append({'ip':f'{ip}','port':f'{port}','protokol':f'{protokol}','usluga':f'{usluga}','opis':f'{opis_nmap}','socat':f'{output_socat}','curl_http':f'{output_curl1}','curl_https':f'{output_curl2}','screen_shot_http':f'{output_screen_shot_web_http}','screen_shot_https':f'{output_screen_shot_web_https}'})
+            data['host'].append({
+                'ip':f'{ip}',
+                'port':f'{port}',
+                'protokol':f'{protokol}',
+                'usluga':f'{usluga}',
+                'opis':f'{opis_nmap}',
+                'socat':f'{output_socat}',
+                'curl_http':f'{output_curl1}',
+                'curl_https':f'{output_curl2}',
+                'screen_shot_http':f'{output_screen_shot_web_http}',
+                'screen_shot_https':f'{output_screen_shot_web_https}\n'})
         
     with open(path_plik_json, 'w') as outfile:
         json.dump(data, outfile)
-    
-    #'/home/nano/data.txt'
-    #infoFromJson = json.loads(data)
-    build_direction = "LEFT_TO_RIGHT"
-    table_attributes = {"style": "width:100%"}
-    #print(json2html.convert(infoFromJson, build_direction=build_direction, table_attributes=table_attributes))
-    #print(json2html.convert(json = data, build_direction=build_direction, table_attributes=table_attributes))
 
-    raport_html = open('/home/nano/data.hml', 'w')
-    raport_html = json2html.convert(json = data, build_direction=build_direction, table_attributes=table_attributes)
+    try:
+        #infoFromJson = json.loads(path_plik_json)
+        
+        #json2html.convert(json = infoFromJson)
+        
+        #'/home/nano/data.txt'
+        #infoFromJson = json.loads(data)
+        #build_direction = "LEFT_TO_RIGHT"
+        #table_attributes = {"style": "width:100%"}
+        #print(json2html.convert(infoFromJson, build_direction=build_direction, table_attributes=table_attributes))
+        #print(json2html.convert(json = data, build_direction=build_direction, table_attributes=table_attributes))
+
+        raport_html = open(path_plik_html, 'w')
+        #raport_html = json2html.convert(json = data, table_attributes='border="1', clubbing=True, encode=False, escape=True)
+        raport_html.write(json2html.convert(json = data))
+        raport_html.close()
+    except Exception as e:
+        print(e)
 
     otwarty_plik_nmap.close()
 
@@ -389,7 +419,7 @@ def f_zapis_log(zrodlo, dane, typ):
     print(komunikat)
     
     # zapis komunikatu do pliku [path_plik_logu]
-    plik_logu.write(komunikat)
+    plik_logu.write(komunikat+'\n')
     
     # zamykamy plik logu
     plik_logu.close()
@@ -411,8 +441,9 @@ if __name__ == '__main__':
         path_plik_nmap_msfconsole = args.fin
     
     #plik logu 
-    path_plik_logu = path_plik_nmap_msfconsole[:-3] + "log"
-    path_plik_json = path_plik_nmap_msfconsole[:-3] + "json"
+    path_plik_logu = path_plik_nmap_msfconsole + ".log"
+    path_plik_json = path_plik_nmap_msfconsole + ".json"
+    path_plik_html = path_plik_nmap_msfconsole + ".html"
 
     # wywołujemy funkcję, która odczyta nam plik linijka po linijce
     f_odczyt_pliku_nmap(path_plik_nmap_msfconsole)
