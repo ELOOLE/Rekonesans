@@ -78,7 +78,7 @@ baner = pyfiglet.figlet_format("Rekonesans")
 print(baner)
 
 def f_odczyt_pliku_nmap(plik):
-    f_zapis_log("skrypt", f"odczytuje plik z danymi: {plik}", "info") 
+    f_zapis_log("f_odczyt_pliku_nmap", f"odczytuje plik z danymi: {plik}", "info") 
     #print(f"{f_czas()} | odczytuje plik z danymi: {plik}")
     otwarty_plik_nmap = open(plik, 'r')
 
@@ -88,7 +88,7 @@ def f_odczyt_pliku_nmap(plik):
         if line != "\n":
             line_count += 1
     otwarty_plik_nmap.close()
-    f_zapis_log("skrypt",f"Ilosc zadan do wykonania: {line_count}","info")
+    f_zapis_log("f_odczyt_pliku_nmap",f"Ilosc zadan do wykonania: {line_count}","info")
 
     # otwieram ponownie
     otwarty_plik_nmap = open(plik, 'r')
@@ -108,13 +108,14 @@ def f_odczyt_pliku_nmap(plik):
         opis_nmap = wynik[4].replace("\"", "").rstrip("\n")
 
         #print(f"({i}/{line_count}) | {f_czas()} | IP: {ip} proto:{protokol} port:{port} usluga: {usluga}")
-        f_zapis_log("skrypt",f"({i}/{line_count}) | proto:{protokol} IP:{ip} port:{port} usluga:{usluga}", "info")
+        f_zapis_log("-----------", "-----------------------------------------------------------------", "-------")
+        f_zapis_log("f_odczyt_pliku_nmap",f"({i}/{line_count}) | proto:{protokol} IP:{ip} port:{port} usluga:{usluga}", "info")
         i+=1
 
         r = re.compile("\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}")
         if r.match(ip) is None:
             #print(f"{f_czas()} | Wpis nie zawiera poprawnego adresu IP [{ip}]")
-            f_zapis_log("skrypt", f"Wpis nie zawiera poprawnego adresu IP [{ip}]", "info")
+            f_zapis_log("f_odczyt_pliku_nmap", f"Wpis nie zawiera poprawnego adresu IP [{ip}]", "info")
         else:
             # pierwsza funkcja socat na określenie hosta
             output_socat = f_socat(ip,port,protokol)
@@ -177,16 +178,16 @@ def f_odczyt_pliku_nmap(plik):
 
     otwarty_plik_nmap.close()
 
-#######################
-# SOCAT 
-#######################
+#############
+# SOCAT     #
+#############
 def f_socat(ip,port,protokol):
     protokol = str.upper(protokol)
     # buduje polecenie
     cmd = f"echo -ne \\x01\\x00\\x00\\x00 | socat -t 1 {protokol}:{ip}:{port},connect-timeout=2 - "
     
     # zapisuje do logu jakie zbudowal polecenie
-    f_zapis_log("skrypt",cmd,"info")
+    f_zapis_log("f_socat",cmd,"info")
     ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
     output = ps.communicate()[0]
 
@@ -204,7 +205,7 @@ def f_curl(ip,port,protokol, h_prot):
         cmd_curl = f"curl -I {h_prot}://{ip}:{port} --max-time 2 --no-keepalive -v"
         
         # zapisujemy zbudowane polecenie do pliku logu
-        f_zapis_log("skypt", cmd_curl, "info")
+        f_zapis_log("f_curl", cmd_curl, "info")
 
         args1 = shlex.split(cmd_curl)
         ps_cmd_curl1 = subprocess.Popen(args1,shell=False,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
@@ -219,7 +220,7 @@ def f_curl(ip,port,protokol, h_prot):
         wynik = "UDP - pomijam"
 
     # zapisujemy do logu co zwrocila [f_curl]
-    f_zapis_log("curl",wynik,"info")
+    f_zapis_log("f_curl",wynik,"info")
 
     return wynik
 
@@ -232,7 +233,7 @@ def f_get_links_from_web(ip,port,protokol,h_prot, curl_output):
     if(h_prot == "http"):
         try:
             addrHTTP = f"http://{ip}:{port}/"
-            f_zapis_log("skrypt/f_get_links_from_web", addrHTTP,"info")
+            f_zapis_log("f_get_links_from_web", addrHTTP,"info")
             parser = 'html.parser'
             resp = urllib.request.urlopen(addrHTTP)
             soup = BeautifulSoup(resp, parser, from_encoding=resp.info().get_param('charset'))
@@ -242,10 +243,10 @@ def f_get_links_from_web(ip,port,protokol,h_prot, curl_output):
                 nowy_adres = parsuje_addr(link['href'])
 
             #print(f"spis_linkow1: {spis_linkow}")
-            f_zapis_log("skrypt/f_get_links_from_web", spis_linkow, "info")
+            f_zapis_log("f_get_links_from_web", spis_linkow, "info")
         except Exception as e:
             #print(f"Wyjatek: {e}")
-            f_zapis_log("skrypt/f_get_links_from_web", e, "error")
+            f_zapis_log("f_get_links_from_web", e, "error")
 
     elif(h_prot == "https"):
         ctx = ssl.create_default_context()
@@ -253,7 +254,7 @@ def f_get_links_from_web(ip,port,protokol,h_prot, curl_output):
         ctx.verify_mode = ssl.CERT_NONE
         try:
             addrHTTP = f"https://{ip}:{port}/"
-            f_zapis_log("skrypt/f_get_links_from_web", addrHTTP,"info")
+            f_zapis_log("f_get_links_from_web", addrHTTP,"info")
             parser = 'html.parser'
             
             resp = urllib.request.urlopen(addrHTTP, context=ctx)
@@ -264,9 +265,9 @@ def f_get_links_from_web(ip,port,protokol,h_prot, curl_output):
                 nowy_adres = parsuje_addr(link['href'])
 
             #print(f"spis_linkow2: {spis_linkow}")
-            f_zapis_log("skrypt/f_get_links_from_web", spis_linkow, "info")
+            f_zapis_log("f_get_links_from_web", spis_linkow, "info")
         except Exception as e:
-            f_zapis_log("skrypt/f_get_links_from_web", e, "error")
+            f_zapis_log("f_get_links_from_web", e, "error")
 
 #######################
 # DIRB
@@ -379,7 +380,7 @@ def f_rpc_p135(ip):
     bindings = objExporter.ServerAlive2()
 
     #print (" " + target_ip)
-    f_zapis_log("f_rpc_p135",f"[*] Wykryte adresy sieciowe hosta [{target_ip}]","info")
+    f_zapis_log("f_rpc_p135",f"[*] Wykryte adresy sieciowe hosta[{target_ip}]","info")
     
     #NetworkAddr = bindings[0]['aNetworkAddr']
     for binding in bindings:
