@@ -142,9 +142,9 @@ def f_odczyt_pliku_nmap(plik):
                 f_zapis_log("skrypt - f_screen_shot_web", f"Wyjatek scr shot https://{ip}:{port} {str(er)}", "error")
 
             output_dcerpc_p135 = ""
-            if(port == 135)
+            if(port == 135):
                 output_dcerpc_p135 = f_rpc_p135(ip)
-            else
+            else:
                 output_dcerpc_p135 = "none"
             #############
             #output_screen_shot_web = "---"
@@ -162,30 +162,18 @@ def f_odczyt_pliku_nmap(plik):
                 'curl_http':f'{output_curl1}',
                 'curl_https':f'{output_curl2}',
                 'screen_shot_http':f'{output_screen_shot_web_http}',
-                'screen_shot_https':f'{output_screen_shot_web_https},
-                'dce_rpc':f'{output_dcerpc_p135}'\n'})
+                'screen_shot_https':f'{output_screen_shot_web_https}',
+                'dce_rpc_p135':f'{output_dcerpc_p135}\n'})
         
     with open(path_plik_json, 'w') as outfile:
         json.dump(data, outfile)
 
     try:
-        #infoFromJson = json.loads(path_plik_json)
-        
-        #json2html.convert(json = infoFromJson)
-        
-        #'/home/nano/data.txt'
-        #infoFromJson = json.loads(data)
-        #build_direction = "LEFT_TO_RIGHT"
-        #table_attributes = {"style": "width:100%"}
-        #print(json2html.convert(infoFromJson, build_direction=build_direction, table_attributes=table_attributes))
-        #print(json2html.convert(json = data, build_direction=build_direction, table_attributes=table_attributes))
-
         raport_html = open(path_plik_html, 'w')
-        #raport_html = json2html.convert(json = data, table_attributes='border="1', clubbing=True, encode=False, escape=True)
         raport_html.write(json2html.convert(json = data, table_attributes='border="1', clubbing=True, encode=False, escape=True))
         raport_html.close()
     except Exception as e:
-        print(e)
+        f_zapis_log("skrypt",e,"error")
 
     otwarty_plik_nmap.close()
 
