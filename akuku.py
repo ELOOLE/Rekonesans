@@ -28,6 +28,12 @@ from random import randrange
 
 from PIL import Image, ImageFont, ImageDraw
 
+import sys, getopt
+from impacket.dcerpc.v5 import transport
+from impacket.dcerpc.v5.ndr import NULL
+from impacket.dcerpc.v5.rpcrt import RPC_C_AUTHN_LEVEL_NONE
+from impacket.dcerpc.v5.dcomrt import IObjectExporter
+
 ##########################################
 # plik z zasobami do skanowania
 # ---------------------------------------
@@ -135,6 +141,11 @@ def f_odczyt_pliku_nmap(plik):
             except Exception as er:
                 f_zapis_log("skrypt - f_screen_shot_web", f"Wyjatek scr shot https://{ip}:{port} {str(er)}", "error")
 
+            output_dcerpc_p135 = ""
+            if(port == 135)
+                output_dcerpc_p135 = f_rpc_p135(ip)
+            else
+                output_dcerpc_p135 = "none"
             #############
             #output_screen_shot_web = "---"
             #if(" 200 " in str(output_curl) or " 302 " in str(output_curl) or " 404 " in str(output_curl)):
@@ -151,7 +162,8 @@ def f_odczyt_pliku_nmap(plik):
                 'curl_http':f'{output_curl1}',
                 'curl_https':f'{output_curl2}',
                 'screen_shot_http':f'{output_screen_shot_web_http}',
-                'screen_shot_https':f'{output_screen_shot_web_https}\n'})
+                'screen_shot_https':f'{output_screen_shot_web_https},
+                'dce_rpc':f'{output_dcerpc_p135}'\n'})
         
     with open(path_plik_json, 'w') as outfile:
         json.dump(data, outfile)
@@ -361,6 +373,35 @@ def scr_shot_web2 (ip,port,h_prot,reszta):
 
     driver.quit()
     return nazwa_pliku
+
+def f_rpc_p135(ip):
+    target_ip = ip
+    authLevel = RPC_C_AUTHN_LEVEL_NONE
+    adresy_ip = ""
+    wynik = f"[*] Wykryte adresy sieciowe hosta [{target_ip}]"
+    
+    stringBinding = r'ncacn_ip_tcp:%s' % target_ip
+    rpctransport = transport.DCERPCTransportFactory(stringBinding)
+
+    portmap = rpctransport.get_dce_rpc()
+    portmap.set_auth_level(authLevel)
+    portmap.connect()
+
+    objExporter = IObjectExporter(portmap)
+    bindings = objExporter.ServerAlive2()
+
+    #print (" " + target_ip)
+    f_zapis_log("f_rpc_p135",f"[*] Wykryte adresy sieciowe hosta [{target_ip}]","info")
+    
+    #NetworkAddr = bindings[0]['aNetworkAddr']
+    for binding in bindings:
+        NetworkAddr = binding['aNetworkAddr']
+        #print ("Address: " + NetworkAddr)
+        adresy_ip += NetworkAddr
+    
+    wynik += adresy_ip
+    f_zapis_log("f_rpc_p135",adresy_ip,"info") 
+    return wynik
 
 #######################
 # URL parser
