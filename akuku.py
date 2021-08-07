@@ -1,15 +1,32 @@
-  
 import os
-from re import sub
-import re
 import time
-import subprocess, signal
+import shlex, subprocess, signal
 import argparse
 import datetime
 import pyfiglet
-
 import json
+import urllib.request
+import codecs
+
+import re
+from re import sub
+
 from json2html import *
+
+from copy import Error
+
+import ssl
+from ssl import RAND_add
+
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.webdriver import WebDriver
+
+from bs4 import BeautifulSoup, SoupStrainer
+
+from random import randrange
+
+from PIL import Image, ImageFont, ImageDraw
 
 # dane do zrzutu danych
 data = {}
