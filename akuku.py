@@ -110,95 +110,95 @@ def f_socat(ip,port,protokol):
 
 def f_curl(ip,port,protokol):
     if(protokol == "tcp"):
-            cmd_curl1 = f"curl -I http://{ip}:{port} --max-time 2 --no-keepalive -v"
-            cmd_curl2 = f"curl -I https://{ip}:{port} --max-time 2 --no-keepalive -v -k"
+        cmd_curl1 = f"curl -I http://{ip}:{port} --max-time 2 --no-keepalive -v"
+        cmd_curl2 = f"curl -I https://{ip}:{port} --max-time 2 --no-keepalive -v -k"
 
-            args1 = shlex.split(cmd_curl1)
-            args2 = shlex.split(cmd_curl2)
+        args1 = shlex.split(cmd_curl1)
+        args2 = shlex.split(cmd_curl2)
 
-            ps_cmd_curl1 = subprocess.Popen(args1,shell=False,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-            ps_cmd_curl2 = subprocess.Popen(args2,shell=False,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-            
-            curl1_output = ps_cmd_curl1.communicate()[0]
-            curl2_output = ps_cmd_curl2.communicate()[0]
-
-            nazwa_pliku_http = ""
-            nazwa_pliku_https = ""
-            nazwa_pliku_random_http = ""
-            nazwa_pliku_random_https = ""
-            spis_linkow = ""
-
-            # zrzut linkow
-            if(" 200 " in str(curl1_output)):
-                try:
-                    addrHTTP = f"http://{ip}:{port}/"
-                    parser = 'html.parser'
-                    resp = urllib.request.urlopen(addrHTTP)
-                    soup = BeautifulSoup(resp, parser, from_encoding=resp.info().get_param('charset'))
-
-                    for link in soup.find_all('a', href=True):
-                        spis_linkow += "\n" + link['href'] 
-                        nowy_adres = parsuje_addr(link['href'])
-
-                    print(f"spis_linkow1: {spis_linkow}")
-                except Exception as e:
-                    print(f"Wyjatek: {e}")
-
-            if(" 200 " in str(curl2_output)):
-                ctx = ssl.create_default_context()
-                ctx.check_hostname = False
-                ctx.verify_mode = ssl.CERT_NONE
-                try:
-                    addrHTTP = f"https://{ip}:{port}/"
-                    parser = 'html.parser'
-                    
-                    resp = urllib.request.urlopen(addrHTTP, context=ctx)
-                    soup = BeautifulSoup(resp, parser, from_encoding=resp.info().get_param('charset'))
-
-                    for link in soup.find_all('a', href=True):
-                        spis_linkow += "\n" + link['href']
-                        nowy_adres = parsuje_addr(link['href'])
-
-                    print(f"spis_linkow2: {spis_linkow}")
-                except Exception as e:
-                    print(f"Wyjatek: {e}")
-
-            # robienie screen shota-a            
-            try:
-                if(" 200 " in str(curl1_output)):
-                    print(f"Kod 200 {ip} {port}")
-                    nazwa_pliku_http = scr_shot_web(ip,port,"http")
-                elif(" 302 " in str(curl1_output)):
-                    print(f"Kod 302 {ip} {port}")
-                    nazwa_pliku_http = scr_shot_web(ip,port,"http")
-                elif(" 404 " in str(curl1_output)):
-                    print(f"Kod 404 {ip} {port}")
-                    nazwa_pliku_http = scr_shot_web(ip,port,"http")
-            except Exception as er:
-                komunikat = f"Wyjatek scr shot http://{ip}:{port} {str(er)}"
-                print(komunikat)
-                nazwa_pliku_http = komunikat
-
-            try:
-                if(" 200 " in str(curl2_output) or " 302 " in str(curl2_output) or " 404 " in str(curl2_output)):
-                    print(f"Kod 200 {ip} {port}")
-                    nazwa_pliku_https = scr_shot_web(ip,port,"https")
-                elif(" 302 " in str(curl2_output)):
-                    print(f"Kod 302 {ip} {port}")
-                    nazwa_pliku_https = scr_shot_web(ip,port,"https")
-                elif(" 404 " in str(curl2_output)):
-                    print(f"Kod 404 {ip} {port}")
-                    nazwa_pliku_https = scr_shot_web(ip,port,"https")
-            except Exception as er:
-                komunikat = f"Wyjatek scr shot https://{ip}:{port} {str(er)}"
-                print(komunikat)
-                nazwa_pliku_https = komunikat
-
-            wynik = (f"{czas};{ip};{protokol};{port};{usluga};{socat_output};{curl1_output};{curl2_output};{nazwa_pliku_http} | {nazwa_pliku_https} | {nazwa_pliku_random_http} | {nazwa_pliku_random_https};{spis_linkow}")
-        else:
-            wynik = (f"{czas};{ip};{protokol};{port};{usluga};{socat_output};-;-;-")
+        ps_cmd_curl1 = subprocess.Popen(args1,shell=False,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        ps_cmd_curl2 = subprocess.Popen(args2,shell=False,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         
-        plik_wynik.write(wynik+"\n")
+        curl1_output = ps_cmd_curl1.communicate()[0]
+        curl2_output = ps_cmd_curl2.communicate()[0]
+
+        nazwa_pliku_http = ""
+        nazwa_pliku_https = ""
+        nazwa_pliku_random_http = ""
+        nazwa_pliku_random_https = ""
+        spis_linkow = ""
+
+        # zrzut linkow
+        if(" 200 " in str(curl1_output)):
+            try:
+                addrHTTP = f"http://{ip}:{port}/"
+                parser = 'html.parser'
+                resp = urllib.request.urlopen(addrHTTP)
+                soup = BeautifulSoup(resp, parser, from_encoding=resp.info().get_param('charset'))
+
+                for link in soup.find_all('a', href=True):
+                    spis_linkow += "\n" + link['href'] 
+                    nowy_adres = parsuje_addr(link['href'])
+
+                print(f"spis_linkow1: {spis_linkow}")
+            except Exception as e:
+                print(f"Wyjatek: {e}")
+
+        if(" 200 " in str(curl2_output)):
+            ctx = ssl.create_default_context()
+            ctx.check_hostname = False
+            ctx.verify_mode = ssl.CERT_NONE
+            try:
+                addrHTTP = f"https://{ip}:{port}/"
+                parser = 'html.parser'
+                
+                resp = urllib.request.urlopen(addrHTTP, context=ctx)
+                soup = BeautifulSoup(resp, parser, from_encoding=resp.info().get_param('charset'))
+
+                for link in soup.find_all('a', href=True):
+                    spis_linkow += "\n" + link['href']
+                    nowy_adres = parsuje_addr(link['href'])
+
+                print(f"spis_linkow2: {spis_linkow}")
+            except Exception as e:
+                print(f"Wyjatek: {e}")
+
+        # robienie screen shota-a            
+        try:
+            if(" 200 " in str(curl1_output)):
+                print(f"Kod 200 {ip} {port}")
+                nazwa_pliku_http = f_screen_shot_web(ip,port,"http")
+            elif(" 302 " in str(curl1_output)):
+                print(f"Kod 302 {ip} {port}")
+                nazwa_pliku_http = f_screen_shot_web(ip,port,"http")
+            elif(" 404 " in str(curl1_output)):
+                print(f"Kod 404 {ip} {port}")
+                nazwa_pliku_http = f_screen_shot_web(ip,port,"http")
+        except Exception as er:
+            komunikat = f"Wyjatek scr shot http://{ip}:{port} {str(er)}"
+            print(komunikat)
+            nazwa_pliku_http = komunikat
+
+        try:
+            if(" 200 " in str(curl2_output) or " 302 " in str(curl2_output) or " 404 " in str(curl2_output)):
+                print(f"Kod 200 {ip} {port}")
+                nazwa_pliku_https = f_screen_shot_web(ip,port,"https")
+            elif(" 302 " in str(curl2_output)):
+                print(f"Kod 302 {ip} {port}")
+                nazwa_pliku_https = f_screen_shot_web(ip,port,"https")
+            elif(" 404 " in str(curl2_output)):
+                print(f"Kod 404 {ip} {port}")
+                nazwa_pliku_https = f_screen_shot_web(ip,port,"https")
+        except Exception as er:
+            komunikat = f"Wyjatek scr shot https://{ip}:{port} {str(er)}"
+            print(komunikat)
+            nazwa_pliku_https = komunikat
+
+        wynik = (f"{f_czas()};{ip};{protokol};{port};{usluga};{socat_output};{curl1_output};{curl2_output};{nazwa_pliku_http} | {nazwa_pliku_https} | {nazwa_pliku_random_http} | {nazwa_pliku_random_https};{spis_linkow}")
+    else:
+        wynik = (f"{f_czas()};{ip};{protokol};{port};{usluga};{socat_output};-;-;-")
+    
+    plik_wynik.write(wynik+"\n")
 
 def f_dirb(ip,port,h_proto):
     czas = datetime.datetime.now()
@@ -218,7 +218,7 @@ def f_screen_shot_web (ip,port,protokol):
     options.headless = True
     driver = webdriver.Chrome(options=options)
 
-    URL = f"{h_prot}://{ip}:{port}"
+    URL = f"{protokol}://{ip}:{port}"
 
     driver.get(URL)
     S=lambda X: driver.execute_script('return document.body.parentNode.scroll' + X)
@@ -227,8 +227,8 @@ def f_screen_shot_web (ip,port,protokol):
     driver.set_window_size(S('Width'),S('Height'))
     #driver.set_window_size(1200,1200)
 
-    nazwa_pliku = plik_z_wynikiem + "_" + f"{ip}_{port}_{h_prot}.png"
-    znak_wodny = f"{czas} | Protokol: [{h_prot}], adres ip: [{ip}], port: [{port}] | ABW / CSIRT GOV"
+    nazwa_pliku = plik_z_wynikiem + "_" + f"{ip}_{port}_{protokol}.png"
+    znak_wodny = f"{czas} | Protokol: [{protokol}], adres ip: [{ip}], port: [{port}] | ABW / CSIRT GOV"
     driver.find_element_by_tag_name('body').screenshot(nazwa_pliku)
     driver.quit()
     
