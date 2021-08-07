@@ -36,8 +36,7 @@ baner = pyfiglet.figlet_format("Rekonesans")
 print(baner)
 
 def f_odczyt_pliku_nmap(plik):
-    czas = datetime.datetime.now()
-    print(f"{czas} | odczytuje plik z danymi: {plik}")
+    print(f"{f_czas()} | odczytuje plik z danymi: {plik}")
     otwarty_plik_nmap = open(plik, 'r')
 
     # licze ile jest lini w pliku z danymi
@@ -124,6 +123,9 @@ def f_screen_shot_web (ip,port,protokol):
 def f_get_links_from_web(ip,port,protokol):
     czas = datetime.datetime.now()
 
+def f_czas ():
+    return datetime.datetime.now()
+    
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser = argparse.ArgumentParser(description='Rekonesans MM wersja 0.1', formatter_class=argparse.RawTextHelpFormatter)
