@@ -114,43 +114,46 @@ def f_odczyt_pliku_nmap(plik):
 
         r = re.compile("\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}")
         if r.match(ip) is None:
-            #print(f"{f_czas()} | Wpis nie zawiera poprawnego adresu IP [{ip}]")
             f_zapis_log("f_odczyt_pliku_nmap", f"Wpis nie zawiera poprawnego adresu IP [{ip}]", "info")
         else:
-            # pierwsza funkcja socat na określenie hosta
+            # OUTPUT
+            # socat
             output_socat = f_socat(ip,port,protokol)
 
+            # OUTPUT
             # curl - odpytuje host i daje info dla wykonania screen shota 
+            # http
             output_curl1 = f_curl(ip,port,protokol,"http")
+            # https
             output_curl2 = f_curl(ip,port,protokol,"https")
             
             # screen shot w przypadku kiedy curl zwroci 200, 302, 404
-            # robienie screen shota-a            
+            # robienie screen shota-a     
+            # http      
             try:
                 if(" 200 " in str(output_curl1) or " 302 " in str(output_curl1) or " 404 " in str(output_curl1)):
                     output_screen_shot_web_http = f_screen_shot_web(ip,port,"http")
                 else:
                     output_screen_shot_web_http = "none"
             except Exception as er:
-                f_zapis_log("skrypt - f_screen_shot_web", f"Wyjatek scr shot http://{ip}:{port} {str(er)}", "error")
+                f_zapis_log("f_odczyt_pliku_nmap/f_screen_shot_web", f"Wyjatek scr shot http://{ip}:{port} {str(er)}", "error")
 
+            # https
             try:
                 if(" 200 " in str(output_curl2) or " 302 " in str(output_curl2) or " 404 " in str(output_curl2)):
                     output_screen_shot_web_https = f_screen_shot_web(ip,port,"https")
                 else:
                     output_screen_shot_web_https = "none"
             except Exception as er:
-                f_zapis_log("skrypt - f_screen_shot_web", f"Wyjatek scr shot https://{ip}:{port} {str(er)}", "error")
+                f_zapis_log("f_odczyt_pliku_nmap/f_screen_shot_web", f"Wyjatek scr shot https://{ip}:{port} {str(er)}", "error")
 
+            # OUTPUT
+            # DCERPC port 135
             output_dcerpc_p135 = ""
             if(port == "135"):
                 output_dcerpc_p135 = f_rpc_p135(ip)
             else:
                 output_dcerpc_p135 = "none"
-            #############
-            #output_screen_shot_web = "---"
-            #if(" 200 " in str(output_curl) or " 302 " in str(output_curl) or " 404 " in str(output_curl)):
-            #    output_screen_shot_web = f_screen_shot_web(ip,port,protokol)
 
             # zapis do pliku *.json
             data['host'].append({
@@ -174,7 +177,7 @@ def f_odczyt_pliku_nmap(plik):
         raport_html.write(json2html.convert(json = data, table_attributes='border="1', clubbing=True, encode=False, escape=True))
         raport_html.close()
     except Exception as e:
-        f_zapis_log("skrypt",e,"error")
+        f_zapis_log("f_odczyt_pliku_nmap-raport_html",e,"error")
 
     otwarty_plik_nmap.close()
 
