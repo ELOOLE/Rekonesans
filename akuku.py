@@ -55,11 +55,6 @@ def f_odczyt_pliku_nmap(plik):
     
     # czytamy linijka po linijce 
     for linijka in otwarty_plik_nmap:
-        #czas otwarcia kolejnej linijki
-        czas = datetime.datetime.now()
-
-        #print(f"linijka: {linijka}")
-
         # rozpoczynamy parsowanie pliku
         # services -u -c port,proto,name,info - o /home/user/rand1234
         wynik = linijka.split(',')
@@ -69,12 +64,12 @@ def f_odczyt_pliku_nmap(plik):
         usluga = wynik[3].replace("\"", "").rstrip("\n")
         opis_nmap = wynik[4].replace("\"", "").rstrip("\n")
 
-        print(f"({i}/{line_count}) | {czas} | IP: {ip} proto:{protokol} port:{port} usluga: {usluga}")
+        print(f"({i}/{line_count}) | {f_czas()} | IP: {ip} proto:{protokol} port:{port} usluga: {usluga}")
         i+=1
 
         r = re.compile("\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}")
         if r.match(ip) is None:
-            print(f"{czas} | Wpis nie zawiera poprawnego adresu IP [{ip}]")
+            print(f"{f_czas()} | Wpis nie zawiera poprawnego adresu IP [{ip}]")
         else:
             # pierwsza funkcja socat na określenie hosta
             output_socat = f_socat(ip,port,protokol)
@@ -106,7 +101,6 @@ def f_odczyt_pliku_nmap(plik):
     otwarty_plik_nmap.close()
 
 def f_socat(ip,port,protokol):
-    czas = datetime.datetime.now()
     protokol = str.upper(protokol)
     cmd = f"echo -ne \\x01\\x00\\x00\\x00 | socat -t 1 {protokol}:{ip}:{port},connect-timeout=2 - "
     ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
@@ -115,17 +109,211 @@ def f_socat(ip,port,protokol):
     return output
 
 def f_curl(ip,port,protokol):
-    czas = datetime.datetime.now()
+    if(protokol == "tcp"):
+            cmd_curl1 = f"curl -I http://{ip}:{port} --max-time 2 --no-keepalive -v"
+            cmd_curl2 = f"curl -I https://{ip}:{port} --max-time 2 --no-keepalive -v -k"
 
+            args1 = shlex.split(cmd_curl1)
+            args2 = shlex.split(cmd_curl2)
+
+            ps_cmd_curl1 = subprocess.Popen(args1,shell=False,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            ps_cmd_curl2 = subprocess.Popen(args2,shell=False,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            
+            curl1_output = ps_cmd_curl1.communicate()[0]
+            curl2_output = ps_cmd_curl2.communicate()[0]
+
+            nazwa_pliku_http = ""
+            nazwa_pliku_https = ""
+            nazwa_pliku_random_http = ""
+            nazwa_pliku_random_https = ""
+            spis_linkow = ""
+
+            # zrzut linkow
+            if(" 200 " in str(curl1_output)):
+                try:
+                    addrHTTP = f"http://{ip}:{port}/"
+                    parser = 'html.parser'
+                    resp = urllib.request.urlopen(addrHTTP)
+                    soup = BeautifulSoup(resp, parser, from_encoding=resp.info().get_param('charset'))
+
+                    for link in soup.find_all('a', href=True):
+                        spis_linkow += "\n" + link['href'] 
+                        nowy_adres = parsuje_addr(link['href'])
+
+                    print(f"spis_linkow1: {spis_linkow}")
+                except Exception as e:
+                    print(f"Wyjatek: {e}")
+
+            if(" 200 " in str(curl2_output)):
+                ctx = ssl.create_default_context()
+                ctx.check_hostname = False
+                ctx.verify_mode = ssl.CERT_NONE
+                try:
+                    addrHTTP = f"https://{ip}:{port}/"
+                    parser = 'html.parser'
+                    
+                    resp = urllib.request.urlopen(addrHTTP, context=ctx)
+                    soup = BeautifulSoup(resp, parser, from_encoding=resp.info().get_param('charset'))
+
+                    for link in soup.find_all('a', href=True):
+                        spis_linkow += "\n" + link['href']
+                        nowy_adres = parsuje_addr(link['href'])
+
+                    print(f"spis_linkow2: {spis_linkow}")
+                except Exception as e:
+                    print(f"Wyjatek: {e}")
+
+            # robienie screen shota-a            
+            try:
+                if(" 200 " in str(curl1_output)):
+                    print(f"Kod 200 {ip} {port}")
+                    nazwa_pliku_http = scr_shot_web(ip,port,"http")
+                elif(" 302 " in str(curl1_output)):
+                    print(f"Kod 302 {ip} {port}")
+                    nazwa_pliku_http = scr_shot_web(ip,port,"http")
+                elif(" 404 " in str(curl1_output)):
+                    print(f"Kod 404 {ip} {port}")
+                    nazwa_pliku_http = scr_shot_web(ip,port,"http")
+            except Exception as er:
+                komunikat = f"Wyjatek scr shot http://{ip}:{port} {str(er)}"
+                print(komunikat)
+                nazwa_pliku_http = komunikat
+
+            try:
+                if(" 200 " in str(curl2_output) or " 302 " in str(curl2_output) or " 404 " in str(curl2_output)):
+                    print(f"Kod 200 {ip} {port}")
+                    nazwa_pliku_https = scr_shot_web(ip,port,"https")
+                elif(" 302 " in str(curl2_output)):
+                    print(f"Kod 302 {ip} {port}")
+                    nazwa_pliku_https = scr_shot_web(ip,port,"https")
+                elif(" 404 " in str(curl2_output)):
+                    print(f"Kod 404 {ip} {port}")
+                    nazwa_pliku_https = scr_shot_web(ip,port,"https")
+            except Exception as er:
+                komunikat = f"Wyjatek scr shot https://{ip}:{port} {str(er)}"
+                print(komunikat)
+                nazwa_pliku_https = komunikat
+
+            wynik = (f"{czas};{ip};{protokol};{port};{usluga};{socat_output};{curl1_output};{curl2_output};{nazwa_pliku_http} | {nazwa_pliku_https} | {nazwa_pliku_random_http} | {nazwa_pliku_random_https};{spis_linkow}")
+        else:
+            wynik = (f"{czas};{ip};{protokol};{port};{usluga};{socat_output};-;-;-")
+        
+        plik_wynik.write(wynik+"\n")
+
+def f_dirb(ip,port,h_proto):
+    czas = datetime.datetime.now()
+    cmd = f"dirb {h_proto}://{ip}:{port} /usr/share/wordlists/dirb/common.txt -f -S" 
+    cmd_p = f"{czas} | {cmd}"
+    print (cmd_p)
+    
+    dirb = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    output = dirb.communicate()[0]
+
+    return output
+        
 def f_screen_shot_web (ip,port,protokol):
     czas = datetime.datetime.now()
+    options = webdriver.ChromeOptions()
+    options.add_argument('--ignore-certificate-errors')
+    options.headless = True
+    driver = webdriver.Chrome(options=options)
+
+    URL = f"{h_prot}://{ip}:{port}"
+
+    driver.get(URL)
+    S=lambda X: driver.execute_script('return document.body.parentNode.scroll' + X)
+    #driver.set_window_size(1200,S('Height'))
+
+    driver.set_window_size(S('Width'),S('Height'))
+    #driver.set_window_size(1200,1200)
+
+    nazwa_pliku = plik_z_wynikiem + "_" + f"{ip}_{port}_{h_prot}.png"
+    znak_wodny = f"{czas} | Protokol: [{h_prot}], adres ip: [{ip}], port: [{port}] | ABW / CSIRT GOV"
+    driver.find_element_by_tag_name('body').screenshot(nazwa_pliku)
+    driver.quit()
+    
+    print(f"(- screen shot web-) | {czas} | {nazwa_pliku}")
+
+    try:
+        #nanosimy znak wodny na img
+        podpisz_screena = Image.open(nazwa_pliku)
+        title_font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 13)
+        title_text = znak_wodny
+        image_editable = ImageDraw.Draw(podpisz_screena)
+        wysokosc_img = podpisz_screena.height-29
+        szerokosc_img = podpisz_screena.width
+        image_editable.rectangle ((0,wysokosc_img+6,szerokosc_img-1,wysokosc_img+21), outline='red', fill='blue')
+        image_editable.text((15, wysokosc_img+5), str(title_text), (165,230,211), font=title_font)
+        podpisz_screena.save(nazwa_pliku)
+
+        #convert png to jpg
+        nazwa_pliku_jpg = nazwa_pliku[:-3] + "jpg"
+        img_to_jpg = podpisz_screena.convert('RGB')
+        img_to_jpg.save(nazwa_pliku_jpg)
+
+        #skasowac png
+        os.remove(nazwa_pliku)
+        
+        print(f"- Naniesiono podpis na obrazek.\n{nazwa_pliku}")
+    except Exception as img_err:
+        print(f"Nie podpisano obrazka: \n{img_err} \n{nazwa_pliku}")
+    
+    return nazwa_pliku
+
+def scr_shot_web2 (ip,port,h_prot,reszta):
+    czas = datetime.datetime.now()
+    options = webdriver.ChromeOptions()
+    options.add_argument('--ignore-certificate-errors')
+    options.headless = True
+    driver = webdriver.Chrome(options=options)
+
+    URL = f"{h_prot}://{ip}:{port}/{reszta}"    
+
+    dopisek = randrange(1000-10000)
+
+    driver.get(URL)
+    S=lambda X: driver.execute_script('return document.body.parentNode.scroll' + X)
+    #driver.set_window_size(1200,S('Height'))
+
+    driver.set_window_size(S('Width'),S('Height'))
+    #driver.set_window_size(1200,1200)
+
+    nazwa_pliku = plik_z_wynikiem + "_" + f"{ip}_{port}_{h_prot}_{dopisek}.png"
+    driver.find_element_by_tag_name('body').screenshot(nazwa_pliku)
+
+    print(f"(-screen shot [web]-) | {czas} | {nazwa_pliku}")
+
+    driver.quit()
+    return nazwa_pliku
+
+def parsuje_addr (adres):
+    h_port = ""
+    if("https" in adres):
+        h_port = "https"
+    elif("http" in adres):
+        h_port = "http"
+    else:
+        return "err"
+
+    host = adres[(int(str(adres).find(":")) + 3):]
+    host = host[:str(host).find(":")]
+
+    port = adres.split(host)
+    port[1]=port[1][1:]
+
+    port =port[1][:str(port[1]).find("/")]
+
+    reszta = adres.split(port)
+    reszta = reszta[1]
+
+    return [h_port, host, port, reszta]
+
+def f_czas ():
+    return datetime.datetime.now()
 
 def f_get_links_from_web(ip,port,protokol):
     czas = datetime.datetime.now()
 
-def f_czas ():
-    return datetime.datetime.now()
-    
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser = argparse.ArgumentParser(description='Rekonesans MM wersja 0.1', formatter_class=argparse.RawTextHelpFormatter)
