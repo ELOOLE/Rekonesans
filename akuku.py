@@ -75,7 +75,7 @@ def f_odczyt_pliku_nmap(plik):
         if line != "\n":
             line_count += 1
     otwarty_plik_nmap.close()
-    print(f"Ilosc zadan do wykonania: {line_count} \n")
+    f_zapis_log("skrypt",f"Ilosc zadan do wykonania: {line_count}","info")
 
     # otwieram ponownie
     otwarty_plik_nmap = open(plik, 'r')
@@ -94,12 +94,14 @@ def f_odczyt_pliku_nmap(plik):
         usluga = wynik[3].replace("\"", "").rstrip("\n")
         opis_nmap = wynik[4].replace("\"", "").rstrip("\n")
 
-        print(f"({i}/{line_count}) | {f_czas()} | IP: {ip} proto:{protokol} port:{port} usluga: {usluga}")
+        #print(f"({i}/{line_count}) | {f_czas()} | IP: {ip} proto:{protokol} port:{port} usluga: {usluga}")
+        f_zapis_log("skrypt",f"({i}/{line_count}) | proto:{protokol} IP:{ip} port:{port} usluga:{usluga}", "info")
         i+=1
 
         r = re.compile("\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}")
         if r.match(ip) is None:
-            print(f"{f_czas()} | Wpis nie zawiera poprawnego adresu IP [{ip}]")
+            #print(f"{f_czas()} | Wpis nie zawiera poprawnego adresu IP [{ip}]")
+            f_zapis_log("skrypt", f"Wpis nie zawiera poprawnego adresu IP [{ip}]", "info")
         else:
             # pierwsza funkcja socat na określenie hosta
             output_socat = f_socat(ip,port,protokol)
@@ -107,41 +109,25 @@ def f_odczyt_pliku_nmap(plik):
             # curl - odpytuje host i daje info dla wykonania screen shota 
             output_curl1 = f_curl(ip,port,protokol,"http")
             output_curl2 = f_curl(ip,port,protokol,"https")
+            
             # screen shot w przypadku kiedy curl zwroci 200, 302, 404
             # robienie screen shota-a            
-        try:
-            if(" 200 " in str(curl1_output)):
-                print(f"Kod 200 {ip} {port}")
-                nazwa_pliku_http = f_screen_shot_web(ip,port,"http")
-            elif(" 302 " in str(curl1_output)):
-                print(f"Kod 302 {ip} {port}")
-                nazwa_pliku_http = f_screen_shot_web(ip,port,"http")
-            elif(" 404 " in str(curl1_output)):
-                print(f"Kod 404 {ip} {port}")
-                nazwa_pliku_http = f_screen_shot_web(ip,port,"http")
-        except Exception as er:
-            komunikat = f"Wyjatek scr shot http://{ip}:{port} {str(er)}"
-            print(komunikat)
-            nazwa_pliku_http = komunikat
+            try:
+                if(" 200 " in str(output_curl1) or " 302 " in str(output_curl1) or " 404 " in str(output_curl1)):
+                    nazwa_pliku_http = f_screen_shot_web(ip,port,"http")
+            except Exception as er:
+                f_zapis_log("skrypt - f_screen_shot_web", f"Wyjatek scr shot http://{ip}:{port} {str(er)}", "error")
 
-        try:
-            if(" 200 " in str(curl2_output) or " 302 " in str(curl2_output) or " 404 " in str(curl2_output)):
-                print(f"Kod 200 {ip} {port}")
-                nazwa_pliku_https = f_screen_shot_web(ip,port,"https")
-            elif(" 302 " in str(curl2_output)):
-                print(f"Kod 302 {ip} {port}")
-                nazwa_pliku_https = f_screen_shot_web(ip,port,"https")
-            elif(" 404 " in str(curl2_output)):
-                print(f"Kod 404 {ip} {port}")
-                nazwa_pliku_https = f_screen_shot_web(ip,port,"https")
-        except Exception as er:
-            komunikat = f"Wyjatek scr shot https://{ip}:{port} {str(er)}"
-            print(komunikat)
-            nazwa_pliku_https = komunikat
+            try:
+                if(" 200 " in str(output_curl2) or " 302 " in str(output_curl2) or " 404 " in str(output_curl2)):
+                    nazwa_pliku_https = f_screen_shot_web(ip,port,"https")
+            except Exception as er:
+                f_zapis_log("skrypt - f_screen_shot_web", f"Wyjatek scr shot https://{ip}:{port} {str(er)}", "error")
+                
             #############
-            output_screen_shot_web = "---"
-            if(" 200 " in str(output_curl) or " 302 " in str(output_curl) or " 404 " in str(output_curl)):
-                output_screen_shot_web = f_screen_shot_web(ip,port,protokol)
+            #output_screen_shot_web = "---"
+            #if(" 200 " in str(output_curl) or " 302 " in str(output_curl) or " 404 " in str(output_curl)):
+            #    output_screen_shot_web = f_screen_shot_web(ip,port,protokol)
 
             # zapis do pliku *.json
             data['host'].append({'ip':f'{ip}','port':f'{port}','protokol':f'{protokol}','usluga':f'{usluga}','opis':f'{opis_nmap}','socat':f'{output_socat}','curl':f'{output_curl}','screen_shot':f'{output_screen_shot_web}'})
@@ -185,17 +171,26 @@ def f_socat(ip,port,protokol):
 def f_curl(ip,port,protokol, h_prot):
     if(protokol == "tcp"):
         # budujemy sklanie polecenie curl dla http
-        cmd_curl1 = f"curl -I {h_prot}://{ip}:{port} --max-time 2 --no-keepalive -v"
-        f_zapis_log("skypt", cmd_curl1)
-        args1 = shlex.split(cmd_curl1)
-        ps_cmd_curl1 = subprocess.Popen(args1,shell=False,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        curl1_output = ps_cmd_curl1.communicate()[0]
-        #wynik = (f"{f_czas()};{ip};{protokol};{port};{usluga};{socat_output};{curl1_output};{curl2_output};{nazwa_pliku_http} | {nazwa_pliku_https} | {nazwa_pliku_random_http} | {nazwa_pliku_random_https};{spis_linkow}")
-        wynik = curl1_output
-    else:
-        #wynik = (f"{f_czas()};{ip};{protokol};{port};{usluga};{socat_output};-;-;-")
-        wynik = "UDP - pomijam"
+        cmd_curl = f"curl -I {h_prot}://{ip}:{port} --max-time 2 --no-keepalive -v"
         
+        # zapisujemy zbudowane polecenie do pliku logu
+        f_zapis_log("skypt", cmd_curl, "info")
+
+        args1 = shlex.split(cmd_curl)
+        ps_cmd_curl1 = subprocess.Popen(args1,shell=False,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        
+        # wynik wykonania polecenia
+        curl_output = ps_cmd_curl1.communicate()[0]
+        
+        # zmienna [wynik] ma dane, ktore zostana zwrocone przez funkcje
+        wynik = curl_output
+    else:
+        # jezeli [protokol] to UDP zmienna [wynik] zwroci wynik jak ponizej
+        wynik = "UDP - pomijam"
+
+    # zapisujemy do logu co zwrocila [f_curl]
+    f_zapis_log("curl",wynik,"info")
+
     return wynik
 
 ############################
