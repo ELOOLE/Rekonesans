@@ -271,7 +271,7 @@ def f_screen_shot_web (ip,port,protokol):
     #driver.set_window_size(1200,1200)
 
     nazwa_pliku = path_plik_nmap_msfconsole + "_" + f"{ip}_{port}_{protokol}.png"
-    znak_wodny = f"{czas} | Protokol: [{protokol}], adres ip: [{ip}], port: [{port}] | ABW / CSIRT GOV"
+    znak_wodny = f"{czas} | Protokol: [{protokol}], adres ip: [{ip}], port: [{port}] "
     driver.find_element_by_tag_name('body').screenshot(nazwa_pliku)
     driver.quit()
     
