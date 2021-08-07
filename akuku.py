@@ -108,12 +108,8 @@ def f_odczyt_pliku_nmap(plik):
 
 def f_socat(ip,port,protokol):
     czas = datetime.datetime.now()
-    cmd = ""
-    if(protokol == "tcp"):
-        cmd = f"echo -ne \\x01\\x00\\x00\\x00 | socat -t 1 TCP:{ip}:{port},connect-timeout=2 - "
-    else:
-        cmd = f"echo -ne \\x01\\x00\\x00\\x00 | socat -t 1 UDP:{ip}:{port},connect-timeout=2 - "
-    
+    protokol = str.upper(protokol)
+    cmd = f"echo -ne \\x01\\x00\\x00\\x00 | socat -t 1 {protokol}:{ip}:{port},connect-timeout=2 - "
     ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
     output = ps.communicate()[0]
 
