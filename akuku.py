@@ -142,7 +142,7 @@ def f_odczyt_pliku_nmap(plik):
                 f_zapis_log("skrypt - f_screen_shot_web", f"Wyjatek scr shot https://{ip}:{port} {str(er)}", "error")
 
             output_dcerpc_p135 = ""
-            if(port == 135):
+            if(port == "135"):
                 output_dcerpc_p135 = f_rpc_p135(ip)
             else:
                 output_dcerpc_p135 = "none"
@@ -366,7 +366,7 @@ def f_rpc_p135(ip):
     target_ip = ip
     authLevel = RPC_C_AUTHN_LEVEL_NONE
     adresy_ip = ""
-    wynik = f"[*] Wykryte adresy sieciowe hosta [{target_ip}]"
+    wynik = f"[*] Wykryte adresy sieciowe hosta [{target_ip}]\n"
     
     stringBinding = r'ncacn_ip_tcp:%s' % target_ip
     rpctransport = transport.DCERPCTransportFactory(stringBinding)
@@ -385,7 +385,7 @@ def f_rpc_p135(ip):
     for binding in bindings:
         NetworkAddr = binding['aNetworkAddr']
         #print ("Address: " + NetworkAddr)
-        adresy_ip += NetworkAddr
+        adresy_ip += NetworkAddr + "\n"
     
     wynik += adresy_ip
     f_zapis_log("f_rpc_p135",adresy_ip,"info") 
