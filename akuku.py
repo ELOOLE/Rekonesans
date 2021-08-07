@@ -28,18 +28,45 @@ from random import randrange
 
 from PIL import Image, ImageFont, ImageDraw
 
-# dane do zrzutu danych
-data = {}
-
+##########################################
 # plik z zasobami do skanowania
+# ---------------------------------------
+# odczytujemy generujemy z metasploit
+# w nastpujacy sposob
+# > services -u -c port,proto,name,info -o /home/user/rand1234
+##########################################
 path_plik_nmap_msfconsole = ""
 
-#banner aplikacji
+##########################################
+# plik logu - generowany automatycznie 
+# jak nie istnije to zostanie stworzony
+# nazywa się jak [path_plik_nmap_msfconsole] 
+# z ta roznica, ze rozszerzenie jest *.log
+##########################################
+path_plik_logu = ""
+
+##########################################
+# plik logu - generowany automatycznie 
+# jak nie istnije to zostanie stworzony
+# nazywa się jak [path_plik_nmap_msfconsole]
+#  z ta roznica, ze rozszerzenie jest *.json
+##########################################
+path_plik_json = ""
+# dane do zrzutu danych zwiazane wlasnie z plikiem *.json
+data = {}
+
+##########################################
+# banner aplikacji
+# plik logu jak zostanie utworzony 
+# wrzuca ten baner jako pierwsza rzecz
+# do jego wynikow
+##########################################
 baner = pyfiglet.figlet_format("Rekonesans")
 print(baner)
 
 def f_odczyt_pliku_nmap(plik):
-    print(f"{f_czas()} | odczytuje plik z danymi: {plik}")
+    f_zapis_log("skrypt", f"odczytuje plik z danymi: {plik}", "info") 
+    #print(f"{f_czas()} | odczytuje plik z danymi: {plik}")
     otwarty_plik_nmap = open(plik, 'r')
 
     # licze ile jest lini w pliku z danymi
@@ -78,95 +105,10 @@ def f_odczyt_pliku_nmap(plik):
             output_socat = f_socat(ip,port,protokol)
 
             # curl - odpytuje host i daje info dla wykonania screen shota 
-            output_curl = f_curl(ip,port,protokol)
-
+            output_curl1 = f_curl(ip,port,protokol,"http")
+            output_curl2 = f_curl(ip,port,protokol,"https")
             # screen shot w przypadku kiedy curl zwroci 200, 302, 404
-            output_screen_shot_web = "---"
-            if(" 200 " in str(output_curl) or " 302 " in str(output_curl) or " 404 " in str(output_curl)):
-                output_screen_shot_web = f_screen_shot_web(ip,port,protokol)
-
-            # zapis do pliku *.json
-            data['host'].append({'ip':f'{ip}','port':f'{port}','protokol':f'{protokol}','usluga':f'{usluga}','opis':f'{opis_nmap}','socat':f'{output_socat}','curl':f'{output_curl}','screen_shot':f'{output_screen_shot_web}'})
-        
-    with open('/home/nano/data.json', 'w') as outfile:
-        json.dump(data, outfile)
-    
-    #'/home/nano/data.txt'
-    #infoFromJson = json.loads(data)
-    build_direction = "LEFT_TO_RIGHT"
-    table_attributes = {"style": "width:100%"}
-    #print(json2html.convert(infoFromJson, build_direction=build_direction, table_attributes=table_attributes))
-    #print(json2html.convert(json = data, build_direction=build_direction, table_attributes=table_attributes))
-
-    raport_html = open('/home/nano/data.hml', 'w')
-    raport_html = json2html.convert(json = data, build_direction=build_direction, table_attributes=table_attributes)
-
-    otwarty_plik_nmap.close()
-
-def f_socat(ip,port,protokol):
-    protokol = str.upper(protokol)
-    cmd = f"echo -ne \\x01\\x00\\x00\\x00 | socat -t 1 {protokol}:{ip}:{port},connect-timeout=2 - "
-    ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-    output = ps.communicate()[0]
-
-    return output
-
-def f_curl(ip,port,protokol):
-    if(protokol == "tcp"):
-        cmd_curl1 = f"curl -I http://{ip}:{port} --max-time 2 --no-keepalive -v"
-        cmd_curl2 = f"curl -I https://{ip}:{port} --max-time 2 --no-keepalive -v -k"
-
-        args1 = shlex.split(cmd_curl1)
-        args2 = shlex.split(cmd_curl2)
-
-        ps_cmd_curl1 = subprocess.Popen(args1,shell=False,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        ps_cmd_curl2 = subprocess.Popen(args2,shell=False,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        
-        curl1_output = ps_cmd_curl1.communicate()[0]
-        curl2_output = ps_cmd_curl2.communicate()[0]
-
-        nazwa_pliku_http = ""
-        nazwa_pliku_https = ""
-        nazwa_pliku_random_http = ""
-        nazwa_pliku_random_https = ""
-        spis_linkow = ""
-
-        # zrzut linkow
-        if(" 200 " in str(curl1_output)):
-            try:
-                addrHTTP = f"http://{ip}:{port}/"
-                parser = 'html.parser'
-                resp = urllib.request.urlopen(addrHTTP)
-                soup = BeautifulSoup(resp, parser, from_encoding=resp.info().get_param('charset'))
-
-                for link in soup.find_all('a', href=True):
-                    spis_linkow += "\n" + link['href'] 
-                    nowy_adres = parsuje_addr(link['href'])
-
-                print(f"spis_linkow1: {spis_linkow}")
-            except Exception as e:
-                print(f"Wyjatek: {e}")
-
-        if(" 200 " in str(curl2_output)):
-            ctx = ssl.create_default_context()
-            ctx.check_hostname = False
-            ctx.verify_mode = ssl.CERT_NONE
-            try:
-                addrHTTP = f"https://{ip}:{port}/"
-                parser = 'html.parser'
-                
-                resp = urllib.request.urlopen(addrHTTP, context=ctx)
-                soup = BeautifulSoup(resp, parser, from_encoding=resp.info().get_param('charset'))
-
-                for link in soup.find_all('a', href=True):
-                    spis_linkow += "\n" + link['href']
-                    nowy_adres = parsuje_addr(link['href'])
-
-                print(f"spis_linkow2: {spis_linkow}")
-            except Exception as e:
-                print(f"Wyjatek: {e}")
-
-        # robienie screen shota-a            
+            # robienie screen shota-a            
         try:
             if(" 200 " in str(curl1_output)):
                 print(f"Kod 200 {ip} {port}")
@@ -196,16 +138,109 @@ def f_curl(ip,port,protokol):
             komunikat = f"Wyjatek scr shot https://{ip}:{port} {str(er)}"
             print(komunikat)
             nazwa_pliku_https = komunikat
+            #############
+            output_screen_shot_web = "---"
+            if(" 200 " in str(output_curl) or " 302 " in str(output_curl) or " 404 " in str(output_curl)):
+                output_screen_shot_web = f_screen_shot_web(ip,port,protokol)
 
+            # zapis do pliku *.json
+            data['host'].append({'ip':f'{ip}','port':f'{port}','protokol':f'{protokol}','usluga':f'{usluga}','opis':f'{opis_nmap}','socat':f'{output_socat}','curl':f'{output_curl}','screen_shot':f'{output_screen_shot_web}'})
+        
+    with open(path_plik_json, 'w') as outfile:
+        json.dump(data, outfile)
+    
+    #'/home/nano/data.txt'
+    #infoFromJson = json.loads(data)
+    build_direction = "LEFT_TO_RIGHT"
+    table_attributes = {"style": "width:100%"}
+    #print(json2html.convert(infoFromJson, build_direction=build_direction, table_attributes=table_attributes))
+    #print(json2html.convert(json = data, build_direction=build_direction, table_attributes=table_attributes))
+
+    raport_html = open('/home/nano/data.hml', 'w')
+    raport_html = json2html.convert(json = data, build_direction=build_direction, table_attributes=table_attributes)
+
+    otwarty_plik_nmap.close()
+
+#######################
+# SOCAT 
+#######################
+def f_socat(ip,port,protokol):
+    protokol = str.upper(protokol)
+    # buduje polecenie
+    cmd = f"echo -ne \\x01\\x00\\x00\\x00 | socat -t 1 {protokol}:{ip}:{port},connect-timeout=2 - "
+    
+    # zapisuje do logu jakie zbudowal polecenie
+    f_zapis_log("skrypt",cmd,"info")
+    ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    output = ps.communicate()[0]
+
+    # zapisuje do logu jaki jest wynik polecenia
+    f_zapis_log("socat",output,"info")
+
+    return output
+
+#######################
+# CURL 
+#######################
+def f_curl(ip,port,protokol, h_prot):
+    if(protokol == "tcp"):
+        # budujemy sklanie polecenie curl dla http
+        cmd_curl1 = f"curl -I {h_prot}://{ip}:{port} --max-time 2 --no-keepalive -v"
+        f_zapis_log("skypt", cmd_curl1)
+        args1 = shlex.split(cmd_curl1)
+        ps_cmd_curl1 = subprocess.Popen(args1,shell=False,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        curl1_output = ps_cmd_curl1.communicate()[0]
         #wynik = (f"{f_czas()};{ip};{protokol};{port};{usluga};{socat_output};{curl1_output};{curl2_output};{nazwa_pliku_http} | {nazwa_pliku_https} | {nazwa_pliku_random_http} | {nazwa_pliku_random_https};{spis_linkow}")
+        wynik = curl1_output
     else:
         #wynik = (f"{f_czas()};{ip};{protokol};{port};{usluga};{socat_output};-;-;-")
-        print("tutaj jak UDP")
-    
-    #plik_wynik.write(wynik+"\n")
+        wynik = "UDP - pomijam"
+        
+    return wynik
 
-    return "wynik jakis"
+############################
+# pobiera linki ze strony
+############################
+def f_get_links_from_web(ip,port,protokol):
+    spis_linkow = ""
+    # zrzut linkow
+    if(" 200 " in str(curl1_output)):
+        try:
+            addrHTTP = f"http://{ip}:{port}/"
+            parser = 'html.parser'
+            resp = urllib.request.urlopen(addrHTTP)
+            soup = BeautifulSoup(resp, parser, from_encoding=resp.info().get_param('charset'))
 
+            for link in soup.find_all('a', href=True):
+                spis_linkow += "\n" + link['href'] 
+                nowy_adres = parsuje_addr(link['href'])
+
+            print(f"spis_linkow1: {spis_linkow}")
+        except Exception as e:
+            print(f"Wyjatek: {e}")
+
+    if(" 200 " in str(curl2_output)):
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        try:
+            addrHTTP = f"https://{ip}:{port}/"
+            parser = 'html.parser'
+            
+            resp = urllib.request.urlopen(addrHTTP, context=ctx)
+            soup = BeautifulSoup(resp, parser, from_encoding=resp.info().get_param('charset'))
+
+            for link in soup.find_all('a', href=True):
+                spis_linkow += "\n" + link['href']
+                nowy_adres = parsuje_addr(link['href'])
+
+            print(f"spis_linkow2: {spis_linkow}")
+        except Exception as e:
+            print(f"Wyjatek: {e}")
+
+#######################
+# DIRB
+#######################
 def f_dirb(ip,port,h_proto):
     cmd = f"dirb {h_proto}://{ip}:{port} /usr/share/wordlists/dirb/common.txt -f -S" 
     cmd_p = f"{f_czas()} | {cmd}"
@@ -216,6 +251,9 @@ def f_dirb(ip,port,h_proto):
 
     return output
         
+###########################
+# SCREEN SHOT of WEB PAGE 
+###########################
 def f_screen_shot_web (ip,port,protokol):
     czas = datetime.datetime.now()
     options = webdriver.ChromeOptions()
@@ -265,6 +303,9 @@ def f_screen_shot_web (ip,port,protokol):
     
     return nazwa_pliku
 
+###########################
+# SCREEN SHOT of WEB PAGE2 
+###########################
 def scr_shot_web2 (ip,port,h_prot,reszta):
     czas = datetime.datetime.now()
     options = webdriver.ChromeOptions()
@@ -291,6 +332,9 @@ def scr_shot_web2 (ip,port,h_prot,reszta):
     driver.quit()
     return nazwa_pliku
 
+#######################
+# URL parser
+#######################
 def parsuje_addr (adres):
     h_port = ""
     if("https" in adres):
@@ -313,28 +357,62 @@ def parsuje_addr (adres):
 
     return [h_port, host, port, reszta]
 
+############################
+# f_czas()
+# funkcja zwracajaca w 
+# wyniku aktualny czas
+############################
 def f_czas ():
     return datetime.datetime.now()
 
-def f_get_links_from_web(ip,port,protokol):
-    czas = datetime.datetime.now()
+######################################
+# Zapis do logu
+# plik w zmiennej: [path_plik_logu] 
+######################################
+def f_zapis_log(zrodlo, dane, typ):
+    # sprawdzam istnienie pliku, jeżeli istnieje dopisze w innym przypadku nadpisze. 
+    if(os.path.isfile(path_plik_logu)):
+        plik_logu = open(path_plik_logu,'a+')
+    else:
+        plik_logu = open(path_plik_logu,'w+')
+        plik_logu.write(baner)
+    
+    # budowa komunikatu w celu zapisania do pliku w zmiennej [path_plik_logu] i wyswietlenia na konsoli
+    # -------------------------------
+    # f_czas() - zwraca aktualny czas
+    # typ - informacyjnie, ostrzezenie, blad
+    # zrodlo - kto wygenerowal ten komunikat
+    # dane - jakie dane zawiera wynik wykonania operacji
+    komunikat = f"{f_czas()} | {typ} | {zrodlo} | {dane}"
+    
+    # wyswietlenie komunikatu w konsoli
+    print(komunikat)
+    
+    # zapis komunikatu do pliku [path_plik_logu]
+    plik_logu.write(komunikat)
+    
+    # zamykamy plik logu
+    plik_logu.close()
 
+###########
+# MAIN    #
+###########
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser = argparse.ArgumentParser(description='Rekonesans MM wersja 0.1', formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('--fin', '--file-input', type=str, help='Podaj sciezke do pliku z adresami')
-    parser.add_argument('--fout', '--file-output', type=str, help='Sciezka do zapisu pliku z wynikami skanowania')
+    #parser.add_argument('--fout', '--file-output', type=str, help='Sciezka do zapisu pliku z wynikami skanowania')
     args = parser.parse_args()
 
-    # odczytujemy plik z metasploit
-    # services -u -c proto,port,name -o /home/user/Pobrane/dane.txt
-    # services -u -c port,proto,name,info - o /home/user/rand1234
     # odczyt pliku
-
     if(str(args.fin) == '' or str(args.fin) == 'None'):
         path_plik_nmap_msfconsole = '/home/nano/test1'
     else:
         path_plik_nmap_msfconsole = args.fin
     
+    #plik logu 
+    path_plik_logu = path_plik_nmap_msfconsole[:-3] + "log"
+    path_plik_json = path_plik_nmap_msfconsole[:-3] + "json"
+
     # wywołujemy funkcję, która odczyta nam plik linijka po linijce
     f_odczyt_pliku_nmap(path_plik_nmap_msfconsole)
