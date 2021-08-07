@@ -31,6 +31,9 @@ from PIL import Image, ImageFont, ImageDraw
 # dane do zrzutu danych
 data = {}
 
+# plik z zasobami do skanowania
+path_plik_nmap_msfconsole = ""
+
 #banner aplikacji
 baner = pyfiglet.figlet_format("Rekonesans")
 print(baner)
@@ -194,16 +197,18 @@ def f_curl(ip,port,protokol):
             print(komunikat)
             nazwa_pliku_https = komunikat
 
-        wynik = (f"{f_czas()};{ip};{protokol};{port};{usluga};{socat_output};{curl1_output};{curl2_output};{nazwa_pliku_http} | {nazwa_pliku_https} | {nazwa_pliku_random_http} | {nazwa_pliku_random_https};{spis_linkow}")
+        #wynik = (f"{f_czas()};{ip};{protokol};{port};{usluga};{socat_output};{curl1_output};{curl2_output};{nazwa_pliku_http} | {nazwa_pliku_https} | {nazwa_pliku_random_http} | {nazwa_pliku_random_https};{spis_linkow}")
     else:
-        wynik = (f"{f_czas()};{ip};{protokol};{port};{usluga};{socat_output};-;-;-")
+        #wynik = (f"{f_czas()};{ip};{protokol};{port};{usluga};{socat_output};-;-;-")
+        print("tutaj jak UDP")
     
-    plik_wynik.write(wynik+"\n")
+    #plik_wynik.write(wynik+"\n")
+
+    return "wynik jakis"
 
 def f_dirb(ip,port,h_proto):
-    czas = datetime.datetime.now()
     cmd = f"dirb {h_proto}://{ip}:{port} /usr/share/wordlists/dirb/common.txt -f -S" 
-    cmd_p = f"{czas} | {cmd}"
+    cmd_p = f"{f_czas()} | {cmd}"
     print (cmd_p)
     
     dirb = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
@@ -227,7 +232,7 @@ def f_screen_shot_web (ip,port,protokol):
     driver.set_window_size(S('Width'),S('Height'))
     #driver.set_window_size(1200,1200)
 
-    nazwa_pliku = plik_z_wynikiem + "_" + f"{ip}_{port}_{protokol}.png"
+    nazwa_pliku = path_plik_nmap_msfconsole + "_" + f"{ip}_{port}_{protokol}.png"
     znak_wodny = f"{czas} | Protokol: [{protokol}], adres ip: [{ip}], port: [{port}] | ABW / CSIRT GOV"
     driver.find_element_by_tag_name('body').screenshot(nazwa_pliku)
     driver.quit()
@@ -278,7 +283,7 @@ def scr_shot_web2 (ip,port,h_prot,reszta):
     driver.set_window_size(S('Width'),S('Height'))
     #driver.set_window_size(1200,1200)
 
-    nazwa_pliku = plik_z_wynikiem + "_" + f"{ip}_{port}_{h_prot}_{dopisek}.png"
+    nazwa_pliku = path_plik_nmap_msfconsole + "_" + f"{ip}_{port}_{h_prot}_{dopisek}.png"
     driver.find_element_by_tag_name('body').screenshot(nazwa_pliku)
 
     print(f"(-screen shot [web]-) | {czas} | {nazwa_pliku}")
