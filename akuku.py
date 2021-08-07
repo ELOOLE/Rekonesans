@@ -170,7 +170,7 @@ def f_odczyt_pliku_nmap(plik):
 
         raport_html = open(path_plik_html, 'w')
         #raport_html = json2html.convert(json = data, table_attributes='border="1', clubbing=True, encode=False, escape=True)
-        raport_html.write(json2html.convert(json = data))
+        raport_html.write(json2html.convert(json = data, table_attributes='border="1', clubbing=True, encode=False, escape=True))
         raport_html.close()
     except Exception as e:
         print(e)
