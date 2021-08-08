@@ -171,8 +171,8 @@ def f_odczyt_pliku_nmap(plik):
                 output_dcerpc_p135 = "none"
 
             # zapis do pliku *.json
-            data['host'].append({
-                'ip':f'{ip}',
+            data['host'].append({ip:{
+                'ip':ip,
                 'port':f'{port}',
                 'protokol':f'{protokol}',
                 'usluga':f'{usluga}',
@@ -184,14 +184,14 @@ def f_odczyt_pliku_nmap(plik):
                 'https_link':f'{output_links_from_web_https}',
                 'screen_shot_http':f'{output_screen_shot_web_http}',
                 'screen_shot_https':f'{output_screen_shot_web_https}',
-                'dce_rpc_p135':f'{output_dcerpc_p135}\n'})
+                'dce_rpc_p135':f'{output_dcerpc_p135}\n'}})
         
-    with open(path_plik_json, 'w') as outfile:
+    with open(path_plik_json, 'a+') as outfile:
         json.dump(data, outfile)
 
     try:
         raport_html = open(path_plik_html, 'w')
-        raport_html.write(json2html.convert(json = data, table_attributes='border="1', clubbing=True, encode=False, escape=True))
+        raport_html.write(json2html.convert(json = data, table_attributes='border="1"', clubbing=True, encode=False, escape=True))
         raport_html.close()
     except Exception as e:
         f_zapis_log("f_odczyt_pliku_nmap-raport_html",e,"error")
@@ -213,6 +213,11 @@ def f_socat(ip,port,protokol):
 
     # zapisuje do logu jaki jest wynik polecenia
     f_zapis_log("socat",output,"info")
+    
+    if(output == "b''"):
+        output = "none"
+    elif(output[:2] == "b'"):
+        output = output[2:-1]
 
     return output
 
@@ -264,7 +269,7 @@ def f_get_links_from_web(ip,port,protokol,h_prot):
 
             f_zapis_log("f_get_links_from_web", spis_linkow, "info")
         except Exception as e:
-            f_zapis_log("f_get_links_from_web", e, "error")
+            f_zapis_log("f_get_links_from_web", f"http {e}", "error")
             spis_linkow = "error"
     elif(h_prot == "https"):
         ctx = ssl.create_default_context()
@@ -284,7 +289,7 @@ def f_get_links_from_web(ip,port,protokol,h_prot):
 
             f_zapis_log("f_get_links_from_web", spis_linkow, "info")
         except Exception as e:
-            f_zapis_log("f_get_links_from_web", e, "error")
+            f_zapis_log("f_get_links_from_web", f"https {e}", "error")
             spis_linkow =  "error"
 
     return spis_linkow
@@ -360,7 +365,7 @@ def f_screen_shot_web(ip,port,protokol):
     except Exception as img_err:
         f_zapis_log("f_screen_shot_web", f"Nie podpisano obrazka dla {protokol}://{ip}:{port} {img_err} ", "error")
 
-    return nazwa_pliku_jpg + "\n" + f'<img src="{nazwa_pliku_jpg}">'
+    return nazwa_pliku_jpg + "\n<br />" + f'<img src="{nazwa_pliku_jpg}">'
 
 ###########################
 # SCREEN SHOT of WEB PAGE2 
