@@ -245,12 +245,10 @@ def f_get_links_from_web(ip,port,protokol,h_prot, curl_output):
                 spis_linkow += "\n" + link['href'] 
                 nowy_adres = parsuje_addr(link['href'])
 
-            #print(f"spis_linkow1: {spis_linkow}")
             f_zapis_log("f_get_links_from_web", spis_linkow, "info")
         except Exception as e:
             #print(f"Wyjatek: {e}")
             f_zapis_log("f_get_links_from_web", e, "error")
-
     elif(h_prot == "https"):
         ctx = ssl.create_default_context()
         ctx.check_hostname = False
@@ -272,6 +270,8 @@ def f_get_links_from_web(ip,port,protokol,h_prot, curl_output):
         except Exception as e:
             f_zapis_log("f_get_links_from_web", e, "error")
 
+    return spis_linkow
+
 #######################
 # DIRB
 #######################
@@ -289,13 +289,13 @@ def f_dirb(ip,port,h_proto):
 # SCREEN SHOT of WEB PAGE 
 ###########################
 def f_screen_shot_web (ip,port,protokol):
-    czas = datetime.datetime.now()
     options = webdriver.ChromeOptions()
     options.add_argument('--ignore-certificate-errors')
     options.headless = True
     driver = webdriver.Chrome(options=options)
 
     URL = f"{protokol}://{ip}:{port}"
+    f_zapis_log("f_screen_shot_web", URL, "info")
 
     driver.get(URL)
     S=lambda X: driver.execute_script('return document.body.parentNode.scroll' + X)
@@ -304,13 +304,17 @@ def f_screen_shot_web (ip,port,protokol):
     driver.set_window_size(S('Width'),S('Height'))
     #driver.set_window_size(1200,1200)
 
+    # nazwa pliku *.png
     nazwa_pliku = path_plik_nmap_msfconsole + "_" + f"{ip}_{port}_{protokol}.png"
-    znak_wodny = f"{czas} | Protokol: [{protokol}], adres ip: [{ip}], port: [{port}] "
+    f_zapis_log("f_screen_shot_web", f"nazwa pliku screen shot-a {nazwa_pliku}", "info")
+
+    # treść znaku wodnego nanoszonego na *.png
+    znak_wodny = f"{f_czas()} | Protokol: [{protokol}], adres ip: [{ip}], port: [{port}]"
+    f_zapis_log("f_screen_shot_web", f"znak wodny {znak_wodny}", "info")
+
     driver.find_element_by_tag_name('body').screenshot(nazwa_pliku)
     driver.quit()
     
-    print(f"(- screen shot web-) | {czas} | {nazwa_pliku}")
-
     try:
         #nanosimy znak wodny na img
         podpisz_screena = Image.open(nazwa_pliku)
@@ -322,20 +326,21 @@ def f_screen_shot_web (ip,port,protokol):
         image_editable.rectangle ((0,wysokosc_img+6,szerokosc_img-1,wysokosc_img+21), outline='red', fill='blue')
         image_editable.text((15, wysokosc_img+5), str(title_text), (165,230,211), font=title_font)
         podpisz_screena.save(nazwa_pliku)
+        f_zapis_log("f_screen_shot_web", f"Naniesiono podpis na obrazek: {nazwa_pliku}", "info")
 
         #convert png to jpg
         nazwa_pliku_jpg = nazwa_pliku[:-3] + "jpg"
         img_to_jpg = podpisz_screena.convert('RGB')
         img_to_jpg.save(nazwa_pliku_jpg)
+        f_zapis_log("f_screen_shot_web", f"konversja {nazwa_pliku} -> {nazwa_pliku_jpg}", "info")
 
         #skasowac png
         os.remove(nazwa_pliku)
-        
-        print(f"- Naniesiono podpis na obrazek.\n{nazwa_pliku}")
+        f_zapis_log("f_screen_shot_web", f"skanowano plik {nazwa_pliku}", "info")
     except Exception as img_err:
-        print(f"Nie podpisano obrazka: \n{img_err} \n{nazwa_pliku}")
+        f_zapis_log("f_screen_shot_web", f"Nie podpisano obrazka dla {protokol}://{ip}:{port} {img_err} ", "error")
     
-    return nazwa_pliku
+    return nazwa_pliku_jpg
 
 ###########################
 # SCREEN SHOT of WEB PAGE2 
