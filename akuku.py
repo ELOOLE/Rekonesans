@@ -127,17 +127,31 @@ def f_odczyt_pliku_nmap(plik):
             # https
             output_curl2 = f_curl(ip,port,protokol,"https")
             
+            # ----------------------------------------------------------
+            # wykrywany linki na stronie
+            if(" 200 " in str(output_curl1) or " 302 " in str(output_curl1) or " 404 " in str(output_curl1)):
+                output_links_from_web_http = f_get_links_from_web(ip,port,protokol,"http")
+            else:
+                output_links_from_web_http = "none"
+
+            if(" 200 " in str(output_curl2) or " 302 " in str(output_curl2) or " 404 " in str(output_curl2)):
+                output_links_from_web_https = f_get_links_from_web(ip,port,protokol,"https")
+            else:
+                output_links_from_web_https = "none"
+
+            # ----------------------------------------------------------
             # screen shot w przypadku kiedy curl zwroci 200, 302, 404
             # robienie screen shota-a     
-            # http      
+            # http    
             try:
-                if(" 200 " in str(output_curl1) or " 302 " in str(output_curl1) or " 404 " in str(output_curl1)):
-                    output_screen_shot_web_http = f_screen_shot_web(ip,port,"http")
+                if(" 200 " in str(output_curl1) or " 302 " in str(output_curl1) or " 404 " in str(output_curl1)):                
+                    output_screen_shot_web_http = f_screen_shot_web(ip,port,"http")   
                 else:
-                    output_screen_shot_web_http = "none"
+                    output_screen_shot_web_http = "none"             
             except Exception as er:
                 f_zapis_log("f_odczyt_pliku_nmap/f_screen_shot_web", f"Wyjatek scr shot http://{ip}:{port} {str(er)}", "error")
-
+                output_screen_shot_web_http = "none"
+            
             # https
             try:
                 if(" 200 " in str(output_curl2) or " 302 " in str(output_curl2) or " 404 " in str(output_curl2)):
@@ -146,6 +160,7 @@ def f_odczyt_pliku_nmap(plik):
                     output_screen_shot_web_https = "none"
             except Exception as er:
                 f_zapis_log("f_odczyt_pliku_nmap/f_screen_shot_web", f"Wyjatek scr shot https://{ip}:{port} {str(er)}", "error")
+                output_screen_shot_web_https = "none"
 
             # OUTPUT
             # DCERPC port 135
@@ -165,6 +180,8 @@ def f_odczyt_pliku_nmap(plik):
                 'socat':f'{output_socat}',
                 'curl_http':f'{output_curl1}',
                 'curl_https':f'{output_curl2}',
+                'http_link':f'{output_links_from_web_http}',
+                'https_link':f'{output_links_from_web_https}',
                 'screen_shot_http':f'{output_screen_shot_web_http}',
                 'screen_shot_https':f'{output_screen_shot_web_https}',
                 'dce_rpc_p135':f'{output_dcerpc_p135}\n'})
@@ -230,7 +247,7 @@ def f_curl(ip,port,protokol, h_prot):
 ############################
 # pobiera linki ze strony
 ############################
-def f_get_links_from_web(ip,port,protokol,h_prot, curl_output):
+def f_get_links_from_web(ip,port,protokol,h_prot):
     spis_linkow = ""
     # zrzut linkow
     if(h_prot == "http"):
@@ -247,8 +264,8 @@ def f_get_links_from_web(ip,port,protokol,h_prot, curl_output):
 
             f_zapis_log("f_get_links_from_web", spis_linkow, "info")
         except Exception as e:
-            #print(f"Wyjatek: {e}")
             f_zapis_log("f_get_links_from_web", e, "error")
+            spis_linkow = "error"
     elif(h_prot == "https"):
         ctx = ssl.create_default_context()
         ctx.check_hostname = False
@@ -265,10 +282,10 @@ def f_get_links_from_web(ip,port,protokol,h_prot, curl_output):
                 spis_linkow += "\n" + link['href']
                 nowy_adres = parsuje_addr(link['href'])
 
-            #print(f"spis_linkow2: {spis_linkow}")
             f_zapis_log("f_get_links_from_web", spis_linkow, "info")
         except Exception as e:
             f_zapis_log("f_get_links_from_web", e, "error")
+            spis_linkow =  "error"
 
     return spis_linkow
 
@@ -288,32 +305,35 @@ def f_dirb(ip,port,h_proto):
 ###########################
 # SCREEN SHOT of WEB PAGE 
 ###########################
-def f_screen_shot_web (ip,port,protokol):
-    options = webdriver.ChromeOptions()
-    options.add_argument('--ignore-certificate-errors')
-    options.headless = True
-    driver = webdriver.Chrome(options=options)
+def f_screen_shot_web(ip,port,protokol):
+    try:
+        options = webdriver.ChromeOptions()
+        options.add_argument('--ignore-certificate-errors')
+        options.headless = True
+        driver = webdriver.Chrome(options=options)
 
-    URL = f"{protokol}://{ip}:{port}"
-    f_zapis_log("f_screen_shot_web", URL, "info")
+        URL = f"{protokol}://{ip}:{port}"
+        f_zapis_log("f_screen_shot_web", URL, "info")
 
-    driver.get(URL)
-    S=lambda X: driver.execute_script('return document.body.parentNode.scroll' + X)
-    #driver.set_window_size(1200,S('Height'))
+        driver.get(URL)
+        S=lambda X: driver.execute_script('return document.body.parentNode.scroll' + X)
+        #driver.set_window_size(1200,S('Height'))
 
-    driver.set_window_size(S('Width'),S('Height'))
-    #driver.set_window_size(1200,1200)
+        driver.set_window_size(S('Width'),S('Height'))
+        #driver.set_window_size(1200,1200)
 
-    # nazwa pliku *.png
-    nazwa_pliku = path_plik_nmap_msfconsole + "_" + f"{ip}_{port}_{protokol}.png"
-    f_zapis_log("f_screen_shot_web", f"nazwa pliku screen shot-a {nazwa_pliku}", "info")
+        # nazwa pliku *.png
+        nazwa_pliku = path_plik_nmap_msfconsole + "_" + f"{ip}_{port}_{protokol}.png"
+        f_zapis_log("f_screen_shot_web", f"nazwa pliku screen shot-a {nazwa_pliku}", "info")
 
-    # treść znaku wodnego nanoszonego na *.png
-    znak_wodny = f"{f_czas()} | Protokol: [{protokol}], adres ip: [{ip}], port: [{port}]"
-    f_zapis_log("f_screen_shot_web", f"znak wodny {znak_wodny}", "info")
+        # treść znaku wodnego nanoszonego na *.png
+        znak_wodny = f"{f_czas()} | Protokol: [{protokol}], adres ip: [{ip}], port: [{port}]"
+        f_zapis_log("f_screen_shot_web", f"znak wodny {znak_wodny}", "info")
 
-    driver.find_element_by_tag_name('body').screenshot(nazwa_pliku)
-    driver.quit()
+        driver.find_element_by_tag_name('body').screenshot(nazwa_pliku)
+        driver.quit()
+    except Exception as error:
+        f_zapis_log("f_screen_shot_web", error, "error")
     
     try:
         #nanosimy znak wodny na img
@@ -339,8 +359,8 @@ def f_screen_shot_web (ip,port,protokol):
         f_zapis_log("f_screen_shot_web", f"skanowano plik {nazwa_pliku}", "info")
     except Exception as img_err:
         f_zapis_log("f_screen_shot_web", f"Nie podpisano obrazka dla {protokol}://{ip}:{port} {img_err} ", "error")
-    
-    return nazwa_pliku_jpg
+
+    return nazwa_pliku_jpg + "\n" + f'<img src="{nazwa_pliku_jpg}">'
 
 ###########################
 # SCREEN SHOT of WEB PAGE2 
