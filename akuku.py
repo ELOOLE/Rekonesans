@@ -171,20 +171,24 @@ def f_odczyt_pliku_nmap(plik):
                 output_dcerpc_p135 = "none"
 
             # zapis do pliku *.json
-            data['host'].append({ip:{
-                'ip':ip,
-                'port':f'{port}',
-                'protokol':f'{protokol}',
-                'usluga':f'{usluga}',
-                'opis':f'{opis_nmap}',
-                'socat':f'{output_socat}',
-                'curl_http':f'{output_curl1}',
-                'curl_https':f'{output_curl2}',
-                'http_link':f'{output_links_from_web_http}',
-                'https_link':f'{output_links_from_web_https}',
-                'screen_shot_http':f'{output_screen_shot_web_http}',
-                'screen_shot_https':f'{output_screen_shot_web_https}',
-                'dce_rpc_p135':f'{output_dcerpc_p135}\n'}})
+            data['host'].append({
+                ip:{
+                    'ip':f'{ip}',
+                    'port':f'{port}',
+                    'protokol':f'{protokol}',
+                    'usluga':f'{usluga}',
+                    'opis':f'{opis_nmap}',
+                    'socat':f'{output_socat}',
+                    'curl':{
+                        'curl_http':f'{output_curl1}',
+                        'curl_https':f'{output_curl2}'},
+                    'links':{
+                        'http_link':f'{output_links_from_web_http}',
+                        'https_link':f'{output_links_from_web_https}'},
+                    'screen shot:':{
+                        'screen_shot_http':f'{output_screen_shot_web_http}',
+                        'screen_shot_https':f'{output_screen_shot_web_https}'},
+                    'dce_rpc_p135':f'{output_dcerpc_p135}\n'}})
         
     with open(path_plik_json, 'a+') as outfile:
         json.dump(data, outfile)
