@@ -3,6 +3,7 @@ import time
 import shlex, subprocess, signal
 import argparse
 import datetime
+from typing import Counter
 import pyfiglet
 import json
 import urllib.request
@@ -129,15 +130,13 @@ def f_odczyt_pliku_nmap(plik):
             
             # ----------------------------------------------------------
             # wykrywany linki na stronie
+            output_links_from_web_http = "none"
             if(" 200 " in str(output_curl1) or " 302 " in str(output_curl1) or " 404 " in str(output_curl1)):
                 output_links_from_web_http = f_get_links_from_web(ip,port,protokol,"http")
-            else:
-                output_links_from_web_http = "none"
-
+                print(output_links_from_web_http)
+            output_links_from_web_https = "none"
             if(" 200 " in str(output_curl2) or " 302 " in str(output_curl2) or " 404 " in str(output_curl2)):
-                output_links_from_web_https = f_get_links_from_web(ip,port,protokol,"https")
-            else:
-                output_links_from_web_https = "none"
+                output_links_from_web_https = f_get_links_from_web(ip,port,protokol,"https")                
 
             # ----------------------------------------------------------
             # screen shot w przypadku kiedy curl zwroci 200, 302, 404
@@ -170,32 +169,51 @@ def f_odczyt_pliku_nmap(plik):
             else:
                 output_dcerpc_p135 = "none"
 
+            #if(output_curl1 !=  "none" and output_curl2 != "none"):
+            #    curl_data = f"'curl':{'curl_http':{output_curl1},'curl_https':{output_curl2}}"
+            #else:
+            #    curl_data = ''
+
             # zapis do pliku *.json
             data['host'].append({
                 ip:{
-                    'ip':f'{ip}',
-                    'port':f'{port}',
-                    'protokol':f'{protokol}',
-                    'usluga':f'{usluga}',
-                    'opis':f'{opis_nmap}',
+                    'ip':ip,
+                    'port':port,
+                    'protokol':protokol,
+                    'usluga':usluga,
+                    'opis':opis_nmap,
                     'socat':f'{output_socat}',
-                    'curl':{
-                        'curl_http':f'{output_curl1}',
-                        'curl_https':f'{output_curl2}'},
-                    'links':{
-                        'http_link':f'{output_links_from_web_http}',
-                        'https_link':f'{output_links_from_web_https}'},
-                    'screen shot:':{
-                        'screen_shot_http':f'{output_screen_shot_web_http}',
-                        'screen_shot_https':f'{output_screen_shot_web_https}'},
-                    'dce_rpc_p135':f'{output_dcerpc_p135}\n'}})
-        
+                }
+            })
+
+            # CURL
+            if(output_curl1 != "none"):
+                data['host'].append({ip:{'curl_http:':f'{output_curl1}'}})
+            if(output_curl2 != "none"):
+                data['host'].append({ip:{'curl_https':f'{output_curl2}'}})
+
+            # LINKS
+            if(output_links_from_web_http != "none"):
+                data['host'].append({ip:{'links_http':f'{output_links_from_web_http}'}})
+            if(output_links_from_web_https != "none"):
+                data['host'].append({ip:{'links_https':f'{output_links_from_web_https}'}})
+
+            # WEB SCREEN SHOT
+            if(output_screen_shot_web_http != "none"):
+                data['host'].append({ip:{'screen_shot_http':f'{output_screen_shot_web_http}'}})
+            if(output_screen_shot_web_https != "none"):
+                data['host'].append({ip:{'screen_shot_https':f'{output_screen_shot_web_https}'}})
+
+            # DCE RPC - port 135
+            if(output_dcerpc_p135 != "none"):
+                data['host'].append({ip:{'dce_rpc_p135':f'{output_dcerpc_p135}'}})
+
     with open(path_plik_json, 'a+') as outfile:
         json.dump(data, outfile)
 
     try:
         raport_html = open(path_plik_html, 'w')
-        raport_html.write(json2html.convert(json = data, table_attributes='border="1"', clubbing=True, encode=False, escape=True))
+        raport_html.write(json2html.convert(json = data, table_attributes='width="100%"', clubbing=True, encode=False, escape=True))
         raport_html.close()
     except Exception as e:
         f_zapis_log("f_odczyt_pliku_nmap-raport_html",e,"error")
@@ -213,14 +231,17 @@ def f_socat(ip,port,protokol):
     # zapisuje do logu jakie zbudowal polecenie
     f_zapis_log("f_socat",cmd,"info")
     ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-    output = ps.communicate()[0]
+    output = str(ps.communicate()[0])
 
     # zapisuje do logu jaki jest wynik polecenia
     f_zapis_log("socat",output,"info")
     
     if(output == "b''"):
         output = "none"
-    elif(output[:2] == "b'"):
+    
+    if(output[:2] == "b'"):
+        output = output[2:-1]
+    elif(output[:2] == 'b"'):
         output = output[2:-1]
 
     return output
@@ -240,7 +261,7 @@ def f_curl(ip,port,protokol, h_prot):
         ps_cmd_curl1 = subprocess.Popen(args1,shell=False,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         
         # wynik wykonania polecenia
-        curl_output = ps_cmd_curl1.communicate()[0]
+        curl_output = str(ps_cmd_curl1.communicate()[0])
         
         # zmienna [wynik] ma dane, ktore zostana zwrocone przez funkcje
         wynik = curl_output
@@ -251,6 +272,9 @@ def f_curl(ip,port,protokol, h_prot):
     # zapisujemy do logu co zwrocila [f_curl]
     f_zapis_log("f_curl",wynik,"info")
 
+    if(str(wynik) == "b''"):
+        wynik = "none"
+
     return wynik
 
 ############################
@@ -258,6 +282,7 @@ def f_curl(ip,port,protokol, h_prot):
 ############################
 def f_get_links_from_web(ip,port,protokol,h_prot):
     spis_linkow = ""
+    spis_linkow_html = ""
     # zrzut linkow
     if(h_prot == "http"):
         try:
@@ -268,13 +293,15 @@ def f_get_links_from_web(ip,port,protokol,h_prot):
             soup = BeautifulSoup(resp, parser, from_encoding=resp.info().get_param('charset'))
 
             for link in soup.find_all('a', href=True):
-                spis_linkow += "\n" + link['href'] 
-                nowy_adres = parsuje_addr(link['href'])
+                spis_linkow += link['href'] + "\n"
+                spis_linkow_html += link['href'] + "<br />" 
+                #nowy_adres = parsuje_addr(link['href'])
+                #linki['url'].append({link['href']})
 
             f_zapis_log("f_get_links_from_web", spis_linkow, "info")
         except Exception as e:
             f_zapis_log("f_get_links_from_web", f"http {e}", "error")
-            spis_linkow = "error"
+            spis_linkow = f"error: {e}"
     elif(h_prot == "https"):
         ctx = ssl.create_default_context()
         ctx.check_hostname = False
@@ -288,15 +315,16 @@ def f_get_links_from_web(ip,port,protokol,h_prot):
             soup = BeautifulSoup(resp, parser, from_encoding=resp.info().get_param('charset'))
 
             for link in soup.find_all('a', href=True):
-                spis_linkow += "\n" + link['href']
-                nowy_adres = parsuje_addr(link['href'])
+                spis_linkow += link['href'] + "\n"
+                #nowy_adres = parsuje_addr(link['href'])
+                spis_linkow_html += link['href'] + "<br />" 
 
             f_zapis_log("f_get_links_from_web", spis_linkow, "info")
         except Exception as e:
             f_zapis_log("f_get_links_from_web", f"https {e}", "error")
             spis_linkow =  "error"
 
-    return spis_linkow
+    return spis_linkow_html
 
 #######################
 # DIRB
@@ -503,7 +531,7 @@ if __name__ == '__main__':
 
     # odczyt pliku
     if(str(args.fin) == '' or str(args.fin) == 'None'):
-        path_plik_nmap_msfconsole = '/home/nano/test1'
+        path_plik_nmap_msfconsole = '/home/user/test1'
     else:
         path_plik_nmap_msfconsole = args.fin
     
