@@ -10,18 +10,74 @@ head = "<!DOCTYPE html>\n<html>\n<head>\n<style>\ntable, th, td {border: 1px sol
 
 open_file_html_new.write(head)
 
+
+
 for line in open_file_html:
-	#read replace the string and write to output file
-    line = line.replace('&gt;', '>')
-    line = line.replace('&lt;', '<')
-    line = line.replace('&quot;', '\"')
-    line = line.replace('b&#x27;', '')
-    line = line.replace('&#x27;<','<')
-    line = line.replace('>\n<','><')
-    #line = line.replace('\n\n', '')
+    i = 1
+    while(i > 0):
+        if(line.find("&gt;") > 0):
+            line = line.replace("&gt;", ">")
+            i += 1
+        else:
+            i -= 1
+
+    i = 1
+    while(i > 0):    
+        if(line.find("&lt;") > 0):
+            i += 1
+            line = line.replace("&lt;", "<")
+        else:
+            i -= 1
+
+    i = 1
+    while(i > 0):  
+        line = line.replace('&quot;', '"')
+        if(line.find('&quot;') > 0):
+            i += 1
+        else:
+            i -= 1
+    
+    i = 1
+    while(i > 0):
+        line = line.replace('&#x27;',"'")
+        if(line.find('&#x27;') > 0):
+            i += 1
+        else:
+            i -= 1
+
+    i = 1
+    while(i > 0):
+        line = line.replace('"<','')
+        if(line.find('"<') > 0):
+            i += 1
+        else:
+            i -= 1
+    
+    i = 1
+    while(i > 0):
+        line = line.replace('\\r\\n','<br />')
+        if(line.find('\\r\\n') > 0):
+            i += 1
+        else:
+            i -= 1
+
+    i = 1
+    while(i > 0):
+        line = line.replace('\\n','<br />')
+        if(line.find('\\n') > 0):
+            i += 1
+        else:
+            i -= 1
+
+    line = line.replace('</td>','</td>\n')
+    line = line.replace('</table>','</table>\n')
+    
     open_file_html_new.write(line)
 
-foot = "</body>\n</html>"    
+    #line = line.replace('\n\n', '')
+    
+
+foot = "\n</body>\n</html>"    
 open_file_html_new.write(foot)
 
 #close input and output files
