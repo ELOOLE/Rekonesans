@@ -133,7 +133,6 @@ def f_odczyt_pliku_nmap(plik):
             output_links_from_web_http = "none"
             if(" 200 " in str(output_curl1) or " 302 " in str(output_curl1) or " 404 " in str(output_curl1)):
                 output_links_from_web_http = f_get_links_from_web(ip,port,protokol,"http")
-                print(output_links_from_web_http)
             output_links_from_web_https = "none"
             if(" 200 " in str(output_curl2) or " 302 " in str(output_curl2) or " 404 " in str(output_curl2)):
                 output_links_from_web_https = f_get_links_from_web(ip,port,protokol,"https")                
@@ -163,16 +162,16 @@ def f_odczyt_pliku_nmap(plik):
 
             # OUTPUT
             # DCERPC port 135
-            output_dcerpc_p135 = ""
+            output_dcerpc_p135 = "none"
             if(port == "135"):
                 output_dcerpc_p135 = f_rpc_p135(ip)
-            else:
-                output_dcerpc_p135 = "none"
 
-            #if(output_curl1 !=  "none" and output_curl2 != "none"):
-            #    curl_data = f"'curl':{'curl_http':{output_curl1},'curl_https':{output_curl2}}"
-            #else:
-            #    curl_data = ''
+
+            # enum4linux
+            output_enum4linux = "none"
+            if(port == "139"):
+                output_enum4linux = f_enum4linux(ip)
+            ########################################################################333
 
             # zapis do pliku *.json
             data['host'].append({
@@ -182,31 +181,35 @@ def f_odczyt_pliku_nmap(plik):
                     'protokol':protokol,
                     'usluga':usluga,
                     'opis':opis_nmap,
-                    'socat':f'{output_socat}',
+                    'socat':f'{output_socat}\n',
                 }
             })
 
             # CURL
             if(output_curl1 != "none"):
-                data['host'].append({ip:{'curl_http:':f'{output_curl1}'}})
+                data['host'].append({ip:{'curl_http:':f'{output_curl1}\n'}})
             if(output_curl2 != "none"):
-                data['host'].append({ip:{'curl_https':f'{output_curl2}'}})
+                data['host'].append({ip:{'curl_https':f'{output_curl2}\n'}})
 
             # LINKS
             if(output_links_from_web_http != "none"):
-                data['host'].append({ip:{'links_http':f'{output_links_from_web_http}'}})
+                data['host'].append({ip:{'links_http':f'{output_links_from_web_http}\n'}})
             if(output_links_from_web_https != "none"):
-                data['host'].append({ip:{'links_https':f'{output_links_from_web_https}'}})
+                data['host'].append({ip:{'links_https':f'{output_links_from_web_https}\n'}})
 
             # WEB SCREEN SHOT
             if(output_screen_shot_web_http != "none"):
-                data['host'].append({ip:{'screen_shot_http':f'{output_screen_shot_web_http}'}})
+                data['host'].append({ip:{'screen_shot_http':f'<img src="{output_screen_shot_web_http}">'}})
             if(output_screen_shot_web_https != "none"):
-                data['host'].append({ip:{'screen_shot_https':f'{output_screen_shot_web_https}'}})
+                data['host'].append({ip:{'screen_shot_https':f'<img src="{output_screen_shot_web_https}">'}})
 
             # DCE RPC - port 135
             if(output_dcerpc_p135 != "none"):
-                data['host'].append({ip:{'dce_rpc_p135':f'{output_dcerpc_p135}'}})
+                data['host'].append({ip:{'dce_rpc_p135':f'{output_dcerpc_p135}\n'}})
+
+            # enum4linux SMB
+            if(output_enum4linux != "none"):
+                data['host'].append({ip:{'enum4linux':f'{output_enum4linux}\n'}})
 
     with open(path_plik_json, 'a+') as outfile:
         json.dump(data, outfile)
@@ -219,6 +222,31 @@ def f_odczyt_pliku_nmap(plik):
         f_zapis_log("f_odczyt_pliku_nmap-raport_html",e,"error")
 
     otwarty_plik_nmap.close()
+
+##############
+# enum4linux #
+##############
+def f_enum4linux(ip):
+    # buduje polecenie
+    cmd = f"enum4linux {ip}"
+    
+    # zapisuje do logu jakie zbudowal polecenie
+    f_zapis_log("f_enum4linux",cmd,"info")
+    ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    output = str(ps.communicate()[0])
+
+    # zapisuje do logu jaki jest wynik polecenia
+    f_zapis_log("enum4linux",output,"info")
+    
+    if(output == "b''"):
+        output = "none"
+    
+    if(output[:2] == "b'"):
+        output = output[2:-1]
+    elif(output[:2] == 'b"'):
+        output = output[2:-1]
+
+    return output
 
 #############
 # SOCAT     #
@@ -264,18 +292,23 @@ def f_curl(ip,port,protokol, h_prot):
         curl_output = str(ps_cmd_curl1.communicate()[0])
         
         # zmienna [wynik] ma dane, ktore zostana zwrocone przez funkcje
-        wynik = curl_output
+        output = str(curl_output)
     else:
         # jezeli [protokol] to UDP zmienna [wynik] zwroci wynik jak ponizej
-        wynik = "UDP - pomijam"
+        output = "UDP - pomijam"
+
+    if(output == "b''"):
+        output = "none"
+    
+    if(output[:2] == "b'"):
+        output = output[2:-1]
+    elif(output[:2] == 'b"'):
+        output = output[2:-1]
 
     # zapisujemy do logu co zwrocila [f_curl]
-    f_zapis_log("f_curl",wynik,"info")
+    f_zapis_log("f_curl",output,"info")
 
-    if(str(wynik) == "b''"):
-        wynik = "none"
-
-    return wynik
+    return output
 
 ############################
 # pobiera linki ze strony
@@ -301,7 +334,7 @@ def f_get_links_from_web(ip,port,protokol,h_prot):
             f_zapis_log("f_get_links_from_web", spis_linkow, "info")
         except Exception as e:
             f_zapis_log("f_get_links_from_web", f"http {e}", "error")
-            spis_linkow = f"error: {e}"
+            spis_linkow,spis_linkow_html = f"error: {e}"
     elif(h_prot == "https"):
         ctx = ssl.create_default_context()
         ctx.check_hostname = False
@@ -322,7 +355,7 @@ def f_get_links_from_web(ip,port,protokol,h_prot):
             f_zapis_log("f_get_links_from_web", spis_linkow, "info")
         except Exception as e:
             f_zapis_log("f_get_links_from_web", f"https {e}", "error")
-            spis_linkow =  "error"
+            spis_linkow,spis_linkow_html =  "error"
 
     return spis_linkow_html
 
@@ -397,7 +430,7 @@ def f_screen_shot_web(ip,port,protokol):
     except Exception as img_err:
         f_zapis_log("f_screen_shot_web", f"Nie podpisano obrazka dla {protokol}://{ip}:{port} {img_err} ", "error")
 
-    return nazwa_pliku_jpg + "\n<br />" + f'<img src="{nazwa_pliku_jpg}">'
+    return nazwa_pliku_jpg
 
 ###########################
 # SCREEN SHOT of WEB PAGE2 
