@@ -159,17 +159,7 @@ def f_odczyt_pliku_nmap(plik):
             except Exception as er:
                 f_zapis_log("f_odczyt_pliku_nmap/f_screen_shot_web", f"Wyjatek scr shot https://{ip}:{port} {str(er)}", "error")
                 output_screen_shot_web_https = "none"
-
-            # OUTPUT
-            # DCERPC port 135
-            output_dcerpc_p135 = "none"
-            if(port == "135"):
-                output_dcerpc_p135 = f_rpc_p135(ip)
-
-            # enum4linux
-            output_enum4linux = "none"
-            if(port == "139"):
-                output_enum4linux = f_enum4linux(ip)
+            ##########################################################################
 
             # ssh mechanizm
             output_ssh_mechanizm = "none"
@@ -181,6 +171,17 @@ def f_odczyt_pliku_nmap(plik):
             output_smtp = "none"
             if(port == "25"):
                 output_smtp = f_smtp(ip)
+
+            # OUTPUT
+            # DCERPC port 135
+            output_dcerpc_p135 = "none"
+            if(port == "135"):
+                output_dcerpc_p135 = f_rpc_p135(ip)
+
+            # enum4linux
+            output_enum4linux = "none"
+            if(port == "139"):
+                output_enum4linux = f_enum4linux(ip)
 
             ########################################################################333
 
@@ -196,6 +197,33 @@ def f_odczyt_pliku_nmap(plik):
                 }
             })
 
+            # port 21
+            # ftp
+            zalecenia_ssh = f"nmap: (NSE) <i><b>nmap --script ssh-brute -d {ip}</b></i>"
+            if(port == "21" or "FTP" in opis_nmap or "ftp" in opis_nmap or "Ftp" in opis_nmap):
+                data['host'].append({ip:{'ftp':{'zalecane':f'{zalecenia_ssh}\n'}}})
+
+            # port 22
+            # ssh 
+            if(output_ssh_mechanizm != "none"):
+                data['host'].append({ip:{'ssh':{'mechanizm':f'{output_ssh_mechanizm}\n'}}})
+
+            zalecenia_ssh = f"nmap: (NSE) <i><b>nmap --script ssh-brute -d {ip}</b></i>"
+            if(port == "22"):
+                data['host'].append({ip:{'ssh':{'Dodatkowo&nbsp;można':f'{zalecenia_ssh}\n'}}})
+# 58775
+            # port 23
+            # telnet
+            zalecenia_telnet = f"nmap (NSE) <i><b>nmap --script *telnet* -p23 -d {ip}</b></i>"
+            if(port == "23"):
+                data['host'].append({ip:{'telnet':{'Dodatkowo&nbsp;można':f'{zalecenia_telnet}\n'}}})
+
+            # port 25
+            # smtp
+            if(port == "25"):
+                data['host'].append({ip:{'smtp':{'mechanizm':f'{output_smtp}\n'}}})
+
+            # default port 80
             # CURL
             if(output_curl1 != "none"):
                 data['host'].append({ip:{'curl_http:':f'{output_curl1}\n'}})
@@ -213,26 +241,6 @@ def f_odczyt_pliku_nmap(plik):
                 data['host'].append({ip:{'screen_shot_http':f'<img src="{output_screen_shot_web_http}">'}})
             if(output_screen_shot_web_https != "none"):
                 data['host'].append({ip:{'screen_shot_https':f'<img src="{output_screen_shot_web_https}">'}})
-
-            # port 22
-            # ssh mechanizm
-            if(output_ssh_mechanizm != "none"):
-                data['host'].append({ip:{'ssh':{'mechanizm':f'{output_ssh_mechanizm}\n'}}})
-
-            zalecenia_ssh = f"nmap: (NSE) <i><b>nmap --script ssh-brute -d {ip}</b></i>"
-            if(port == "22"):
-                data['host'].append({ip:{'ssh':{'zalecane':f'{zalecenia_ssh}\n'}}})
-# 58775
-            # port 23
-            # telnet
-            zalecenia_telnet = f"nmap (NSE) <i><b>nmap --script *telnet* -p23 -d {ip}</b></i>"
-            if(port == "23"):
-                data['host'].append({ip:{'telnet':{'zalecane':f'{zalecenia_telnet}\n'}}})
-
-            # port 25
-            # smtp
-            if(port == "25"):
-                data['host'].append({ip:{'smtp':{'mechanizm':f'{output_smtp}\n'}}})
 
             # port 135
             # DCE RPC 
