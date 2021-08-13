@@ -164,7 +164,7 @@ def f_odczyt_pliku_nmap(plik):
             # ssh mechanizm
             output_ssh_mechanizm = "none"
             if(port == "22"):
-                output_ssh_mechanizm = f_ssh_mechanizm(ip)
+                output_ssh_mechanizm = f_ssh_mechanizm(ip,port)
 
             # port 25
             # smtp
@@ -186,8 +186,7 @@ def f_odczyt_pliku_nmap(plik):
             ########################################################################333
 
             # zapis do pliku *.json
-            data['host'].append({
-                ip:{
+            data['host'].append({f'<p style="color:red;font-size:30px">{ip}</p>':{
                     'ip':ip,
                     'port':port,
                     'protokol':protokol,
@@ -199,24 +198,24 @@ def f_odczyt_pliku_nmap(plik):
 
             # port 21
             # ftp
-            zalecenia_ssh = f"nmap: (NSE) <i><b>nmap --script ssh-brute -d {ip}</b></i>"
             if(port == "21" or "FTP" in opis_nmap or "ftp" in opis_nmap or "Ftp" in opis_nmap):
-                data['host'].append({ip:{'ftp':{'zalecane':f'{zalecenia_ssh}\n'}}})
+                zalecenia_ftp = f"nmap: (NSE) <i><b>nmap --script ftp* -p{port} -d {ip}</b></i>"
+                data['host'].append({ip:{'ftp':{'Dodatkowo&nbsp;można:':f'<p style="color:red;">{zalecenia_ftp}</p>\n'}}})
 
             # port 22
             # ssh 
             if(output_ssh_mechanizm != "none"):
                 data['host'].append({ip:{'ssh':{'mechanizm':f'{output_ssh_mechanizm}\n'}}})
 
-            zalecenia_ssh = f"nmap: (NSE) <i><b>nmap --script ssh-brute -d {ip}</b></i>"
-            if(port == "22"):
-                data['host'].append({ip:{'ssh':{'Dodatkowo&nbsp;można':f'{zalecenia_ssh}\n'}}})
-# 58775
+            if(port == "22" or "ssh" in opis_nmap or "SSH" in opis_nmap or "Ssh" in opis_nmap):
+                zalecenia_ssh = f"nmap: (NSE) <i><b>nmap --script ssh-brute -d {ip}</b></i>"
+                data['host'].append({ip:{'ssh':{'Dodatkowo&nbsp;można':f'<p style="color:red;">{zalecenia_ssh}</p>\n'}}})
+
             # port 23
             # telnet
             zalecenia_telnet = f"nmap (NSE) <i><b>nmap --script *telnet* -p23 -d {ip}</b></i>"
             if(port == "23"):
-                data['host'].append({ip:{'telnet':{'Dodatkowo&nbsp;można':f'{zalecenia_telnet}\n'}}})
+                data['host'].append({ip:{'telnet':{'Dodatkowo&nbsp;można':f'<p style="color:red;">{zalecenia_telnet}</p>\n'}}})
 
             # port 25
             # smtp
@@ -267,7 +266,7 @@ def f_odczyt_pliku_nmap(plik):
 #############
 # SSH       #
 #############
-def f_ssh_mechanizm(ip):
+def f_ssh_mechanizm(ip, port):
     # buduje polecenie
     cmd = f'nmap --script "ssh* and not ssh-brute" {ip} -p22'
     
