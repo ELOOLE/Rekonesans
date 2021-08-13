@@ -166,11 +166,22 @@ def f_odczyt_pliku_nmap(plik):
             if(port == "135"):
                 output_dcerpc_p135 = f_rpc_p135(ip)
 
-
             # enum4linux
             output_enum4linux = "none"
             if(port == "139"):
                 output_enum4linux = f_enum4linux(ip)
+
+            # ssh mechanizm
+            output_ssh_mechanizm = "none"
+            if(port == "22"):
+                output_ssh_mechanizm = f_ssh_mechanizm(ip)
+
+            # port 25
+            # smtp
+            output_smtp = "none"
+            if(port == "25"):
+                output_smtp = f_smtp(ip)
+
             ########################################################################333
 
             # zapis do pliku *.json
@@ -203,10 +214,32 @@ def f_odczyt_pliku_nmap(plik):
             if(output_screen_shot_web_https != "none"):
                 data['host'].append({ip:{'screen_shot_https':f'<img src="{output_screen_shot_web_https}">'}})
 
-            # DCE RPC - port 135
-            if(output_dcerpc_p135 != "none"):
-                data['host'].append({ip:{'dce_rpc_p135':f'{output_dcerpc_p135}\n'}})
+            # port 22
+            # ssh mechanizm
+            if(output_ssh_mechanizm != "none"):
+                data['host'].append({ip:{'ssh':{'mechanizm':f'{output_ssh_mechanizm}\n'}}})
 
+            zalecenia_ssh = f"nmap: (NSE) <i><b>nmap --script ssh-brute -d {ip}</b></i>"
+            if(port == "22"):
+                data['host'].append({ip:{'ssh':{'zalecane':f'{zalecenia_ssh}\n'}}})
+# 58775
+            # port 23
+            # telnet
+            zalecenia_telnet = f"nmap (NSE) <i><b>nmap --script *telnet* -p23 -d {ip}</b></i>"
+            if(port == "23"):
+                data['host'].append({ip:{'telnet':{'zalecane':f'{zalecenia_telnet}\n'}}})
+
+            # port 25
+            # smtp
+            if(port == "25"):
+                data['host'].append({ip:{'smtp':{'mechanizm':f'{output_smtp}\n'}}})
+
+            # port 135
+            # DCE RPC 
+            if(output_dcerpc_p135 != "none"):
+                data['host'].append({ip:{'dcerpc_p135':f'{output_dcerpc_p135}\n'}})
+
+            # port 139 i 445
             # enum4linux SMB
             if(output_enum4linux != "none"):
                 data['host'].append({ip:{'enum4linux':f'{output_enum4linux}\n'}})
@@ -223,20 +256,45 @@ def f_odczyt_pliku_nmap(plik):
 
     otwarty_plik_nmap.close()
 
-##############
-# enum4linux #
-##############
-def f_enum4linux(ip):
+#############
+# SSH       #
+#############
+def f_ssh_mechanizm(ip):
     # buduje polecenie
-    cmd = f"enum4linux {ip}"
+    cmd = f'nmap --script "ssh* and not ssh-brute" {ip} -p22'
     
     # zapisuje do logu jakie zbudowal polecenie
-    f_zapis_log("f_enum4linux",cmd,"info")
+    f_zapis_log("f_ssh_mechanizm",cmd,"info")
     ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
     output = str(ps.communicate()[0])
 
     # zapisuje do logu jaki jest wynik polecenia
-    f_zapis_log("enum4linux",output,"info")
+    f_zapis_log("f_ssh_mechanizm",output,"info")
+    
+    if(output == "b''"):
+        output = "none"
+    
+    if(output[:2] == "b'"):
+        output = output[2:-1]
+    elif(output[:2] == 'b"'):
+        output = output[2:-1]
+
+    return output
+
+#############
+# SSH       #
+#############
+def f_smtp(ip):
+    # buduje polecenie
+    cmd = f'nmap --script smtp* -p25 {ip}'
+    
+    # zapisuje do logu jakie zbudowal polecenie
+    f_zapis_log("f_smtp",cmd,"info")
+    ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    output = str(ps.communicate()[0])
+
+    # zapisuje do logu jaki jest wynik polecenia
+    f_zapis_log("f_smtp",output,"info")
     
     if(output == "b''"):
         output = "none"
@@ -331,6 +389,9 @@ def f_get_links_from_web(ip,port,protokol,h_prot):
                 #nowy_adres = parsuje_addr(link['href'])
                 #linki['url'].append({link['href']})
 
+            spis_linkow = spis_linkow[:-2]
+            spis_linkow_html = spis_linkow_html[:-2]
+
             f_zapis_log("f_get_links_from_web", spis_linkow, "info")
         except Exception as e:
             f_zapis_log("f_get_links_from_web", f"http {e}", "error")
@@ -352,12 +413,40 @@ def f_get_links_from_web(ip,port,protokol,h_prot):
                 #nowy_adres = parsuje_addr(link['href'])
                 spis_linkow_html += link['href'] + "<br />" 
 
+            spis_linkow = spis_linkow[:-2]
+            spis_linkow_html = spis_linkow_html[:-2]
+
             f_zapis_log("f_get_links_from_web", spis_linkow, "info")
         except Exception as e:
             f_zapis_log("f_get_links_from_web", f"https {e}", "error")
             spis_linkow,spis_linkow_html =  "error"
 
-    return spis_linkow_html
+    return spis_linkow_html[:-2]
+
+##############
+# enum4linux #
+##############
+def f_enum4linux(ip):
+    # buduje polecenie
+    cmd = f"enum4linux {ip}"
+    
+    # zapisuje do logu jakie zbudowal polecenie
+    f_zapis_log("f_enum4linux",cmd,"info")
+    ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    output = str(ps.communicate()[0])
+
+    # zapisuje do logu jaki jest wynik polecenia
+    f_zapis_log("enum4linux",output,"info")
+    
+    if(output == "b''"):
+        output = "none"
+    
+    if(output[:2] == "b'"):
+        output = output[2:-1]
+    elif(output[:2] == 'b"'):
+        output = output[2:-1]
+
+    return output
 
 #######################
 # DIRB
