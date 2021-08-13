@@ -24,8 +24,6 @@ head += '<body>\n'
 
 open_file_html_new.write(head)
 
-
-
 for line in open_file_html:
     i = 1
     while(i > 0):
