@@ -43,4 +43,8 @@ open_file_html_new.write(foot)
 
 #close input and output files
 open_file_html.close()
+<<<<<<< HEAD
 open_file_html_new .close()
+=======
+open_file_html_new .close()
+>>>>>>> 4bc6b278aa64e9226cf21901aa76f79ba8c02c8b

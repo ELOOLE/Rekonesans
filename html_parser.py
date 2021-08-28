@@ -1,6 +1,6 @@
 import os
 
-file_html = "/home/nano/test1.html"
+file_html = "/home/user/test1.html"
 file_html_new = file_html[:-5] + "_convert.html"
 
 open_file_html = open(file_html, "r")

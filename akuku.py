@@ -162,7 +162,11 @@ def f_odczyt_pliku_nmap(plik):
                 f_zapis_log("f_odczyt_pliku_nmap/f_screen_shot_web", f"Wyjatek scr shot https://{ip}:{port} {str(er)}", "error")
                 output_screen_shot_web_https = "none"
             ##########################################################################
+<<<<<<< HEAD
             # port 22
+=======
+
+>>>>>>> 4bc6b278aa64e9226cf21901aa76f79ba8c02c8b
             # ssh mechanizm
             output_ssh_mechanizm = "none"
             if(port == "22"):
@@ -179,6 +183,16 @@ def f_odczyt_pliku_nmap(plik):
             output_dcerpc_p135 = "none"
             if(port == "135"):
                 output_dcerpc_p135 = f_rpc_p135(ip)
+<<<<<<< HEAD
+=======
+
+            # enum4linux
+            output_enum4linux = "none"
+            if(port == "139"):
+                output_enum4linux = f_enum4linux(ip)
+
+            ########################################################################333
+>>>>>>> 4bc6b278aa64e9226cf21901aa76f79ba8c02c8b
 
             # enum4linux
             output_enum4linux = "none"
@@ -187,7 +201,11 @@ def f_odczyt_pliku_nmap(plik):
 
             ########################################################################333
             # zapis do pliku *.json
+<<<<<<< HEAD
             data['host'].append({ip:{
+=======
+            data['host'].append({f'<p style="color:red;font-size:30px">{ip}</p>':{
+>>>>>>> 4bc6b278aa64e9226cf21901aa76f79ba8c02c8b
                     'ip':ip,
                     'port':port,
                     'protokol':protokol,
@@ -201,7 +219,11 @@ def f_odczyt_pliku_nmap(plik):
             # ftp
             if(port == "21" or "FTP" in opis_nmap or "ftp" in opis_nmap or "Ftp" in opis_nmap):
                 zalecenia_ftp = f"nmap: (NSE) <i><b>nmap --script ftp* -p{port} -d {ip}</b></i>"
+<<<<<<< HEAD
                 data['host'].append({ip:{'ftp':{'Dodatkowo&nbsp;można:':f'<p style="color:red">{zalecenia_ftp}</p>\n'}}})
+=======
+                data['host'].append({ip:{'ftp':{'Dodatkowo&nbsp;można:':f'<p style="color:red;">{zalecenia_ftp}</p>\n'}}})
+>>>>>>> 4bc6b278aa64e9226cf21901aa76f79ba8c02c8b
 
             # port 22
             # ssh 
@@ -210,6 +232,7 @@ def f_odczyt_pliku_nmap(plik):
 
             if(port == "22" or "ssh" in opis_nmap or "SSH" in opis_nmap or "Ssh" in opis_nmap):
                 zalecenia_ssh = f"nmap: (NSE) <i><b>nmap --script ssh-brute -d {ip}</b></i>"
+<<<<<<< HEAD
                 data['host'].append({ip:{'ssh':{'Dodatkowo&nbsp;można':f'<p style="color:red">{zalecenia_ssh}</p>\n'}}})
 
             # port 23
@@ -217,6 +240,15 @@ def f_odczyt_pliku_nmap(plik):
             zalecenia_telnet = f"nmap (NSE) <i><b>nmap --script telnet* -p23 -d {ip}</b></i>"
             if(port == "23"):
                 data['host'].append({ip:{'telnet':{'Dodatkowo&nbsp;można':f'<p style="color:red">{zalecenia_telnet}</p>\n'}}})
+=======
+                data['host'].append({ip:{'ssh':{'Dodatkowo&nbsp;można':f'<p style="color:red;">{zalecenia_ssh}</p>\n'}}})
+
+            # port 23
+            # telnet
+            zalecenia_telnet = f"nmap (NSE) <i><b>nmap --script *telnet* -p23 -d {ip}</b></i>"
+            if(port == "23"):
+                data['host'].append({ip:{'telnet':{'Dodatkowo&nbsp;można':f'<p style="color:red;">{zalecenia_telnet}</p>\n'}}})
+>>>>>>> 4bc6b278aa64e9226cf21901aa76f79ba8c02c8b
 
             # port 25
             # smtp
@@ -430,6 +462,7 @@ def f_get_links_from_web(ip,port,protokol,h_prot):
             spis_linkow,spis_linkow_html =  "error"
 
     return spis_linkow_html[:-2]
+<<<<<<< HEAD
 
 ##############
 # enum4linux #
@@ -454,6 +487,32 @@ def f_enum4linux(ip):
     elif(output[:2] == 'b"'):
         output = output[2:-1]
 
+=======
+
+##############
+# enum4linux #
+##############
+def f_enum4linux(ip):
+    # buduje polecenie
+    cmd = f"enum4linux {ip}"
+    
+    # zapisuje do logu jakie zbudowal polecenie
+    f_zapis_log("f_enum4linux",cmd,"info")
+    ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    output = str(ps.communicate()[0])
+
+    # zapisuje do logu jaki jest wynik polecenia
+    f_zapis_log("enum4linux",output,"info")
+    
+    if(output == "b''"):
+        output = "none"
+    
+    if(output[:2] == "b'"):
+        output = output[2:-1]
+    elif(output[:2] == 'b"'):
+        output = output[2:-1]
+
+>>>>>>> 4bc6b278aa64e9226cf21901aa76f79ba8c02c8b
     return output
 
 #######################
@@ -661,7 +720,7 @@ if __name__ == '__main__':
 
     # odczyt pliku
     if(str(args.fin) == '' or str(args.fin) == 'None'):
-        path_plik_nmap_msfconsole = '/home/nano/test1'
+        path_plik_nmap_msfconsole = '/home/user/test1'
     else:
         path_plik_nmap_msfconsole = args.fin
     
