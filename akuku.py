@@ -9,6 +9,8 @@ import json
 import urllib.request
 import codecs
 
+import ipaddress
+
 import re
 from re import sub
 
