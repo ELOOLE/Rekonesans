@@ -7,6 +7,7 @@ from typing import Counter
 import pyfiglet
 import json
 import urllib.request
+from urllib.parse import urlparse
 import codecs
 
 import re
@@ -37,7 +38,7 @@ from impacket.dcerpc.v5.dcomrt import IObjectExporter
 
 '''Moje import'''
 import html_parser
-
+import f_file
 
 # dane do zrzutu danych zwiazane wlasnie z plikiem *.json
 data = {}
@@ -47,7 +48,7 @@ print(baner)
 
 def f_odczyt_pliku_nmap(plik):
     f_zapis_log("f_odczyt_pliku_nmap", f"odczytuje plik z danymi: {plik}", "info") 
-    line_count = f_policz_wiersze_w_pliku(plik)
+    line_count = f_file.f_policz_wiersze_w_pliku(plik)
     f_zapis_log("f_odczyt_pliku_nmap",f"Ilosc zadan do wykonania: {line_count}","info")
 
     # otwieram ponownie
@@ -171,7 +172,7 @@ def f_odczyt_pliku_nmap(plik):
 
             # port 23
             # telnet
-            zalecenia_telnet = f"nmap (NSE) <i><b>nmap --script *telnet* -p23 -d {ip}</b></i>"
+            zalecenia_telnet = f"nmap (NSE) <i><b>nmap --script telnet* -p23 -d {ip}</b></i>"
             if(port == "23"):
                 data['host'].append({ip:{'telnet':{'Dodatkowo&nbsp;można':f'<p style="color:red;">{zalecenia_telnet}</p>\n'}}})
 
@@ -230,7 +231,7 @@ def f_ssh_mechanizm(ip, port):
     # zapisuje do logu jakie zbudowal polecenie
     f_zapis_log("f_ssh_mechanizm",cmd,"info")
     ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-    output = str(ps.communicate()[0])
+    output = str(ps.communicate()[0].decode('utf-8'))
 
     # zapisuje do logu jaki jest wynik polecenia
     f_zapis_log("f_ssh_mechanizm",output,"info")
@@ -294,6 +295,7 @@ def f_socat(ip,port,protokol):
 
 def f_curl(ip,port,protokol, h_prot):
     '''cURL'''
+    protokol = str.lower(protokol)
     if(protokol == "tcp"):
         # budujemy sklanie polecenie curl dla http
         cmd_curl = f"curl -I {h_prot}://{ip}:{port} --max-time 2 --no-keepalive -v"
@@ -305,21 +307,13 @@ def f_curl(ip,port,protokol, h_prot):
         ps_cmd_curl1 = subprocess.Popen(args1,shell=False,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         
         # wynik wykonania polecenia
-        curl_output = str(ps_cmd_curl1.communicate()[0])
+        curl_output = str(ps_cmd_curl1.communicate()[0].decode('utf-8'))
         
         # zmienna [wynik] ma dane, ktore zostana zwrocone przez funkcje
         output = str(curl_output)
     else:
         # jezeli [protokol] to UDP zmienna [wynik] zwroci wynik jak ponizej
         output = "UDP - pomijam"
-
-    if(output == "b''"):
-        output = "none"
-    
-    if(output[:2] == "b'"):
-        output = output[2:-1]
-    elif(output[:2] == 'b"'):
-        output = output[2:-1]
 
     # zapisujemy do logu co zwrocila [f_curl]
     f_zapis_log("f_curl",output,"info")
@@ -342,8 +336,6 @@ def f_get_links_from_web(ip,port,protokol,h_prot):
             for link in soup.find_all('a', href=True):
                 spis_linkow += link['href'] + "\n"
                 spis_linkow_html += link['href'] + "<br />" 
-                #nowy_adres = parsuje_addr(link['href'])
-                #linki['url'].append({link['href']})
 
             spis_linkow = spis_linkow[:-2]
             spis_linkow_html = spis_linkow_html[:-2]
@@ -366,7 +358,6 @@ def f_get_links_from_web(ip,port,protokol,h_prot):
 
             for link in soup.find_all('a', href=True):
                 spis_linkow += link['href'] + "\n"
-                #nowy_adres = parsuje_addr(link['href'])
                 spis_linkow_html += link['href'] + "<br />" 
 
             spis_linkow = spis_linkow[:-2]
@@ -490,29 +481,6 @@ def f_rpc_p135(ip):
     f_zapis_log("f_rpc_p135",adresy_ip,"info") 
     return wynik
 
-def parsuje_addr (adres):
-    '''Parsuje adres URL'''
-    h_port = ""
-    if("https" in adres):
-        h_port = "https"
-    elif("http" in adres):
-        h_port = "http"
-    else:
-        return "err"
-
-    host = adres[(int(str(adres).find(":")) + 3):]
-    host = host[:str(host).find(":")]
-
-    port = adres.split(host)
-    port[1]=port[1][1:]
-
-    port =port[1][:str(port[1]).find("/")]
-
-    reszta = adres.split(port)
-    reszta = reszta[1]
-
-    return [h_port, host, port, reszta]
-
 def f_czas ():
     '''Zwraca w wyniku aktualny czas'''
     return datetime.datetime.now()
@@ -543,22 +511,6 @@ def f_zapis_log(zrodlo, dane, typ):
     
     # zamykamy plik logu
     plik_logu.close()
-
-def f_policz_wiersze_w_pliku(path):
-    '''liczy ilosc linijek w wierszu'''
-    '''zwraca: int, ilość linijek w podanym pliku'''
-    # otwieram plik
-    otwarty_plik = open(path, "r")
-    line_count = 0
-    # czytam linijce po linijce
-    for line in otwarty_plik:
-        if line != "\n":
-            line_count += 1
-
-    # zamykam plik            
-    otwarty_plik.close()
-    # zwracam wynik
-    return line_count
 
 if __name__ == '__main__':
     '''MAIN'''
