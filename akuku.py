@@ -77,9 +77,7 @@ def f_odczyt_pliku_nmap(plik):
         if r.match(ip) is None:
             f_zapis_log("f_odczyt_pliku_nmap", f"Wpis nie zawiera poprawnego adresu IP [{ip}]", "info")
         else:
-            ##########################################################################
-            # OUTPUT
-            ##########################################################################
+            '''OUTPUT'''
             '''socat port 1-65535 TCP i UDP'''
             output_socat = f_socat(ip,port,protokol)
             
@@ -112,26 +110,22 @@ def f_odczyt_pliku_nmap(plik):
                 f_zapis_log("f_odczyt_pliku_nmap/f_screen_shot_web", f"Wyjatek scr shot https://{ip}:{port} {str(er)}", "error")
                 output_screen_shot_web_https = "none"
 
-            # port 22
-            # ssh mechanizm
+            '''port 22, ssh mechanizm'''
             output_ssh_mechanizm = "none"
             if(port == "22" or "ssh" in str(opis_nmap).lower):
                 output_ssh_mechanizm = f_ssh_mechanizm(ip,port)
 
-            # port 25
-            # smtp
+            '''port 25, smtp'''
             output_smtp = "none"
             if(port == "25" or "smtp" in str(opis_nmap).lower):
                 output_smtp = f_smtp(ip)
 
-            # port 135
-            # DCERPC 
+            '''port 135, DCERPC'''
             output_dcerpc_p135 = "none"
             if(port == "135"):
                 output_dcerpc_p135 = f_rpc_p135(ip)
             
-            # port 139
-            # enum4linux
+            '''port 139, enum4linux'''
             output_enum4linux = "none"
             if(port == "139"):
                 output_enum4linux = f_enum4linux(ip)
@@ -148,14 +142,12 @@ def f_odczyt_pliku_nmap(plik):
                 }
             })
 
-            # port 21
-            # ftp
+            '''port 21, ftp, dodatkowe dzialania'''
             if(port == "21" or "ftp" in str(opis_nmap).lower):
                 zalecenia_ftp = f"nmap: (NSE) <i><b>nmap --script ftp* -p{port} -d {ip}</b></i>"
                 data['host'].append({ip:{'ftp':{'Dodatkowo&nbsp;można:':f'<p style="color:red;">{zalecenia_ftp}</p>\n'}}})
 
-            # port 22
-            # ssh 
+            '''port 22, ssh, output'''
             if(output_ssh_mechanizm != "none"):
                 data['host'].append({ip:{'ssh':{'mechanizm':f'{output_ssh_mechanizm}\n'}}})
 
@@ -163,14 +155,12 @@ def f_odczyt_pliku_nmap(plik):
                 zalecenia_ssh = f"nmap: (NSE) <i><b>nmap --script ssh-brute -d {ip}</b></i>"
                 data['host'].append({ip:{'ssh':{'Dodatkowo&nbsp;można':f'<p style="color:red;">{zalecenia_ssh}</p>\n'}}})
 
-            # port 23
-            # telnet
+            '''port 23, telnet, dodatkowe dzialania'''
             zalecenia_telnet = f"nmap (NSE) <i><b>nmap --script telnet* -p23 -d {ip}</b></i>"
             if(port == "23"):
                 data['host'].append({ip:{'telnet':{'Dodatkowo&nbsp;można':f'<p style="color:red;">{zalecenia_telnet}</p>\n'}}})
 
-            # port 25
-            # smtp
+            '''port 25, smtp, output''''
             if(port == "25"):
                 data['host'].append({ip:{'smtp':{'mechanizm':f'{output_smtp}\n'}}})
 
