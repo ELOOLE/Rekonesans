@@ -77,18 +77,15 @@ def f_odczyt_pliku_nmap(plik):
         if r.match(ip) is None:
             f_zapis_log("f_odczyt_pliku_nmap", f"Wpis nie zawiera poprawnego adresu IP [{ip}]", "info")
         else:
+            ##########################################################################
             # OUTPUT
-            # socat
+            ##########################################################################
+            '''socat port 1-65535 TCP i UDP'''
             output_socat = f_socat(ip,port,protokol)
-
-            # OUTPUT
-            # curl - odpytuje host i daje info dla wykonania screen shota 
-            # http
-            output_curl1 = f_curl(ip,port,protokol,"http")
-            # https
-            output_curl2 = f_curl(ip,port,protokol,"https")
             
-            # ----------------------------------------------------------
+            # cURL 
+            output_curl1 = f_curl(ip,port,protokol,"http")
+            output_curl2 = f_curl(ip,port,protokol,"https")
             # wykrywany linki na stronie
             output_links_from_web_http = "none"
             if(" 200 " in str(output_curl1) or " 302 " in str(output_curl1) or " 404 " in str(output_curl1)):
@@ -97,7 +94,6 @@ def f_odczyt_pliku_nmap(plik):
             if(" 200 " in str(output_curl2) or " 302 " in str(output_curl2) or " 404 " in str(output_curl2)):
                 output_links_from_web_https = f_get_links_from_web(ip,port,protokol,"https")                
 
-            # ----------------------------------------------------------
             # screen shot w przypadku kiedy curl zwroci 200, 302, 404
             # robienie screen shota-a     
             # http    
@@ -119,30 +115,31 @@ def f_odczyt_pliku_nmap(plik):
             except Exception as er:
                 f_zapis_log("f_odczyt_pliku_nmap/f_screen_shot_web", f"Wyjatek scr shot https://{ip}:{port} {str(er)}", "error")
                 output_screen_shot_web_https = "none"
-            ##########################################################################
 
+            # port 22
             # ssh mechanizm
             output_ssh_mechanizm = "none"
-            if(port == "22"):
+            if(port == "22" or "ssh" in str(opis_nmap).lower):
                 output_ssh_mechanizm = f_ssh_mechanizm(ip,port)
 
             # port 25
             # smtp
             output_smtp = "none"
-            if(port == "25"):
+            if(port == "25" or "smtp" in str(opis_nmap).lower):
                 output_smtp = f_smtp(ip)
 
-            # OUTPUT
-            # DCERPC port 135
+            # port 135
+            # DCERPC 
             output_dcerpc_p135 = "none"
             if(port == "135"):
                 output_dcerpc_p135 = f_rpc_p135(ip)
-
+            
+            # port 139
             # enum4linux
             output_enum4linux = "none"
             if(port == "139"):
                 output_enum4linux = f_enum4linux(ip)
-
+            
             ###########################################################################
             # zapis do pliku *.json
             data['host'].append({ip:{
@@ -157,7 +154,7 @@ def f_odczyt_pliku_nmap(plik):
 
             # port 21
             # ftp
-            if(port == "21" or "FTP" in opis_nmap or "ftp" in opis_nmap or "Ftp" in opis_nmap):
+            if(port == "21" or "ftp" in str(opis_nmap).lower):
                 zalecenia_ftp = f"nmap: (NSE) <i><b>nmap --script ftp* -p{port} -d {ip}</b></i>"
                 data['host'].append({ip:{'ftp':{'Dodatkowo&nbsp;można:':f'<p style="color:red;">{zalecenia_ftp}</p>\n'}}})
 
