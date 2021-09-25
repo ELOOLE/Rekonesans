@@ -164,32 +164,29 @@ def f_odczyt_pliku_nmap(plik):
             if(port == "25"):
                 data['host'].append({ip:{'smtp':{'mechanizm':f'{output_smtp}\n'}}})
 
-            # default port 80
-            # CURL
+            '''cURL, output'''
             if(output_curl1 != "none"):
                 data['host'].append({ip:{'curl_http:':f'{output_curl1}\n'}})
             if(output_curl2 != "none"):
                 data['host'].append({ip:{'curl_https':f'{output_curl2}\n'}})
 
-            # LINKS
+            '''cURL, links'''
             if(output_links_from_web_http != "none"):
                 data['host'].append({ip:{'links_http':f'{output_links_from_web_http}\n'}})
             if(output_links_from_web_https != "none"):
                 data['host'].append({ip:{'links_https':f'{output_links_from_web_https}\n'}})
 
-            # WEB SCREEN SHOT
+            '''WEB SCREEN SHOT'''
             if(output_screen_shot_web_http != "none"):
                 data['host'].append({ip:{'screen_shot_http':f'<img src="{output_screen_shot_web_http}">'}})
             if(output_screen_shot_web_https != "none"):
                 data['host'].append({ip:{'screen_shot_https':f'<img src="{output_screen_shot_web_https}">'}})
 
-            # port 135
-            # DCE RPC 
+            '''port 135, DCE RPC, output'''
             if(output_dcerpc_p135 != "none"):
                 data['host'].append({ip:{'dcerpc_p135':f'{output_dcerpc_p135}\n'}})
 
-            # port 139 i 445
-            # enum4linux SMB
+            '''port 139 i 445, enum4linux SMB'''
             if(output_enum4linux != "none"):
                 data['host'].append({ip:{'enum4linux':f'{output_enum4linux}\n'}})
 
