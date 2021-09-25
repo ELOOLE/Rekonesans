@@ -83,20 +83,12 @@ def f_odczyt_pliku_nmap(plik):
             '''socat port 1-65535 TCP i UDP'''
             output_socat = f_socat(ip,port,protokol)
             
-            # cURL 
+            '''cURL: wykrywany linki na stronie'''
             output_curl1 = f_curl(ip,port,protokol,"http")
-            output_curl2 = f_curl(ip,port,protokol,"https")
-            # wykrywany linki na stronie
             output_links_from_web_http = "none"
             if(" 200 " in str(output_curl1) or " 302 " in str(output_curl1) or " 404 " in str(output_curl1)):
                 output_links_from_web_http = f_get_links_from_web(ip,port,protokol,"http")
-            output_links_from_web_https = "none"
-            if(" 200 " in str(output_curl2) or " 302 " in str(output_curl2) or " 404 " in str(output_curl2)):
-                output_links_from_web_https = f_get_links_from_web(ip,port,protokol,"https")                
-
-            # screen shot w przypadku kiedy curl zwroci 200, 302, 404
-            # robienie screen shota-a     
-            # http    
+            '''http: screen shot w przypadku kiedy curl zwroci 200, 302, 404, robienie screen shota-a'''
             try:
                 if(" 200 " in str(output_curl1) or " 302 " in str(output_curl1) or " 404 " in str(output_curl1)):                
                     output_screen_shot_web_http = f_screen_shot_web(ip,port,"http")   
@@ -105,8 +97,12 @@ def f_odczyt_pliku_nmap(plik):
             except Exception as er:
                 f_zapis_log("f_odczyt_pliku_nmap/f_screen_shot_web", f"Wyjatek scr shot http://{ip}:{port} {str(er)}", "error")
                 output_screen_shot_web_http = "none"
-            
-            # https
+            '''cURL: wykrywany linki na stronie'''
+            output_curl2 = f_curl(ip,port,protokol,"https")
+            output_links_from_web_https = "none"
+            if(" 200 " in str(output_curl2) or " 302 " in str(output_curl2) or " 404 " in str(output_curl2)):
+                output_links_from_web_https = f_get_links_from_web(ip,port,protokol,"https")
+            '''http: screen shot w przypadku kiedy curl zwroci 200, 302, 404, robienie screen shota-a'''
             try:
                 if(" 200 " in str(output_curl2) or " 302 " in str(output_curl2) or " 404 " in str(output_curl2)):
                     output_screen_shot_web_https = f_screen_shot_web(ip,port,"https")
