@@ -202,6 +202,11 @@ def f_odczyt_pliku_nmap(plik):
             # port 513
             
             # port 514
+            
+            # 543 klogin, Kerberos login
+            # 544 kshell, Kerberos Remote shell
+            # 546 DHCPv6 client
+            # 547 DHCPv6 server
     
     ###########################################################################
     with open(path_plik_json, 'a+') as outfile:
