@@ -195,7 +195,13 @@ def f_odczyt_pliku_nmap(plik):
             
             # port 143 imap
             
-            # port 161,162
+            # port 161
+            
+            # port 512
+            
+            # port 513
+            
+            # port 514
     
     ###########################################################################
     with open(path_plik_json, 'a+') as outfile:
