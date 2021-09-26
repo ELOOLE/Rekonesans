@@ -170,8 +170,8 @@ def f_odczyt_pliku_nmap(plik):
            
             # port 53, dns
             if(port == "53"):
-                zalecenia_dns = f"<i><b>dnsrecon -d {ip} -D /usr/share/wordlists/dnsmap.txt -t std --xml dnsrecon.xml</b></i>"
-                data['host'].append({ip:{'smtp':{'mechanizm':f'{output_smtp}\n'}}})
+                zalecenia_dns = f"<i><b>dnsrecon -w -g -d {ip} --csv dnsrecon{ip}.xml</b></i>"
+                data['host'].append({ip:{'dns':{'Dodatkowo&nbsp;można':f'<p style="color:red;">{zalecenia_dns}</p>\n'}}})
                 
             # port 67, 68 protocol: UDP, DHCP
             
