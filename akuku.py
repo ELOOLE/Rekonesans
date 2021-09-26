@@ -109,7 +109,8 @@ def f_odczyt_pliku_nmap(plik):
                 output_links_from_web_http = f_get_links_from_web(ip,port,protokol,"http")
                 data['host'].append({ip:{'links_http':f'{output_links_from_web_http}\n'}})
                 try:            
-                    output_screen_shot_web_http = f_screen_shot_web(ip,port,"http")             
+                    output_screen_shot_web_http = f_screen_shot_web(ip,port,"http")
+                    data['host'].append({ip:{'screen_shot_http':f'<img src="{output_screen_shot_web_http}">'}})
                 except Exception as er:
                     f_zapis_log("f_odczyt_pliku_nmap/f_screen_shot_web", f"Wyjatek scr shot http://{ip}:{port} {str(er)}", "error")
                     output_screen_shot_web_http = "none"
@@ -125,18 +126,20 @@ def f_odczyt_pliku_nmap(plik):
                 data['host'].append({ip:{'links_https':f'{output_links_from_web_https}\n'}})
                 try:
                     output_screen_shot_web_https = f_screen_shot_web(ip,port,"https")
+                    data['host'].append({ip:{'screen_shot_https':f'<img src="{output_screen_shot_web_https}">'}})
                 except Exception as er:
                     f_zapis_log("f_odczyt_pliku_nmap/f_screen_shot_web", f"Wyjatek scr shot https://{ip}:{port} {str(er)}", "error")
                     output_screen_shot_web_https = "none"
-                
-            '''port 21, ftp, dodatkowe dzialania'''
+            
+            # ports / services    
+            # port 21
             if(port == "21" or "ftp" in str(opis_nmap).lower):
                 zalecenia_ftp = f"nmap: (NSE) <i><b>nmap --script ftp* -p{port} -d {ip}</b></i>\n"
                 zalecenie_ftp += f"Brute-force: <i><b>hydra -s {port} -C /usr/share/wordlists/ftp-default-userpass.txt -u -f {ip} ftp</b></i>\n"
                 zalecenie_ftp += f"Brute-force: <i><b>patator ftp_login host={ip} user=FILE0 0=logins.txt password=asdf -x ignore:mesg='Login incorrect.' -x ignore,reset,retry:code=500</b></i>"
                 data['host'].append({ip:{'ftp':{'Dodatkowo&nbsp;można:':f'<p style="color:red;">{zalecenia_ftp}</p>\n'}}})
 
-            '''port 22, ssh mechanizm'''
+            # port 22
             output_ssh_mechanizm = "none"
             if(port == "22" or "ssh" in str(opis_nmap).lower):
                 output_ssh_mechanizm = f_ssh_mechanizm(ip,port)
@@ -146,34 +149,28 @@ def f_odczyt_pliku_nmap(plik):
                 zalecenia_ssh += "Brute-force usługi ssh z powodu ograniczen ilosciowych zapytan, zaleca sie uzyc malego slownika"
                 data['host'].append({ip:{'ssh':{'Dodatkowo&nbsp;można':f'<p style="color:red;">{zalecenia_ssh}</p>\n'}}})
 
-            '''port 23, telnet, dodatkowe dzialania'''
+            # port 23
             if(port == "23"):
                 zalecenia_telnet = f"nmap (NSE) <i><b>nmap --script telnet* -p23 -d {ip}</b></i>"
                 data['host'].append({ip:{'telnet':{'Dodatkowo&nbsp;można':f'<p style="color:red;">{zalecenia_telnet}</p>\n'}}})
                 
-            '''port 25, smtp'''
+            # port 25
             output_smtp = "none"
             if(port == "25" or "smtp" in str(opis_nmap).lower):
                 output_smtp = f_smtp(ip)
                 data['host'].append({ip:{'smtp':{'mechanizm':f'{output_smtp}\n'}}})
 
-            '''port 135, DCERPC'''
+            # port 135
             output_dcerpc_p135 = "none"
             if(port == "135"):
                 output_dcerpc_p135 = f_rpc_p135(ip)
                 data['host'].append({ip:{'dcerpc_p135':f'{output_dcerpc_p135}\n'}})
             
-            '''port 139, enum4linux'''
+            # port 139, enum4linux
             output_enum4linux = "none"
             if(port == "139"):
                 output_enum4linux = f_enum4linux(ip)
                 data['host'].append({ip:{'enum4linux':f'{output_enum4linux}\n'}})
-            
-            '''WEB SCREEN SHOT'''
-            if(output_screen_shot_web_http != "none"):
-                data['host'].append({ip:{'screen_shot_http':f'<img src="{output_screen_shot_web_http}">'}})
-            if(output_screen_shot_web_https != "none"):
-                data['host'].append({ip:{'screen_shot_https':f'<img src="{output_screen_shot_web_https}">'}})
     
     ###########################################################################
     with open(path_plik_json, 'a+') as outfile:
