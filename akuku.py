@@ -101,9 +101,14 @@ def f_odczyt_pliku_nmap(plik):
             # cURL
             '''cURL: wykrywany linki na stronie'''
             output_curl1 = f_curl(ip,port,protokol,"http")
-            output_links_from_web_http = "none"
+            if(output_curl1 != "none"):
+                data['host'].append({ip:{'curl_http:':f'{output_curl1}\n'}})
+                
+            output_links_from_web_http = "none"            
             if(" 200 " in str(output_curl1) or " 302 " in str(output_curl1) or " 404 " in str(output_curl1)):
                 output_links_from_web_http = f_get_links_from_web(ip,port,protokol,"http")
+                data['host'].append({ip:{'links_http':f'{output_links_from_web_http}\n'}})
+
             '''http: screen shot w przypadku kiedy curl zwroci 200, 302, 404, robienie screen shota-a'''
             try:
                 if(" 200 " in str(output_curl1) or " 302 " in str(output_curl1) or " 404 " in str(output_curl1)):                
@@ -115,9 +120,14 @@ def f_odczyt_pliku_nmap(plik):
                 output_screen_shot_web_http = "none"
             '''cURL: wykrywany linki na stronie'''
             output_curl2 = f_curl(ip,port,protokol,"https")
-            output_links_from_web_https = "none"
+            if(output_curl2 != "none"):
+                data['host'].append({ip:{'curl_https':f'{output_curl2}\n'}})
+            
+            output_links_from_web_https = "none"           
             if(" 200 " in str(output_curl2) or " 302 " in str(output_curl2) or " 404 " in str(output_curl2)):
                 output_links_from_web_https = f_get_links_from_web(ip,port,protokol,"https")
+                data['host'].append({ip:{'links_https':f'{output_links_from_web_https}\n'}})
+                
             '''http: screen shot w przypadku kiedy curl zwroci 200, 302, 404, robienie screen shota-a'''
             try:
                 if(" 200 " in str(output_curl2) or " 302 " in str(output_curl2) or " 404 " in str(output_curl2)):
@@ -168,18 +178,6 @@ def f_odczyt_pliku_nmap(plik):
                 output_enum4linux = f_enum4linux(ip)
                 data['host'].append({ip:{'enum4linux':f'{output_enum4linux}\n'}})
             
-            '''cURL, output'''
-            if(output_curl1 != "none"):
-                data['host'].append({ip:{'curl_http:':f'{output_curl1}\n'}})
-            if(output_curl2 != "none"):
-                data['host'].append({ip:{'curl_https':f'{output_curl2}\n'}})
-
-            '''cURL, links'''
-            if(output_links_from_web_http != "none"):
-                data['host'].append({ip:{'links_http':f'{output_links_from_web_http}\n'}})
-            if(output_links_from_web_https != "none"):
-                data['host'].append({ip:{'links_https':f'{output_links_from_web_https}\n'}})
-
             '''WEB SCREEN SHOT'''
             if(output_screen_shot_web_http != "none"):
                 data['host'].append({ip:{'screen_shot_http':f'<img src="{output_screen_shot_web_http}">'}})
