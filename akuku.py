@@ -158,7 +158,7 @@ def f_odczyt_pliku_nmap(plik):
                 data['host'].append({ip:{'ssh':{'Dodatkowo&nbsp;można':f'<p style="color:red;">{zalecenia_ssh}</p>\n'}}})
 
             # port 23
-            if(port == "23"):
+            if(port == "23" or "telnet" in str(opis_nmap).lower):
                 zalecenia_telnet = f"nmap (NSE) <i><b>nmap --script telnet* -p23 -d {ip}</b></i>"
                 data['host'].append({ip:{'telnet':{'Dodatkowo&nbsp;można':f'<p style="color:red;">{zalecenia_telnet}</p>\n'}}})
                 
@@ -168,6 +168,12 @@ def f_odczyt_pliku_nmap(plik):
                 output_smtp = f_smtp(ip)
                 data['host'].append({ip:{'smtp':{'mechanizm':f'{output_smtp}\n'}}})
            
+            # port 53, dns
+            
+            # port 67, 68 protocol: UDP, DHCP
+            
+            # port 110, pop3
+            
             # port 135
             output_dcerpc_p135 = "none"
             if(port == "135"):
@@ -179,6 +185,10 @@ def f_odczyt_pliku_nmap(plik):
             if(port == "139"):
                 output_enum4linux = f_enum4linux(ip)
                 data['host'].append({ip:{'enum4linux':f'{output_enum4linux}\n'}})
+            
+            # port 143 imap
+            
+            # port 161,162
     
     ###########################################################################
     with open(path_plik_json, 'a+') as outfile:
