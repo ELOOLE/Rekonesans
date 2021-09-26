@@ -114,6 +114,10 @@ def f_odczyt_pliku_nmap(plik):
                 except Exception as er:
                     f_zapis_log("f_odczyt_pliku_nmap/f_screen_shot_web", f"Wyjatek scr shot http://{ip}:{port} {str(er)}", "error")
                     output_screen_shot_web_http = "none"
+                
+                zalecenia_http = f"nikto -h {ip}"
+                zalecenia_http += f"dirb http://{ip} /usr/share/wordlist/dirb/common.txt"
+                data['host'].append({ip:{'http':{'Dodatkowo&nbsp;można':f'<p style="color:red;">{zalecenia_http}</p>\n'}}})
             
             # https
             output_curl2 = f_curl(ip,port,protokol,"https")
@@ -130,6 +134,10 @@ def f_odczyt_pliku_nmap(plik):
                 except Exception as er:
                     f_zapis_log("f_odczyt_pliku_nmap/f_screen_shot_web", f"Wyjatek scr shot https://{ip}:{port} {str(er)}", "error")
                     output_screen_shot_web_https = "none"
+                
+                zalecenia_https = f"nikto -h {ip}"
+                zalecenia_https += f"dirb https://{ip} /usr/share/wordlist/dirb/common.txt"
+                data['host'].append({ip:{'https':{'Dodatkowo&nbsp;można':f'<p style="color:red;">{zalecenia_https}</p>\n'}}})
             
             # ports / services    
             # port 21
@@ -159,7 +167,7 @@ def f_odczyt_pliku_nmap(plik):
             if(port == "25" or "smtp" in str(opis_nmap).lower):
                 output_smtp = f_smtp(ip)
                 data['host'].append({ip:{'smtp':{'mechanizm':f'{output_smtp}\n'}}})
-
+           
             # port 135
             output_dcerpc_p135 = "none"
             if(port == "135"):
