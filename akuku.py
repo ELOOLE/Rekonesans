@@ -159,7 +159,7 @@ def f_odczyt_pliku_nmap(plik):
             if(output_ssh_mechanizm != "none"):
                 data['host'].append({ip:{'ssh':{'mechanizm':f'{output_ssh_mechanizm}\n'}}})
 
-            if(port == "22" or "ssh" in opis_nmap or "SSH" in opis_nmap or "Ssh" in opis_nmap):
+            if(port == "22" or "ssh" in str(opis_nmap).lower):
                 zalecenia_ssh = f"nmap: (NSE) <i><b>nmap --script ssh-brute -d {ip}</b></i>"
                 data['host'].append({ip:{'ssh':{'Dodatkowo&nbsp;można':f'<p style="color:red;">{zalecenia_ssh}</p>\n'}}})
 
