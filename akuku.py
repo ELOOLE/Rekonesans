@@ -173,17 +173,19 @@ def f_odczyt_pliku_nmap(plik):
                 zalecenia_dns = f"<i><b>dnsrecon -w -g -d {ip} --csv /home/user/dnsrecon{ip}.csv</b></i> do zapisu, musi byc podana sciezna bezwzgledna inaczej nie zapisze"
                 data['host'].append({ip:{'dns':{'Dodatkowo&nbsp;można':f'<p style="color:red;">{zalecenia_dns}</p>\n'}}})
                 
-            # port 67, 68 protocol: UDP, DHCP
+            # port 67, 68, DHCP protocol: UDP
             
             # port 110, pop3
             
-            # port 123, protocol: UDP
+            # port 123, NTP, protocol: UDP
             
             # port 135
             output_dcerpc_p135 = "none"
             if(port == "135"):
                 output_dcerpc_p135 = f_rpc_p135(ip)
                 data['host'].append({ip:{'dcerpc_p135':f'{output_dcerpc_p135}\n'}})
+            
+            # port 137
             
             # port 139, enum4linux
             output_enum4linux = "none"
