@@ -97,7 +97,8 @@ def f_odczyt_pliku_nmap(plik):
                     'socat':f'{output_socat}\n',
                 }
             })
-            
+            ###########################################################################
+            # cURL
             '''cURL: wykrywany linki na stronie'''
             output_curl1 = f_curl(ip,port,protokol,"http")
             output_links_from_web_http = "none"
@@ -126,7 +127,6 @@ def f_odczyt_pliku_nmap(plik):
             except Exception as er:
                 f_zapis_log("f_odczyt_pliku_nmap/f_screen_shot_web", f"Wyjatek scr shot https://{ip}:{port} {str(er)}", "error")
                 output_screen_shot_web_https = "none"
-
                 
             '''port 21, ftp, dodatkowe dzialania'''
             if(port == "21" or "ftp" in str(opis_nmap).lower):
@@ -160,11 +160,13 @@ def f_odczyt_pliku_nmap(plik):
             output_dcerpc_p135 = "none"
             if(port == "135"):
                 output_dcerpc_p135 = f_rpc_p135(ip)
+                data['host'].append({ip:{'dcerpc_p135':f'{output_dcerpc_p135}\n'}})
             
             '''port 139, enum4linux'''
             output_enum4linux = "none"
             if(port == "139"):
                 output_enum4linux = f_enum4linux(ip)
+                data['host'].append({ip:{'enum4linux':f'{output_enum4linux}\n'}})
             
             '''cURL, output'''
             if(output_curl1 != "none"):
@@ -183,15 +185,8 @@ def f_odczyt_pliku_nmap(plik):
                 data['host'].append({ip:{'screen_shot_http':f'<img src="{output_screen_shot_web_http}">'}})
             if(output_screen_shot_web_https != "none"):
                 data['host'].append({ip:{'screen_shot_https':f'<img src="{output_screen_shot_web_https}">'}})
-
-            '''port 135, DCE RPC, output'''
-            if(output_dcerpc_p135 != "none"):
-                data['host'].append({ip:{'dcerpc_p135':f'{output_dcerpc_p135}\n'}})
-
-            '''port 139 i 445, enum4linux SMB'''
-            if(output_enum4linux != "none"):
-                data['host'].append({ip:{'enum4linux':f'{output_enum4linux}\n'}})
-
+    
+    ###########################################################################
     with open(path_plik_json, 'a+') as outfile:
         json.dump(data, outfile)
 
