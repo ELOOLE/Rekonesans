@@ -170,7 +170,7 @@ def f_odczyt_pliku_nmap(plik):
            
             # port 53, dns
             if(port == "53"):
-                zalecenia_dns = f"<i><b>dnsrecon -w -g -d {ip} --csv dnsrecon{ip}.csv</b></i>"
+                zalecenia_dns = f"<i><b>dnsrecon -w -g -d {ip} --csv /home/user/dnsrecon{ip}.csv</b></i> do zapisu, musi byc podana sciezna bezwzgledna inaczej nie zapisze"
                 data['host'].append({ip:{'dns':{'Dodatkowo&nbsp;można':f'<p style="color:red;">{zalecenia_dns}</p>\n'}}})
                 
             # port 67, 68 protocol: UDP, DHCP
