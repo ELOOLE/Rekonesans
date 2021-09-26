@@ -1,3 +1,9 @@
+###############################################################################
+## akuku for Linux,Windows... v1.0
+## Written by WW
+## Copyright 2021
+###############################################################################
+
 import os
 import time
 import shlex, subprocess, signal
