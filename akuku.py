@@ -177,6 +177,8 @@ def f_odczyt_pliku_nmap(plik):
             
             # port 110, pop3
             
+            # port 123, protocol: UDP
+            
             # port 135
             output_dcerpc_p135 = "none"
             if(port == "135"):
