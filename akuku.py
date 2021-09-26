@@ -150,7 +150,9 @@ def f_odczyt_pliku_nmap(plik):
 
             '''port 21, ftp, dodatkowe dzialania'''
             if(port == "21" or "ftp" in str(opis_nmap).lower):
-                zalecenia_ftp = f"nmap: (NSE) <i><b>nmap --script ftp* -p{port} -d {ip}</b></i>"
+                zalecenia_ftp = f"nmap: (NSE) <i><b>nmap --script ftp* -p{port} -d {ip}</b></i>\n"
+                zalecenie_ftp += f"Brute-force: <i><b>hydra -s {port} -C /usr/share/wordlists/ftp-default-userpass.txt -u -f {ip} ftp</b></i>\n"
+                zalecenie_ftp += f"Brute-force: <i><b>patator ftp_login host={ip} user=FILE0 0=logins.txt password=asdf -x ignore:mesg='Login incorrect.' -x ignore,reset,retry:code=500</b></i>"
                 data['host'].append({ip:{'ftp':{'Dodatkowo&nbsp;można:':f'<p style="color:red;">{zalecenia_ftp}</p>\n'}}})
 
             '''port 22, ssh, output'''
