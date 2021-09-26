@@ -99,7 +99,7 @@ def f_odczyt_pliku_nmap(plik):
             })
             ###########################################################################
             # cURL
-            '''cURL: wykrywany linki na stronie'''
+            # http
             output_curl1 = f_curl(ip,port,protokol,"http")
             if(output_curl1 != "none"):
                 data['host'].append({ip:{'curl_http:':f'{output_curl1}\n'}})
@@ -108,17 +108,13 @@ def f_odczyt_pliku_nmap(plik):
             if(" 200 " in str(output_curl1) or " 302 " in str(output_curl1) or " 404 " in str(output_curl1)):
                 output_links_from_web_http = f_get_links_from_web(ip,port,protokol,"http")
                 data['host'].append({ip:{'links_http':f'{output_links_from_web_http}\n'}})
-
-            '''http: screen shot w przypadku kiedy curl zwroci 200, 302, 404, robienie screen shota-a'''
-            try:
-                if(" 200 " in str(output_curl1) or " 302 " in str(output_curl1) or " 404 " in str(output_curl1)):                
-                    output_screen_shot_web_http = f_screen_shot_web(ip,port,"http")   
-                else:
-                    output_screen_shot_web_http = "none"             
-            except Exception as er:
-                f_zapis_log("f_odczyt_pliku_nmap/f_screen_shot_web", f"Wyjatek scr shot http://{ip}:{port} {str(er)}", "error")
-                output_screen_shot_web_http = "none"
-            '''cURL: wykrywany linki na stronie'''
+                try:            
+                    output_screen_shot_web_http = f_screen_shot_web(ip,port,"http")             
+                except Exception as er:
+                    f_zapis_log("f_odczyt_pliku_nmap/f_screen_shot_web", f"Wyjatek scr shot http://{ip}:{port} {str(er)}", "error")
+                    output_screen_shot_web_http = "none"
+            
+            # https
             output_curl2 = f_curl(ip,port,protokol,"https")
             if(output_curl2 != "none"):
                 data['host'].append({ip:{'curl_https':f'{output_curl2}\n'}})
@@ -127,16 +123,11 @@ def f_odczyt_pliku_nmap(plik):
             if(" 200 " in str(output_curl2) or " 302 " in str(output_curl2) or " 404 " in str(output_curl2)):
                 output_links_from_web_https = f_get_links_from_web(ip,port,protokol,"https")
                 data['host'].append({ip:{'links_https':f'{output_links_from_web_https}\n'}})
-                
-            '''http: screen shot w przypadku kiedy curl zwroci 200, 302, 404, robienie screen shota-a'''
-            try:
-                if(" 200 " in str(output_curl2) or " 302 " in str(output_curl2) or " 404 " in str(output_curl2)):
+                try:
                     output_screen_shot_web_https = f_screen_shot_web(ip,port,"https")
-                else:
+                except Exception as er:
+                    f_zapis_log("f_odczyt_pliku_nmap/f_screen_shot_web", f"Wyjatek scr shot https://{ip}:{port} {str(er)}", "error")
                     output_screen_shot_web_https = "none"
-            except Exception as er:
-                f_zapis_log("f_odczyt_pliku_nmap/f_screen_shot_web", f"Wyjatek scr shot https://{ip}:{port} {str(er)}", "error")
-                output_screen_shot_web_https = "none"
                 
             '''port 21, ftp, dodatkowe dzialania'''
             if(port == "21" or "ftp" in str(opis_nmap).lower):
