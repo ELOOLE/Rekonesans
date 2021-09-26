@@ -86,6 +86,17 @@ def f_odczyt_pliku_nmap(plik):
             '''OUTPUT'''
             '''socat port 1-65535 TCP i UDP'''
             output_socat = f_socat(ip,port,protokol)
+            ###########################################################################
+            # zapis do pliku *.json
+            data['host'].append({ip:{
+                    'ip':ip,
+                    'port':port,
+                    'protokol':protokol,
+                    'usluga':usluga,
+                    'opis':opis_nmap,
+                    'socat':f'{output_socat}\n',
+                }
+            })
             
             '''cURL: wykrywany linki na stronie'''
             output_curl1 = f_curl(ip,port,protokol,"http")
@@ -116,15 +127,34 @@ def f_odczyt_pliku_nmap(plik):
                 f_zapis_log("f_odczyt_pliku_nmap/f_screen_shot_web", f"Wyjatek scr shot https://{ip}:{port} {str(er)}", "error")
                 output_screen_shot_web_https = "none"
 
+                
+            '''port 21, ftp, dodatkowe dzialania'''
+            if(port == "21" or "ftp" in str(opis_nmap).lower):
+                zalecenia_ftp = f"nmap: (NSE) <i><b>nmap --script ftp* -p{port} -d {ip}</b></i>\n"
+                zalecenie_ftp += f"Brute-force: <i><b>hydra -s {port} -C /usr/share/wordlists/ftp-default-userpass.txt -u -f {ip} ftp</b></i>\n"
+                zalecenie_ftp += f"Brute-force: <i><b>patator ftp_login host={ip} user=FILE0 0=logins.txt password=asdf -x ignore:mesg='Login incorrect.' -x ignore,reset,retry:code=500</b></i>"
+                data['host'].append({ip:{'ftp':{'Dodatkowo&nbsp;można:':f'<p style="color:red;">{zalecenia_ftp}</p>\n'}}})
+
             '''port 22, ssh mechanizm'''
             output_ssh_mechanizm = "none"
             if(port == "22" or "ssh" in str(opis_nmap).lower):
                 output_ssh_mechanizm = f_ssh_mechanizm(ip,port)
+                data['host'].append({ip:{'ssh':{'mechanizm':f'{output_ssh_mechanizm}\n'}}})
+                zalecenia_ssh = f"nmap: (NSE) <i><b>nmap --script ssh-brute -d {ip}</b></i>"
+                zalecenia_ssh += f"Brute-force: <i><b>ssh_login host={ip} user=FILE0 0=logins.txt password=$(perl -e ""print 'A'x50000"") --max-retries 0 --timeout 10 -x ignore:time=0-3</b></i>"
+                zalecenia_ssh += "Brute-force usługi ssh z powodu ograniczen ilosciowych zapytan, zaleca sie uzyc malego slownika"
+                data['host'].append({ip:{'ssh':{'Dodatkowo&nbsp;można':f'<p style="color:red;">{zalecenia_ssh}</p>\n'}}})
 
+            '''port 23, telnet, dodatkowe dzialania'''
+            if(port == "23"):
+                zalecenia_telnet = f"nmap (NSE) <i><b>nmap --script telnet* -p23 -d {ip}</b></i>"
+                data['host'].append({ip:{'telnet':{'Dodatkowo&nbsp;można':f'<p style="color:red;">{zalecenia_telnet}</p>\n'}}})
+                
             '''port 25, smtp'''
             output_smtp = "none"
             if(port == "25" or "smtp" in str(opis_nmap).lower):
                 output_smtp = f_smtp(ip)
+                data['host'].append({ip:{'smtp':{'mechanizm':f'{output_smtp}\n'}}})
 
             '''port 135, DCERPC'''
             output_dcerpc_p135 = "none"
@@ -136,42 +166,6 @@ def f_odczyt_pliku_nmap(plik):
             if(port == "139"):
                 output_enum4linux = f_enum4linux(ip)
             
-            ###########################################################################
-            # zapis do pliku *.json
-            data['host'].append({ip:{
-                    'ip':ip,
-                    'port':port,
-                    'protokol':protokol,
-                    'usluga':usluga,
-                    'opis':opis_nmap,
-                    'socat':f'{output_socat}\n',
-                }
-            })
-
-            '''port 21, ftp, dodatkowe dzialania'''
-            if(port == "21" or "ftp" in str(opis_nmap).lower):
-                zalecenia_ftp = f"nmap: (NSE) <i><b>nmap --script ftp* -p{port} -d {ip}</b></i>\n"
-                zalecenie_ftp += f"Brute-force: <i><b>hydra -s {port} -C /usr/share/wordlists/ftp-default-userpass.txt -u -f {ip} ftp</b></i>\n"
-                zalecenie_ftp += f"Brute-force: <i><b>patator ftp_login host={ip} user=FILE0 0=logins.txt password=asdf -x ignore:mesg='Login incorrect.' -x ignore,reset,retry:code=500</b></i>"
-                data['host'].append({ip:{'ftp':{'Dodatkowo&nbsp;można:':f'<p style="color:red;">{zalecenia_ftp}</p>\n'}}})
-
-            '''port 22, ssh, output'''
-            if(port == "22" or "ssh" in str(opis_nmap).lower):
-                data['host'].append({ip:{'ssh':{'mechanizm':f'{output_ssh_mechanizm}\n'}}})
-                zalecenia_ssh = f"nmap: (NSE) <i><b>nmap --script ssh-brute -d {ip}</b></i>"
-                zalecenia_ssh += f"Brute-force: <i><b>ssh_login host={ip} user=FILE0 0=logins.txt password=$(perl -e ""print 'A'x50000"") --max-retries 0 --timeout 10 -x ignore:time=0-3</b></i>"
-                zalecenia_ssh += "Brute-force usługi ssh z powodu ograniczen ilosciowych zapytan, zaleca sie uzyc malego slownika"
-                data['host'].append({ip:{'ssh':{'Dodatkowo&nbsp;można':f'<p style="color:red;">{zalecenia_ssh}</p>\n'}}})
-
-            '''port 23, telnet, dodatkowe dzialania'''
-            if(port == "23"):
-                zalecenia_telnet = f"nmap (NSE) <i><b>nmap --script telnet* -p23 -d {ip}</b></i>"
-                data['host'].append({ip:{'telnet':{'Dodatkowo&nbsp;można':f'<p style="color:red;">{zalecenia_telnet}</p>\n'}}})
-
-            '''port 25, smtp, output''''
-            if(port == "25"):
-                data['host'].append({ip:{'smtp':{'mechanizm':f'{output_smtp}\n'}}})
-
             '''cURL, output'''
             if(output_curl1 != "none"):
                 data['host'].append({ip:{'curl_http:':f'{output_curl1}\n'}})
