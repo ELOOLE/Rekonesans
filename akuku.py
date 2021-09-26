@@ -42,7 +42,7 @@ from impacket.dcerpc.v5.ndr import NULL
 from impacket.dcerpc.v5.rpcrt import RPC_C_AUTHN_LEVEL_NONE
 from impacket.dcerpc.v5.dcomrt import IObjectExporter
 
-'''Moje import'''
+# pliki wymagane
 import html_parser
 import f_file
 
