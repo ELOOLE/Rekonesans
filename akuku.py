@@ -54,7 +54,7 @@ print(baner)
 
 def f_odczyt_pliku_nmap(plik):
     f_zapis_log("f_odczyt_pliku_nmap", f"odczytuje plik z danymi: {plik}", "info") 
-    line_count = f_file.f_policz_wiersze_w_pliku(plik)
+    line_count = f_policz_wiersze_w_pliku(plik)
     f_zapis_log("f_odczyt_pliku_nmap",f"Ilosc zadan do wykonania: {line_count}","info")
 
     # otwieram ponownie
@@ -512,6 +512,22 @@ def f_zapis_log(zrodlo, dane, typ):
     # zamykamy plik logu
     plik_logu.close()
 
+def f_policz_wiersze_w_pliku(path):
+    '''liczy ilosc linijek w wierszu'''
+    '''zwraca: int, ilość linijek w podanym pliku'''
+    # otwieram plik
+    otwarty_plik = open(path, "r")
+    line_count = 0
+    # czytam linijce po linijce
+    for line in otwarty_plik:
+        if line != "\n":
+            line_count += 1
+
+    # zamykam plik            
+    otwarty_plik.close()
+    # zwracam wynik
+    return line_count
+    
 if __name__ == '__main__':
     '''MAIN'''
     parser = argparse.ArgumentParser()
