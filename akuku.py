@@ -1,5 +1,5 @@
 ###############################################################################
-## akuku for Linux,Windows... v1.0
+## akuku for Linux,Windows... v0.1
 ## Written by WW
 ## Copyright 2021
 ## input: metasploit(db_nmap - discover)         
@@ -58,7 +58,7 @@ def f_odczyt_pliku_nmap(plik):
     global ilosc_uslug
     ilosc_uslug = line_count
 
-    tips_color = "green"
+    tips_color = "blue"
     # otwieram ponownie
     otwarty_plik_nmap = open(plik, 'r')
     i = 1
@@ -69,11 +69,11 @@ def f_odczyt_pliku_nmap(plik):
     for linijka in otwarty_plik_nmap:
         # rozpoczynamy parsowanie pliku
         wynik = linijka.split(',')
-        ip = wynik[0].replace("\"", "").rstrip("\n")
-        port = wynik[1].replace("\"", "").rstrip("\n")
-        protokol = wynik[2].replace("\"", "").rstrip("\n")
-        usluga = wynik[3].replace("\"", "").rstrip("\n")
-        opis_nmap = wynik[4].replace("\"", "").rstrip("\n")
+        ip = wynik[0].replace("\"", "").rstrip("")
+        port = wynik[1].replace("\"", "").rstrip("")
+        protokol = wynik[2].replace("\"", "").rstrip("")
+        usluga = wynik[3].replace("\"", "").rstrip("")
+        opis_nmap = wynik[4].replace("\"", "").rstrip("")
 
         #print(f"({i}/{line_count}) | {f_czas()} | IP: {ip} proto:{protokol} port:{port} usluga: {usluga}")
         f_zapis_log("-----------", "-----------------------------------------------------------------", "-------")
@@ -85,21 +85,24 @@ def f_odczyt_pliku_nmap(plik):
             f_zapis_log("f_odczyt_pliku_nmap", f"Wpis nie zawiera poprawnego adresu IP [{ip}]", "info")
         else:
             '''OUTPUT'''
-            '''socat port 1-65535 TCP i UDP'''
-            output_socat = f_socat(ip,port,protokol)
             ###########################################################################
             # zapis do pliku *.json
             data['host'].append({ip:{
                     'ip':ip,
                     'port':port,
-                    'protokol':protokol,
-                    'usluga':usluga,
-                    'opis':opis_nmap,
-                    'socat':f'{output_socat}\n',
+                    'protokoł':protokol,
+                    'usługa':usluga,
+                    'opis':opis_nmap
                 }
             })
-            opis_nmap = str(opis_nmap).lower
+            
             ###########################################################################
+
+            #socat port 1-65535 TCP i UDP
+            output_socat = f_socat(ip,port,protokol)
+            if(output_socat != "none"):
+                data['host'].append({ip:{'socat:':f'{output_socat}\n'}})
+
             # cURL
             # http
             output_curl1 = f_curl(ip,port,protokol,"http")
@@ -117,8 +120,8 @@ def f_odczyt_pliku_nmap(plik):
                     f_zapis_log("f_odczyt_pliku_nmap/f_screen_shot_web", f"Wyjatek scr shot http://{ip}:{port} {str(er)}", "error")
                     output_screen_shot_web_http = "none"
                 
-                zalecenia_http = f"nikto -h {ip}"
-                zalecenia_http += f"dirb http://{ip} /usr/share/wordlist/dirb/common.txt"
+                zalecenia_http = f"<b>nikto -h {ip}</b><br />"
+                zalecenia_http += f"<b>dirb http://{ip} /usr/share/wordlist/dirb/common.txt</b><br />"
                 data['host'].append({ip:{'http':{'Dodatkowo&nbsp;można':f'<p style="color:{tips_color};">{zalecenia_http}</p>\n'}}})
             
             # https
@@ -137,43 +140,43 @@ def f_odczyt_pliku_nmap(plik):
                     f_zapis_log("f_odczyt_pliku_nmap/f_screen_shot_web", f"Wyjatek scr shot https://{ip}:{port} {str(er)}", "error")
                     output_screen_shot_web_https = "none"
                 
-                zalecenia_https = f"nikto -h {ip}<br />"
-                zalecenia_https += f"dirb https://{ip} /usr/share/wordlist/dirb/common.txt<br />"
+                zalecenia_https = f"nikto -h {ip}<br />\n"
+                zalecenia_https += f"dirb https://{ip} /usr/share/wordlist/dirb/common.txt<br />\n"
                 data['host'].append({ip:{'https':{'Dodatkowo&nbsp;można':f'<p style="color:{tips_color};">{zalecenia_https}</p>\n'}}})
             
             # ports / services    
             # port 21
-            if(port == "21" or "ftp" in str(opis_nmap)):
-                zalecenia_ftp = f"NMAP (NSE) <i><b>nmap --script ftp* -p{port} -d {ip}</b></i><br />"
-                zalecenia_ftp += f"Brute-force: <i><b>hydra -s {port} -C /usr/share/wordlists/ftp-default-userpass.txt -u -f {ip} ftp</b></i><br />"
-                zalecenia_ftp += f"Brute-force: <i><b>patator ftp_login host={ip} user=FILE0 0=logins.txt password=asdf -x ignore:mesg='Login incorrect.' -x ignore,reset,retry:code=500</b></i><br />"
+            if(port == "21" or "ftp" in opis_nmap):
+                zalecenia_ftp = f"NMAP (NSE) <b>nmap --script ftp* -p{port} -d {ip}</b><br />"
+                zalecenia_ftp += f"Brute-force: <b>hydra -s {port} -C /usr/share/wordlists/ftp-default-userpass.txt -u -f {ip} ftp</b><br />"
+                zalecenia_ftp += f"Brute-force: <b>patator ftp_login host={ip} user=FILE0 0=logins.txt password=asdf -x ignore:mesg='Login incorrect.' -x ignore,reset,retry:code=500</b><br />"
                 data['host'].append({ip:{'ftp':{'Dodatkowo&nbsp;można:':f'<p style="color:{tips_color};">{zalecenia_ftp}</p>\n'}}})
 
             # port 22
             output_ssh_mechanizm = "none"
-            if(port == "22" or "ssh" in str(opis_nmap)):
+            if(port == "22" or "ssh" in opis_nmap):
                 output_ssh_mechanizm = f_ssh_mechanizm(ip,port)
                 data['host'].append({ip:{'ssh':{'mechanizm':f'{output_ssh_mechanizm}\n'}}})
-                zalecenia_ssh = f"nmap: (NSE) <i><b>nmap --script ssh-brute -d {ip}</b></i><br />"
-                zalecenia_ssh += f"Brute-force: <i><b>ssh_login host={ip} user=FILE0 0=logins.txt password=$(perl -e ""print 'A'x50000"") --max-retries 0 --timeout 10 -x ignore:time=0-3</b></i><br />"
+                zalecenia_ssh = f"nmap: (NSE) <b>nmap --script ssh-brute -d {ip}</b><br />"
+                zalecenia_ssh += f"Brute-force: <b>ssh_login host={ip} user=FILE0 0=logins.txt password=$(perl -e ""print 'A'x50000"") --max-retries 0 --timeout 10 -x ignore:time=0-3</b><br />"
                 zalecenia_ssh += "Brute-force usługi ssh z powodu ograniczen ilosciowych zapytan, zaleca sie uzyc malego slownika<br />"
                 data['host'].append({ip:{'ssh':{'Dodatkowo&nbsp;można':f'<p style="color:{tips_color};">{zalecenia_ssh}</p>\n'}}})
 
             # port 23
-            if(port == "23" or "telnet" in str(opis_nmap)):
-                zalecenia_telnet = f"nmap (NSE) <i><b>nmap --script telnet* -p23 -d {ip}</b></i><br />"
+            if(port == "23" or "telnet" in opis_nmap):
+                zalecenia_telnet = f"nmap (NSE) <b>nmap --script telnet* -p23 -d {ip}</b><br />"
                 data['host'].append({ip:{'telnet':{'Dodatkowo&nbsp;można':f'<p style="color:{tips_color};">{zalecenia_telnet}</p>\n'}}})
                 
             # port 25
             output_smtp = "none"
-            if(port == "25" or "smtp" in str(opis_nmap)):
+            if(port == "25" or "smtp" in opis_nmap):
                 output_smtp = f_smtp(ip)
                 data['host'].append({ip:{'smtp':{'mechanizm':f'{output_smtp}\n'}}})
            
             # port 53, dns
             if(port == "53"):
-                zalecenia_dns = f"<i><b>dnsrecon -w -g -d {ip} --csv /home/user/dnsrecon{ip}.csv</b></i> do zapisu, musi byc podana sciezna bezwzgledna inaczej nie zapisze<br />"
-                zalecenia_dns += f"<i><b>dnsenum --noreverse {ip}</b></i><br />"
+                zalecenia_dns = f"<b>dnsrecon -w -g -d {ip} --csv /home/user/dnsrecon{ip}.csv</b> do zapisu, musi byc podana sciezna bezwzgledna inaczej nie zapisze<br />"
+                zalecenia_dns += f"<b>dnsenum --noreverse {ip}</b><br />"
                 data['host'].append({ip:{'dns':{'Dodatkowo&nbsp;można':f'<p style="color:{tips_color};">{zalecenia_dns}</p>\n'}}})
                 
             # port 67, 68, DHCP protocol: UDP
@@ -281,9 +284,6 @@ def f_socat(ip,port,protokol):
     f_zapis_log("f_socat",cmd,"info")
     ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
     output = str(ps.communicate()[0])
-
-    # zapisuje do logu jaki jest wynik polecenia
-    f_zapis_log("socat",output,"info")
     
     if(output == "b''"):
         output = "none"
@@ -293,6 +293,9 @@ def f_socat(ip,port,protokol):
     elif(output[:2] == 'b"'):
         output = output[2:-1]
 
+    # zapisuje do logu jaki jest wynik polecenia
+    f_zapis_log("socat",output,"info")
+    
     return output
 
 def f_curl(ip,port,protokol, h_prot):
