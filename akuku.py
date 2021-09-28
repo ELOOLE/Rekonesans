@@ -2,6 +2,8 @@
 ## akuku for Linux,Windows... v1.0
 ## Written by WW
 ## Copyright 2021
+## input: metasploit(db_nmap - discover)         
+## services -u -c port,proto,name,info - o /home/user/rand1234
 ###############################################################################
 
 import os
@@ -42,12 +44,8 @@ from impacket.dcerpc.v5.ndr import NULL
 from impacket.dcerpc.v5.rpcrt import RPC_C_AUTHN_LEVEL_NONE
 from impacket.dcerpc.v5.dcomrt import IObjectExporter
 
-# pliki wymagane
-import html_parser
-import f_file
-
 # dane do zrzutu danych zwiazane wlasnie z plikiem *.json
-data = {}
+ilosc_uslug = 0
 
 baner = pyfiglet.figlet_format("Rekonesans")
 print(baner)
@@ -57,16 +55,19 @@ def f_odczyt_pliku_nmap(plik):
     line_count = f_policz_wiersze_w_pliku(plik)
     f_zapis_log("f_odczyt_pliku_nmap",f"Ilosc zadan do wykonania: {line_count}","info")
 
+    global ilosc_uslug
+    ilosc_uslug = line_count
+
+    tips_color = "green"
     # otwieram ponownie
     otwarty_plik_nmap = open(plik, 'r')
     i = 1
-
+    data = {}
     data['host'] = []
     
     # czytamy linijka po linijce 
     for linijka in otwarty_plik_nmap:
         # rozpoczynamy parsowanie pliku
-        # services -u -c port,proto,name,info - o /home/user/rand1234
         wynik = linijka.split(',')
         ip = wynik[0].replace("\"", "").rstrip("\n")
         port = wynik[1].replace("\"", "").rstrip("\n")
@@ -97,6 +98,7 @@ def f_odczyt_pliku_nmap(plik):
                     'socat':f'{output_socat}\n',
                 }
             })
+            opis_nmap = str(opis_nmap).lower
             ###########################################################################
             # cURL
             # http
@@ -117,7 +119,7 @@ def f_odczyt_pliku_nmap(plik):
                 
                 zalecenia_http = f"nikto -h {ip}"
                 zalecenia_http += f"dirb http://{ip} /usr/share/wordlist/dirb/common.txt"
-                data['host'].append({ip:{'http':{'Dodatkowo&nbsp;można':f'<p style="color:red;">{zalecenia_http}</p>\n'}}})
+                data['host'].append({ip:{'http':{'Dodatkowo&nbsp;można':f'<p style="color:{tips_color};">{zalecenia_http}</p>\n'}}})
             
             # https
             output_curl2 = f_curl(ip,port,protokol,"https")
@@ -135,44 +137,44 @@ def f_odczyt_pliku_nmap(plik):
                     f_zapis_log("f_odczyt_pliku_nmap/f_screen_shot_web", f"Wyjatek scr shot https://{ip}:{port} {str(er)}", "error")
                     output_screen_shot_web_https = "none"
                 
-                zalecenia_https = f"nikto -h {ip}"
-                zalecenia_https += f"dirb https://{ip} /usr/share/wordlist/dirb/common.txt"
-                data['host'].append({ip:{'https':{'Dodatkowo&nbsp;można':f'<p style="color:red;">{zalecenia_https}</p>\n'}}})
+                zalecenia_https = f"nikto -h {ip}<br />"
+                zalecenia_https += f"dirb https://{ip} /usr/share/wordlist/dirb/common.txt<br />"
+                data['host'].append({ip:{'https':{'Dodatkowo&nbsp;można':f'<p style="color:{tips_color};">{zalecenia_https}</p>\n'}}})
             
             # ports / services    
             # port 21
-            if(port == "21" or "ftp" in str(opis_nmap).lower):
-                zalecenia_ftp = f"nmap: (NSE) <i><b>nmap --script ftp* -p{port} -d {ip}</b></i>\n"
-                zalecenie_ftp += f"Brute-force: <i><b>hydra -s {port} -C /usr/share/wordlists/ftp-default-userpass.txt -u -f {ip} ftp</b></i>\n"
-                zalecenie_ftp += f"Brute-force: <i><b>patator ftp_login host={ip} user=FILE0 0=logins.txt password=asdf -x ignore:mesg='Login incorrect.' -x ignore,reset,retry:code=500</b></i>"
-                data['host'].append({ip:{'ftp':{'Dodatkowo&nbsp;można:':f'<p style="color:red;">{zalecenia_ftp}</p>\n'}}})
+            if(port == "21" or "ftp" in str(opis_nmap)):
+                zalecenia_ftp = f"NMAP (NSE) <i><b>nmap --script ftp* -p{port} -d {ip}</b></i><br />"
+                zalecenia_ftp += f"Brute-force: <i><b>hydra -s {port} -C /usr/share/wordlists/ftp-default-userpass.txt -u -f {ip} ftp</b></i><br />"
+                zalecenia_ftp += f"Brute-force: <i><b>patator ftp_login host={ip} user=FILE0 0=logins.txt password=asdf -x ignore:mesg='Login incorrect.' -x ignore,reset,retry:code=500</b></i><br />"
+                data['host'].append({ip:{'ftp':{'Dodatkowo&nbsp;można:':f'<p style="color:{tips_color};">{zalecenia_ftp}</p>\n'}}})
 
             # port 22
             output_ssh_mechanizm = "none"
-            if(port == "22" or "ssh" in str(opis_nmap).lower):
+            if(port == "22" or "ssh" in str(opis_nmap)):
                 output_ssh_mechanizm = f_ssh_mechanizm(ip,port)
                 data['host'].append({ip:{'ssh':{'mechanizm':f'{output_ssh_mechanizm}\n'}}})
-                zalecenia_ssh = f"nmap: (NSE) <i><b>nmap --script ssh-brute -d {ip}</b></i>"
-                zalecenia_ssh += f"Brute-force: <i><b>ssh_login host={ip} user=FILE0 0=logins.txt password=$(perl -e ""print 'A'x50000"") --max-retries 0 --timeout 10 -x ignore:time=0-3</b></i>"
-                zalecenia_ssh += "Brute-force usługi ssh z powodu ograniczen ilosciowych zapytan, zaleca sie uzyc malego slownika"
-                data['host'].append({ip:{'ssh':{'Dodatkowo&nbsp;można':f'<p style="color:red;">{zalecenia_ssh}</p>\n'}}})
+                zalecenia_ssh = f"nmap: (NSE) <i><b>nmap --script ssh-brute -d {ip}</b></i><br />"
+                zalecenia_ssh += f"Brute-force: <i><b>ssh_login host={ip} user=FILE0 0=logins.txt password=$(perl -e ""print 'A'x50000"") --max-retries 0 --timeout 10 -x ignore:time=0-3</b></i><br />"
+                zalecenia_ssh += "Brute-force usługi ssh z powodu ograniczen ilosciowych zapytan, zaleca sie uzyc malego slownika<br />"
+                data['host'].append({ip:{'ssh':{'Dodatkowo&nbsp;można':f'<p style="color:{tips_color};">{zalecenia_ssh}</p>\n'}}})
 
             # port 23
-            if(port == "23" or "telnet" in str(opis_nmap).lower):
-                zalecenia_telnet = f"nmap (NSE) <i><b>nmap --script telnet* -p23 -d {ip}</b></i>"
-                data['host'].append({ip:{'telnet':{'Dodatkowo&nbsp;można':f'<p style="color:red;">{zalecenia_telnet}</p>\n'}}})
+            if(port == "23" or "telnet" in str(opis_nmap)):
+                zalecenia_telnet = f"nmap (NSE) <i><b>nmap --script telnet* -p23 -d {ip}</b></i><br />"
+                data['host'].append({ip:{'telnet':{'Dodatkowo&nbsp;można':f'<p style="color:{tips_color};">{zalecenia_telnet}</p>\n'}}})
                 
             # port 25
             output_smtp = "none"
-            if(port == "25" or "smtp" in str(opis_nmap).lower):
+            if(port == "25" or "smtp" in str(opis_nmap)):
                 output_smtp = f_smtp(ip)
                 data['host'].append({ip:{'smtp':{'mechanizm':f'{output_smtp}\n'}}})
            
             # port 53, dns
             if(port == "53"):
-                zalecenia_dns = f"<i><b>dnsrecon -w -g -d {ip} --csv /home/user/dnsrecon{ip}.csv</b></i> do zapisu, musi byc podana sciezna bezwzgledna inaczej nie zapisze"
-                zalecenia_dns += f"<i><b>dnsenum --noreverse {ip}</b></i>"
-                data['host'].append({ip:{'dns':{'Dodatkowo&nbsp;można':f'<p style="color:red;">{zalecenia_dns}</p>\n'}}})
+                zalecenia_dns = f"<i><b>dnsrecon -w -g -d {ip} --csv /home/user/dnsrecon{ip}.csv</b></i> do zapisu, musi byc podana sciezna bezwzgledna inaczej nie zapisze<br />"
+                zalecenia_dns += f"<i><b>dnsenum --noreverse {ip}</b></i><br />"
+                data['host'].append({ip:{'dns':{'Dodatkowo&nbsp;można':f'<p style="color:{tips_color};">{zalecenia_dns}</p>\n'}}})
                 
             # port 67, 68, DHCP protocol: UDP
             
@@ -231,7 +233,7 @@ def f_ssh_mechanizm(ip, port):
     # zapisuje do logu jakie zbudowal polecenie
     f_zapis_log("f_ssh_mechanizm",cmd,"info")
     ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-    output = str(ps.communicate()[0].decode('utf-8'))
+    output = str(ps.communicate()[0])
 
     # zapisuje do logu jaki jest wynik polecenia
     f_zapis_log("f_ssh_mechanizm",output,"info")
@@ -310,15 +312,17 @@ def f_curl(ip,port,protokol, h_prot):
         curl_output = str(ps_cmd_curl1.communicate()[0].decode('utf-8'))
         
         # zmienna [wynik] ma dane, ktore zostana zwrocone przez funkcje
-        output = str(curl_output)
+        output = str(curl_output).strip()
+        if(len(output) == 0):
+            output = "none"
     else:
         # jezeli [protokol] to UDP zmienna [wynik] zwroci wynik jak ponizej
-        output = "UDP - pomijam"
+        output = "none"
 
     # zapisujemy do logu co zwrocila [f_curl]
     f_zapis_log("f_curl",output,"info")
 
-    return output
+    return output.strip()
 
 def f_get_links_from_web(ip,port,protokol,h_prot):
     '''pobiera linki ze strony'''
@@ -528,6 +532,19 @@ def f_policz_wiersze_w_pliku(path):
     # zwracam wynik
     return line_count
 
+def f_count_str_in_file(path, szukana):
+    '''liczy ilosc linijek w wierszu'''
+    '''zwraca: int, ilość linijek w podanym pliku'''
+    # otwieram plik
+    otwarty_plik = open(path, "r")
+    data = otwarty_plik.read()
+    
+    wystapien = data.count(szukana)
+    
+    otwarty_plik.close()
+    # zwracam wynik
+    return wystapien
+
 def f_html_parser(file_html):
     file_html_new = file_html[:-5] + "_convert.html"
 
@@ -549,6 +566,21 @@ def f_html_parser(file_html):
     head += '</style>\n'
     head += '</head>\n'
     head += '<body>\n'
+    head += '<table>\n'
+    head += '<tr>\n'
+    head += '<td>\n'
+    head += '<h5 style="text-align:right">autor: MM, wersja 0.1 2021 r.</h5>\n'
+    head += '<hr>\n'
+    head += f'<h1 style="text-align:center">Rekonesans {str(ilosc_uslug)} usług.</h1>\n'
+    head += '<hr>\n'
+    head += f'<h4 style="text-align:left">SRT: {start_script}<br/>END: {str(f_czas ())}</h4>\n'
+    head += '<hr>\n'
+    head += f'<h4 style="text-align:left">Plik logu: {path_plik_logu}</h4>\n'
+    head += '<hr>\n'
+    head += f'Błędów w pliku logu: {f_count_str_in_file(path_plik_logu, "error")}\n'
+    head += '</td>\n'
+    head += '</tr>\n'
+    head += '</table>\n'
 
     open_file_html_new.write(head)
 
@@ -579,6 +611,9 @@ if __name__ == '__main__':
     parser.add_argument('--fin', '--file-input', type=str, help='Podaj sciezke do pliku z adresami')
     #parser.add_argument('--fout', '--file-output', type=str, help='Sciezka do zapisu pliku z wynikami skanowania')
     args = parser.parse_args()
+
+    # rozpoczecie
+    start_script = f_czas()
 
     # odczyt pliku
     if(str(args.fin) == '' or str(args.fin) == 'None'):
