@@ -7,7 +7,7 @@
 ###############################################################################
 
 import os
-import time
+import socket
 import shlex, subprocess, signal
 import argparse
 import datetime
@@ -78,16 +78,17 @@ def f_odczyt_pliku_nmap(plik):
         #print(f"({i}/{line_count}) | {f_czas()} | IP: {ip} proto:{protokol} port:{port} usluga: {usluga}")
         f_zapis_log("-----------", "-----------------------------------------------------------------", "-------")
         f_zapis_log("f_odczyt_pliku_nmap",f"({i}/{line_count}) | proto:{protokol} IP:{ip} port:{port} usluga:{usluga}", "info")
-        i+=1
 
         r = re.compile("\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}")
         if r.match(ip) is None:
             f_zapis_log("f_odczyt_pliku_nmap", f"Wpis nie zawiera poprawnego adresu IP [{ip}]", "info")
+            ilosc_uslug -= 1
         else:
             '''OUTPUT'''
             ###########################################################################
             # zapis do pliku *.json
             data['host'].append({ip:{
+                    'id':f'<h1>&nbsp;{i}</h1>',
                     'ip':ip,
                     'port':port,
                     'protokoł':protokol,
@@ -213,6 +214,7 @@ def f_odczyt_pliku_nmap(plik):
             # 544 kshell, Kerberos Remote shell
             # 546 DHCPv6 client
             # 547 DHCPv6 server
+            i+=1
     
     ###########################################################################
     with open(path_plik_json, 'a+') as outfile:
@@ -576,10 +578,10 @@ def f_html_parser(file_html):
     head += '<hr>\n'
     head += f'<h1 style="text-align:center">Rekonesans {str(ilosc_uslug)} usług.</h1>\n'
     head += '<hr>\n'
-    head += f'<h4 style="text-align:left">SRT: {start_script}<br/>END: {str(f_czas ())}</h4>\n'
+    head += f'SRT: {start_script}<br/>END: {str(f_czas ())}\n'
     head += '<hr>\n'
-    head += f'<h4 style="text-align:left">Plik logu: {path_plik_logu}</h4>\n'
-    head += '<hr>\n'
+    head += f'Plik logu: {path_plik_logu}\n'
+    head += '<br />\n'
     head += f'Błędów w pliku logu: {f_count_str_in_file(path_plik_logu, "error")}\n'
     head += '</td>\n'
     head += '</tr>\n'
