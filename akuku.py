@@ -3,7 +3,7 @@
 ## Written by MM
 ## Copyright 2021
 ## input: metasploit(db_nmap - discover)         
-## services -u -c port,proto,name,info - o /home/user/rand1234
+## services -u -c port,proto,name,info -o /home/user/rand1234
 ###############################################################################
 
 import os
