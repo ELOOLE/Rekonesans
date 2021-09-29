@@ -1,6 +1,6 @@
 ###############################################################################
 ## akuku for Linux,Windows... v0.1
-## Written by WW
+## Written by MM
 ## Copyright 2021
 ## input: metasploit(db_nmap - discover)         
 ## services -u -c port,proto,name,info - o /home/user/rand1234
