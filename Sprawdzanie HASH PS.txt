@@ -1,0 +1,1 @@
+Get-FileHash -Algorithm SHA1 -Path C:\Users\...\...\ovf
