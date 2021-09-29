@@ -352,7 +352,8 @@ def f_get_links_from_web(ip,port,protokol,h_prot):
             f_zapis_log("f_get_links_from_web", spis_linkow, "info")
         except Exception as e:
             f_zapis_log("f_get_links_from_web", f"http {e}", "error")
-            spis_linkow,spis_linkow_html = f"error: {e}"
+            spis_linkow = f"error: {e}"
+            spis_linkow_html = f"error: {e}"
     elif(h_prot == "https"):
         ctx = ssl.create_default_context()
         ctx.check_hostname = False
