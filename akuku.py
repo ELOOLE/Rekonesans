@@ -26,7 +26,7 @@ from json2html import *
 from copy import Error
 
 import ssl
-from ssl import RAND_add
+from ssl import CertificateError, RAND_add
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -76,7 +76,7 @@ def f_odczyt_pliku_nmap(plik):
         opis_nmap = wynik[4].replace("\"", "").rstrip("")
 
         #print(f"({i}/{line_count}) | {f_czas()} | IP: {ip} proto:{protokol} port:{port} usluga: {usluga}")
-        f_zapis_log("-----------", "-----------------------------------------------------------------", "-------")
+        f_zapis_log("---------", "-----------------------------------------------------------------", "-------------------")
         f_zapis_log("f_odczyt_pliku_nmap",f"({i}/{line_count}) | proto:{protokol} IP:{ip} port:{port} usluga:{usluga}", "info")
 
         r = re.compile("\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}")
@@ -91,8 +91,8 @@ def f_odczyt_pliku_nmap(plik):
                     'id':f'<h1>&nbsp;{i}</h1>',
                     'ip':ip,
                     'port':port,
-                    'protokoł':protokol,
-                    'usługa':usluga,
+                    'protokol':protokol,
+                    'usluga':usluga,
                     'opis':opis_nmap
                 }
             })
@@ -111,7 +111,7 @@ def f_odczyt_pliku_nmap(plik):
                 data['host'].append({ip:{'curl_http:':f'{output_curl1}\n'}})
                 
             output_links_from_web_http = "none"            
-            if(" 200 " in str(output_curl1) or " 302 " in str(output_curl1) or " 404 " in str(output_curl1)):
+            if(" 200 " in str(output_curl1) or " 301 " in str(output_curl1) or " 302 " in str(output_curl1) or " 404 " in str(output_curl1)):
                 output_links_from_web_http = f_get_links_from_web(ip,port,protokol,"http")
                 data['host'].append({ip:{'links_http':f'{output_links_from_web_http}\n'}})
                 try:            
@@ -123,7 +123,7 @@ def f_odczyt_pliku_nmap(plik):
                 
                 zalecenia_http = f"<b>nikto -h {ip}</b><br />"
                 zalecenia_http += f"<b>dirb http://{ip} /usr/share/wordlist/dirb/common.txt</b><br />"
-                data['host'].append({ip:{'http':{'Dodatkowo&nbsp;można':f'<p style="color:{tips_color};">{zalecenia_http}</p>\n'}}})
+                data['host'].append({ip:{'http':{'Dodatkowo&nbsp;mo|na':f'<p style="color:{tips_color};">{zalecenia_http}</p>\n'}}})
             
             # https
             output_curl2 = f_curl(ip,port,protokol,"https")
@@ -131,7 +131,7 @@ def f_odczyt_pliku_nmap(plik):
                 data['host'].append({ip:{'curl_https':f'{output_curl2}\n'}})
             
             output_links_from_web_https = "none"           
-            if(" 200 " in str(output_curl2) or " 302 " in str(output_curl2) or " 404 " in str(output_curl2)):
+            if(" 200 " in str(output_curl2) or " 301 " in str(output_curl2) or " 302 " in str(output_curl1) or " 404 " in str(output_curl2)):
                 output_links_from_web_https = f_get_links_from_web(ip,port,protokol,"https")
                 data['host'].append({ip:{'links_https':f'{output_links_from_web_https}\n'}})
                 try:
@@ -143,7 +143,7 @@ def f_odczyt_pliku_nmap(plik):
                 
                 zalecenia_https = f"nikto -h {ip}<br />\n"
                 zalecenia_https += f"dirb https://{ip} /usr/share/wordlist/dirb/common.txt<br />\n"
-                data['host'].append({ip:{'https':{'Dodatkowo&nbsp;można':f'<p style="color:{tips_color};">{zalecenia_https}</p>\n'}}})
+                data['host'].append({ip:{'https':{'Dodatkowo':f'<p style="color:{tips_color};">{zalecenia_https}</p>\n'}}})
             
             # ports / services    
             # port 21
@@ -151,7 +151,7 @@ def f_odczyt_pliku_nmap(plik):
                 zalecenia_ftp = f"NMAP (NSE) <b>nmap --script ftp* -p{port} -d {ip}</b><br />"
                 zalecenia_ftp += f"Brute-force: <b>hydra -s {port} -C /usr/share/wordlists/ftp-default-userpass.txt -u -f {ip} ftp</b><br />"
                 zalecenia_ftp += f"Brute-force: <b>patator ftp_login host={ip} user=FILE0 0=logins.txt password=asdf -x ignore:mesg='Login incorrect.' -x ignore,reset,retry:code=500</b><br />"
-                data['host'].append({ip:{'ftp':{'Dodatkowo&nbsp;można:':f'<p style="color:{tips_color};">{zalecenia_ftp}</p>\n'}}})
+                data['host'].append({ip:{'ftp':{'Dodatkowo:':f'<p style="color:{tips_color};">{zalecenia_ftp}</p>\n'}}})
 
             # port 22
             output_ssh_mechanizm = "none"
@@ -160,13 +160,13 @@ def f_odczyt_pliku_nmap(plik):
                 data['host'].append({ip:{'ssh':{'mechanizm':f'{output_ssh_mechanizm}\n'}}})
                 zalecenia_ssh = f"nmap: (NSE) <b>nmap --script ssh-brute -d {ip}</b><br />"
                 zalecenia_ssh += f"Brute-force: <b>ssh_login host={ip} user=FILE0 0=logins.txt password=$(perl -e ""print 'A'x50000"") --max-retries 0 --timeout 10 -x ignore:time=0-3</b><br />"
-                zalecenia_ssh += "Brute-force usługi ssh z powodu ograniczen ilosciowych zapytan, zaleca sie uzyc malego slownika<br />"
-                data['host'].append({ip:{'ssh':{'Dodatkowo&nbsp;można':f'<p style="color:{tips_color};">{zalecenia_ssh}</p>\n'}}})
+                zalecenia_ssh += "Brute-force uslugi ssh z powodu ograniczen ilosciowych zapytan, zaleca sie uzyc malego slownika<br />"
+                data['host'].append({ip:{'ssh':{'Dodatkowo':f'<p style="color:{tips_color};">{zalecenia_ssh}</p>\n'}}})
 
             # port 23
             if(port == "23" or "telnet" in opis_nmap):
                 zalecenia_telnet = f"nmap (NSE) <b>nmap --script telnet* -p23 -d {ip}</b><br />"
-                data['host'].append({ip:{'telnet':{'Dodatkowo&nbsp;można':f'<p style="color:{tips_color};">{zalecenia_telnet}</p>\n'}}})
+                data['host'].append({ip:{'telnet':{'Dodatkowo':f'<p style="color:{tips_color};">{zalecenia_telnet}</p>\n'}}})
                 
             # port 25
             output_smtp = "none"
@@ -178,7 +178,7 @@ def f_odczyt_pliku_nmap(plik):
             if(port == "53"):
                 zalecenia_dns = f"<b>dnsrecon -w -g -d {ip} --csv /home/user/dnsrecon{ip}.csv</b> do zapisu, musi byc podana sciezna bezwzgledna inaczej nie zapisze<br />"
                 zalecenia_dns += f"<b>dnsenum --noreverse {ip}</b><br />"
-                data['host'].append({ip:{'dns':{'Dodatkowo&nbsp;można':f'<p style="color:{tips_color};">{zalecenia_dns}</p>\n'}}})
+                data['host'].append({ip:{'dns':{'Dodatkowo':f'<p style="color:{tips_color};">{zalecenia_dns}</p>\n'}}})
                 
             # port 67, 68, DHCP protocol: UDP
             
@@ -305,8 +305,11 @@ def f_curl(ip,port,protokol, h_prot):
     protokol = str.lower(protokol)
     if(protokol == "tcp"):
         # budujemy sklanie polecenie curl dla http
-        cmd_curl = f"curl -I {h_prot}://{ip}:{port} --max-time 2 --no-keepalive -v"
-        
+        if(h_prot == "http"):
+            cmd_curl = f"curl -I -k {h_prot}://{ip}:{port} --max-time 2 --no-keepalive -v"
+        elif(h_prot == "https"):
+            cmd_curl = f"curl -I -k {h_prot}://{ip}:{port} --max-time 2 --no-keepalive -v"
+
         # zapisujemy zbudowane polecenie do pliku logu
         f_zapis_log("f_curl", cmd_curl, "info")
 
@@ -334,49 +337,51 @@ def f_get_links_from_web(ip,port,protokol,h_prot):
     spis_linkow = ""
     spis_linkow_html = ""
     # zrzut linkow
-    if(h_prot == "http"):
-        try:
-            addrHTTP = f"http://{ip}:{port}/"
-            f_zapis_log("f_get_links_from_web", addrHTTP,"info")
-            parser = 'html.parser'
-            resp = urllib.request.urlopen(addrHTTP)
-            soup = BeautifulSoup(resp, parser, from_encoding=resp.info().get_param('charset'))
+    # if(h_prot == "http"):
+    #    try:
+    #       addrHTTP = f"http://{ip}:{port}/"
+    #        f_zapis_log("f_get_links_from_web", addrHTTP,"info")
+    #        parser = 'html.parser'
+    #        resp = urllib.request.urlopen(addrHTTP)
+    #        soup = BeautifulSoup(resp, parser, from_encoding=resp.info().get_param('charset'))
 
-            for link in soup.find_all('a', href=True):
-                spis_linkow += link['href'] + "\n"
-                spis_linkow_html += link['href'] + "<br />" 
+    #        for link in soup.find_all('a', href=True):
+    #            spis_linkow += link['href'] + "\n"
+    #            spis_linkow_html += link['href'] + "<br />" 
 
-            spis_linkow = spis_linkow[:-2]
-            spis_linkow_html = spis_linkow_html[:-2]
+    #        spis_linkow = spis_linkow[:-2]
+    #        spis_linkow_html = spis_linkow_html[:-2]
 
-            f_zapis_log("f_get_links_from_web", spis_linkow, "info")
-        except Exception as e:
-            f_zapis_log("f_get_links_from_web", f"http {e}", "error")
-            spis_linkow = f"error: {e}"
-            spis_linkow_html = f"error: {e}"
-    elif(h_prot == "https"):
-        ctx = ssl.create_default_context()
-        ctx.check_hostname = False
-        ctx.verify_mode = ssl.CERT_NONE
-        try:
-            addrHTTP = f"https://{ip}:{port}/"
-            f_zapis_log("f_get_links_from_web", addrHTTP,"info")
-            parser = 'html.parser'
-            
-            resp = urllib.request.urlopen(addrHTTP, context=ctx)
-            soup = BeautifulSoup(resp, parser, from_encoding=resp.info().get_param('charset'))
+    #        f_zapis_log("f_get_links_from_web", spis_linkow, "info")
+    #    except Exception as e:
+    #        f_zapis_log("f_get_links_from_web", f"http {e}", "error")
+    #        spis_linkow = f"error: {e}"
+    #        spis_linkow_html = f"error: {e}"
+    #elif(h_prot == "https"):
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
 
-            for link in soup.find_all('a', href=True):
-                spis_linkow += link['href'] + "\n"
-                spis_linkow_html += link['href'] + "<br />" 
+    try:
+        addrHTTP = f"{h_prot}://{ip}:{port}/"
+        f_zapis_log("f_get_links_from_web", addrHTTP,"info")
+        parser = 'html.parser'
+        
+        resp = urllib.request.urlopen(addrHTTP, context=ctx)
+        soup = BeautifulSoup(resp, parser, from_encoding=resp.info().get_param('charset'))
 
-            spis_linkow = spis_linkow[:-2]
-            spis_linkow_html = spis_linkow_html[:-2]
+        for link in soup.find_all('a', href=True):
+            spis_linkow += link['href'] + "\n"
+            spis_linkow_html += link['href'] + "<br />" 
 
-            f_zapis_log("f_get_links_from_web", spis_linkow, "info")
-        except Exception as e:
-            f_zapis_log("f_get_links_from_web", f"https {e}", "error")
-            spis_linkow,spis_linkow_html =  "error"
+        spis_linkow = spis_linkow[:-2]
+        spis_linkow_html = spis_linkow_html[:-2]
+
+        f_zapis_log("f_get_links_from_web", spis_linkow, "info")
+    except Exception as e:
+        f_zapis_log("f_get_links_from_web", f"{h_prot} {e}", "error")
+        spis_linkow =  "error"
+        spis_linkow_html =  "error"
 
     return spis_linkow_html[:-2]
 
@@ -425,7 +430,7 @@ def f_screen_shot_web(ip,port,protokol):
         nazwa_pliku = path_plik_nmap_msfconsole + "_" + f"{ip}_{port}_{protokol}.png"
         f_zapis_log("f_screen_shot_web", f"nazwa pliku screen shot-a {nazwa_pliku}", "info")
 
-        # treść znaku wodnego nanoszonego na *.png
+        # tre[ znaku wodnego nanoszonego na *.png
         znak_wodny = f"{f_czas()} | Protokol: [{protokol}], adres ip: [{ip}], port: [{port}]"
         f_zapis_log("f_screen_shot_web", f"znak wodny {znak_wodny}", "info")
 
@@ -459,7 +464,9 @@ def f_screen_shot_web(ip,port,protokol):
     except Exception as img_err:
         f_zapis_log("f_screen_shot_web", f"Nie podpisano obrazka dla {protokol}://{ip}:{port} {img_err} ", "error")
 
-    return nazwa_pliku_jpg
+    obrazek = os.path.basename(nazwa_pliku_jpg)
+
+    return obrazek
 
 def f_rpc_p135(ip):
     '''RPC port 135'''
@@ -498,7 +505,7 @@ def f_czas ():
 def f_zapis_log(zrodlo, dane, typ):
     '''Zapis wyniku dzialania do pliku logu'''
     '''Sciezka pliku w zmiennej [path_plik_logu]'''
-    #sprawdzam istnienie pliku, jeżeli istnieje dopisze w innym przypadku nadpisze '''
+    #sprawdzam istnienie pliku, je|eli istnieje dopisze w innym przypadku nadpisze '''
     if(os.path.isfile(path_plik_logu)):
         plik_logu = open(path_plik_logu,'a+')
     else:
@@ -524,7 +531,7 @@ def f_zapis_log(zrodlo, dane, typ):
 
 def f_policz_wiersze_w_pliku(path):
     '''liczy ilosc linijek w wierszu'''
-    '''zwraca: int, ilość linijek w podanym pliku'''
+    '''zwraca: int, ilosc linijek w podanym pliku'''
     # otwieram plik
     otwarty_plik = open(path, "r")
     line_count = 0
@@ -540,7 +547,7 @@ def f_policz_wiersze_w_pliku(path):
 
 def f_count_str_in_file(path, szukana):
     '''liczy ilosc linijek w wierszu'''
-    '''zwraca: int, ilość linijek w podanym pliku'''
+    '''zwraca: int, ilosc linijek w podanym pliku'''
     # otwieram plik
     otwarty_plik = open(path, "r")
     data = otwarty_plik.read()
@@ -577,13 +584,13 @@ def f_html_parser(file_html):
     head += '<td>\n'
     head += '<h5 style="text-align:right">autor: MM, wersja 0.1 2021 r.</h5>\n'
     head += '<hr>\n'
-    head += f'<h1 style="text-align:center">Rekonesans {str(ilosc_uslug)} usług.</h1>\n'
+    head += f'<h1 style="text-align:center">Rekonesans {str(ilosc_uslug)} uslug.</h1>\n'
     head += '<hr>\n'
     head += f'SRT: {start_script}<br/>END: {str(f_czas ())}\n'
     head += '<hr>\n'
     head += f'Plik logu: {path_plik_logu}\n'
     head += '<br />\n'
-    head += f'Błędów w pliku logu: {f_count_str_in_file(path_plik_logu, "error")}\n'
+    head += f'Bledow w pliku logu: {f_count_str_in_file(path_plik_logu, "error")}\n'
     head += '</td>\n'
     head += '</tr>\n'
     head += '</table>\n'
@@ -623,7 +630,7 @@ if __name__ == '__main__':
 
     # odczyt pliku
     if(str(args.fin) == '' or str(args.fin) == 'None'):
-        path_plik_nmap_msfconsole = '/home/user/test1'
+        path_plik_nmap_msfconsole = '/home/pentester/PWPW_outside'
     else:
         path_plik_nmap_msfconsole = args.fin
     
@@ -633,7 +640,7 @@ if __name__ == '__main__':
         path_plik_json = path_plik_nmap_msfconsole + ".json"
         path_plik_html = path_plik_nmap_msfconsole + ".html"
 
-        # wywołujemy funkcję, która odczyta nam plik linijka po linijce
+        # wywoBujemy funkcj, kt�ra odczyta nam plik linijka po linijce
         f_odczyt_pliku_nmap(path_plik_nmap_msfconsole)
     else:
-        print("Plik z danymi nie istnieje!" + path_plik_nmap_msfconsole)       
+        print("Plik z danymi nie istnieje!" + path_plik_nmap_msfconsole)
