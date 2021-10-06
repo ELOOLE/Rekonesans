@@ -479,6 +479,13 @@ def f_screen_shot_web(adres):
         port = netloc[1]
         # path
         #path = lista_adres.path
+        if(len(netloc) == 1):
+            if(protokol == "http"):
+                port = "80"
+            elif(protokol == "https"):
+                port = "443"
+        else:
+            port = netloc[1]
 
         #URL = f"{protokol}://{ip}:{port}"
         URL = adres
@@ -499,7 +506,8 @@ def f_screen_shot_web(adres):
         znak_wodny = f"{f_czas()} | Protokol: [{protokol}], adres ip: [{ip}], port: [{port}]"
         f_zapis_log("f_screen_shot_web", f"znak wodny {znak_wodny}", "info")
 
-        driver.find_element_by_tag_name('body').screenshot(nazwa_pliku)
+        #driver.find_element_by_tag_name('body').screenshot(nazwa_pliku)
+        driver.save_screenshot(nazwa_pliku)
         driver.quit()
 
         #nanosimy znak wodny na img
@@ -702,7 +710,7 @@ if __name__ == '__main__':
         path_plik_json = path_plik_nmap_msfconsole + ".json"
         path_plik_html = path_plik_nmap_msfconsole + ".html"
 
-        # wywoBujemy funkcj, kt�ra odczyta nam plik linijka po linijce
+        # wywolujemy funkcje, ktara odczyta nam plik linijka po linijce
         f_odczyt_pliku_nmap(path_plik_nmap_msfconsole)
     else:
         print("Plik z danymi nie istnieje!" + path_plik_nmap_msfconsole)
