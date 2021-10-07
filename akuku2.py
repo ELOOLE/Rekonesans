@@ -1,5 +1,5 @@
 ###############################################################################
-## akuku for Linux,Windows... v0.1
+## akuku for Linux,Windows... v0.2
 ## Written by MM
 ## Copyright 2021
 ## input: metasploit(db_nmap - discover)         
