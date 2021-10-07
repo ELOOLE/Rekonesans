@@ -228,7 +228,7 @@ def f_odczyt_pliku_nmap(plik):
 def f_ssh_mechanizm(ip, port):
     '''SSH'''
     # buduje polecenie
-    cmd = f'nmap --script "ssh* and not ssh-brute" {ip} -p22'
+    cmd = f'nmap --script "ssh* and not ssh-brute and not ssh-run" {ip} -p22'
     
     # zapisuje do logu jakie zbudowal polecenie
     f_zapis_log("f_ssh_mechanizm",cmd,"info")
