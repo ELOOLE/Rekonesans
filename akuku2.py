@@ -1,5 +1,5 @@
 ###############################################################################
-## akuku for Linux,Windows... v0.2
+## akuku for Linux,Windows... v0.1
 ## Written by MM
 ## Copyright 2021
 ## input: metasploit(db_nmap - discover)         
@@ -63,8 +63,8 @@ def f_odczyt_pliku_nmap(plik):
     otwarty_plik_nmap = open(plik, 'r')
     i = 1
     data = {}
-    data['host'] = []
-    
+    data['skan'] = []
+
     # czytamy linijka po linijce 
     for linijka in otwarty_plik_nmap:
         # rozpoczynamy parsowanie pliku
@@ -84,32 +84,28 @@ def f_odczyt_pliku_nmap(plik):
             f_zapis_log("f_odczyt_pliku_nmap", f"Wpis nie zawiera poprawnego adresu IP [{ip}]", "info")
             ilosc_uslug -= 1
         else:
-            '''OUTPUT'''
-            ###########################################################################
             # zapis do pliku *.json
-            data['host'].append({ip:{
-                    'id':f'<h1>&nbsp;{i}</h1>',
+            tmp_dict = {ip:{
                     'ip':ip,
                     'port':port,
                     'protokol':protokol,
                     'usluga':usluga,
                     'opis':opis_nmap
-                }
-            })
-            
-            ###########################################################################
-
+                }}
+           
             #socat port 1-65535 TCP i UDP
             output_socat = f_socat(ip,port,protokol)
             if(output_socat != "none"):
-                data['host'].append({ip:{'socat:':f'{output_socat}\n'}})
+                tmp_dict[ip]['socat:'] = f'{output_socat}\n'
+                # data['host'].append({ip:{'socat:':f'{output_socat}\n'}})
 
             # cURL, links, web_shot
             lista_protokol = ["http","https"]
             for h_prot in lista_protokol:
                 output_curl = f_curl(ip,port,protokol,h_prot)
                 if(output_curl != "none"):
-                    data['host'].append({ip:{f'curl_{h_prot}:':f'{output_curl}\n'}})
+                    #data['host'].append({ip:{f'curl_{h_prot}:':f'{output_curl}\n'}})
+                    tmp_dict[ip][f'curl:{h_prot}'] = f'{output_curl}\n'
                 
                     adres = f"{h_prot}://{ip}:{port}"
                     f_zapis_log("f_odczyt_pliku_nmap", f"adres [{adres}]", "info")
@@ -126,54 +122,77 @@ def f_odczyt_pliku_nmap(plik):
                                     adres = adres2
                             
                             output_links_from_web = f_get_links_from_web(adres)
-                            data['host'].append({ip:{f'links_{h_prot}':f'{output_links_from_web}\n'}})
+                            #data['host'].append({ip:{f'links_{h_prot}':f'{output_links_from_web}\n'}})
+                            tmp_dict[ip][f'links:{h_prot}'] = f'{output_links_from_web}\n'
                             output_screen_shot_web = f_screen_shot_web(adres)
                             if(output_screen_shot_web == "error"):
-                                data['host'].append({ip:{f'screen_shot_{h_prot}':f'{output_screen_shot_web}'}})
+                                #data['host'].append({ip:{f'screen_shot_{h_prot}':f'{output_screen_shot_web}'}})
+                                tmp_dict[ip][f'web_shot:'] = f'{output_screen_shot_web}\n'
                             else:
-                                data['host'].append({ip:{f'screen_shot_{h_prot}':f'<img src="{output_screen_shot_web}">'}})
+                                #data['host'].append({ip:{f'screen_shot_{h_prot}':f'<img src="{output_screen_shot_web}">'}})
+                                tmp_dict[ip][f'web_shot:'] = f'<img src="{output_screen_shot_web}">\n'
                         except Exception as er:
                             f_zapis_log("f_odczyt_pliku_nmap/f_screen_shot_web", f"Wyjatek scr shot {h_prot}://{ip}:{port} {str(er)}", "error")
                             output_screen_shot_web = "none"
                         
-                        zalecenia = f"<b>nikto -h {ip}</b><br />"
-                        zalecenia += f"<b>dirb {h_prot}://{ip} /usr/share/wordlist/dirb/common.txt</b><br />"
-                        data['host'].append({ip:{'http':{'Dodatkowo':f'<p style="color:{tips_color};">{zalecenia}</p>\n'}}})
+                        #zalecenia = f"<b>nikto -h {ip}</b><br />"
+                        #zalecenia += f"<b>dirb {h_prot}://{ip} /usr/share/wordlist/dirb/common.txt</b><br />"
+                        #data['host'].append({ip:{'http':{'Dodatkowo':f'<p style="color:{tips_color};">{zalecenia}</p>\n'}}})
+
+                        tmp_dict[ip]['http:tips'] = f'nikto -h {ip}\n'
+                        tmp_dict[ip]['http:tips'] = f'dirb {h_prot}://{ip} /usr/share/wordlist/dirb/common.txt\n'
             
             # ports / services    
             # port 21
-            if(port == "21" or "ftp" in opis_nmap):
-                zalecenia_ftp = f"NMAP (NSE) <b>nmap --script ftp* -p{port} -d {ip}</b><br />"
-                zalecenia_ftp += f"Brute-force: <b>hydra -s {port} -C /usr/share/wordlists/ftp-default-userpass.txt -u -f {ip} ftp</b><br />"
-                zalecenia_ftp += f"Brute-force: <b>patator ftp_login host={ip} user=FILE0 0=logins.txt password=asdf -x ignore:mesg='Login incorrect.' -x ignore,reset,retry:code=500</b><br />"
-                data['host'].append({ip:{'ftp':{'Dodatkowo:':f'<p style="color:{tips_color};">{zalecenia_ftp}</p>\n'}}})
+            if(port == "21" or "ftp" in opis_nmap.lower()):
+                #zalecenia_ftp = f"NMAP (NSE) <b>nmap --script ftp* -p{port} -d {ip}</b><br />"
+                #zalecenia_ftp += f"Brute-force: <b>hydra -s {port} -C /usr/share/wordlists/ftp-default-userpass.txt -u -f {ip} ftp</b><br />"
+                #zalecenia_ftp += f"Brute-force: <b>patator ftp_login host={ip} user=FILE0 0=logins.txt password=asdf -x ignore:mesg='Login incorrect.' -x ignore,reset,retry:code=500</b><br />"
+                #data['host'].append({ip:{'ftp':{'Dodatkowo:':f'<p style="color:{tips_color};">{zalecenia_ftp}</p>\n'}}})
+                tmp_dict[ip]['ftp:tips[NSE]'] = f'nmap --script ftp* -p{port} -d {ip}\n'
+                tmp_dict[ip]['ftp:tips[Brute-force]'] = f'hydra -s {port} -C /usr/share/wordlists/ftp-default-userpass.txt -u -f {ip} ftp\n'
+                tmp_dict[ip]['ftp:tips[Brute-force]'] = f"patator ftp_login host={ip} user=FILE0 0=logins.txt password=asdf -x ignore:mesg='Login incorrect.' -x ignore,reset,retry:code=500"
 
             # port 22
-            output_ssh_mechanizm = "none"
-            if(port == "22" or "ssh" in opis_nmap):
+            #output_ssh_mechanizm = "none"
+            if(port == "22" or "ssh" in opis_nmap.lower()):
                 output_ssh_mechanizm = f_ssh_mechanizm(ip,port)
-                data['host'].append({ip:{'ssh':{'mechanizm':f'{output_ssh_mechanizm}\n'}}})
-                zalecenia_ssh = f"nmap: (NSE) <b>nmap --script ssh-brute -d {ip}</b><br />"
-                zalecenia_ssh += f"Brute-force: <b>ssh_login host={ip} user=FILE0 0=logins.txt password=$(perl -e ""print 'A'x50000"") --max-retries 0 --timeout 10 -x ignore:time=0-3</b><br />"
-                zalecenia_ssh += "Brute-force uslugi ssh z powodu ograniczen ilosciowych zapytan, zaleca sie uzyc malego slownika<br />"
-                data['host'].append({ip:{'ssh':{'Dodatkowo':f'<p style="color:{tips_color};">{zalecenia_ssh}</p>\n'}}})
+                #data['host'].append({ip:{'ssh':{'mechanizm':f'{output_ssh_mechanizm}\n'}}})
+                tmp_dict[ip]['ssh]'] = f'{output_ssh_mechanizm}\n'
+                #zalecenia_ssh = f"nmap: (NSE) <b>nmap --script ssh-brute -d {ip}</b><br />"
+                #zalecenia_ssh += f"Brute-force: <b>ssh_login host={ip} user=FILE0 0=logins.txt password=$(perl -e ""print 'A'x50000"") --max-retries 0 --timeout 10 -x ignore:time=0-3</b><br />"
+                #zalecenia_ssh += "Brute-force uslugi ssh z powodu ograniczen ilosciowych zapytan, zaleca sie uzyc malego slownika<br />"
+                #data['host'].append({ip:{'ssh':{'Dodatkowo':f'<p style="color:{tips_color};">{zalecenia_ssh}</p>\n'}}})
+                tmp_dict[ip]['ssh:tips[NSE]'] = f'nmap: (NSE) <b>nmap --script ssh-brute -d {ip}\n'
+                tmp_dict[ip]['ssh:tips[Brute-force]'] = f"Brute-force: ssh_login host={ip} user=FILE0 0=logins.txt password=$(perl -e ""print 'A'x50000"") --max-retries 0 --timeout 10 -x ignore:time=0-3"
+                tmp_dict[ip]['ssh:tips[Brute-force]'] = f"Brute-force uslugi ssh z powodu ograniczen ilosciowych zapytan, zaleca sie uzyc malego slownika"
 
             # port 23
-            if(port == "23" or "telnet" in opis_nmap):
-                zalecenia_telnet = f"nmap (NSE) <b>nmap --script telnet* -p23 -d {ip}</b><br />"
-                data['host'].append({ip:{'telnet':{'Dodatkowo':f'<p style="color:{tips_color};">{zalecenia_telnet}</p>\n'}}})
+            if(port == "23" or "telnet" in opis_nmap.lower()):
+                #zalecenia_telnet = f"nmap (NSE) <b>nmap --script telnet* -p23 -d {ip}</b><br />"
+                #data['host'].append({ip:{'telnet':{'Dodatkowo':f'<p style="color:{tips_color};">{zalecenia_telnet}</p>\n'}}})
+                tmp_dict[ip]['ssh:wskazowka'] = f"nmap (NSE) nmap --script telnet* -p23 -d {ip}"
                 
             # port 25
-            output_smtp = "none"
-            if(port == "25" or "smtp" in opis_nmap):
+            # output_smtp = "none"
+            if(port == "25" or "smtp" in opis_nmap.lower()):
                 output_smtp = f_smtp(ip)
-                data['host'].append({ip:{'smtp':{'mechanizm':f'{output_smtp}\n'}}})
+                #zalecenia_smtp = f"smtp-user-enum -M VRFY -U users.txt -t {ip}</b><br />"
+                #zalecenia_smtp = f"smtp-user-enum -M EXPN -u admin1 -t {ip}</b><br />"
+                #zalecenia_smtp = f"smtp-user-enum.pl -M RCPT -U users.txt -T mail-server-ips.txt {ip}</b><br />"
+                #zalecenia_smtp = f"smtp-user-enum.pl -M EXPN -D example.com -U users.txt -t {ip}</b><br />"
+                #data['host'].append({ip:{'smtp':{'Dodatkowo':f'<p style="color:{tips_color};">{zalecenia_smtp}</p>\n'}}})
+                #data['host'].append({ip:{'smtp':{'mechanizm':f'{output_smtp}\n'}}})
+                tmp_dict[ip]['smtp'] = f'{output_smtp}\n'
+                tmp_dict[ip]['smtp:wskazowka'] = f"smtp-user-enum -M EXPN -u admin1 -t {ip}"
            
             # port 53, dns
             if(port == "53"):
-                zalecenia_dns = f"<b>dnsrecon -w -g -d {ip} --csv /home/user/dnsrecon{ip}.csv</b> do zapisu, musi byc podana sciezna bezwzgledna inaczej nie zapisze<br />"
-                zalecenia_dns += f"<b>dnsenum --noreverse {ip}</b><br />"
-                data['host'].append({ip:{'dns':{'Dodatkowo':f'<p style="color:{tips_color};">{zalecenia_dns}</p>\n'}}})
+                #zalecenia_dns = f"<b>dnsrecon -w -g -d {ip} --csv /home/user/dnsrecon{ip}.csv</b> do zapisu, musi byc podana sciezna bezwzgledna inaczej nie zapisze<br />"
+                #zalecenia_dns += f"<b>dnsenum --noreverse {ip}</b><br />"
+                #data['host'].append({ip:{'dns':{'Dodatkowo':f'<p style="color:{tips_color};">{zalecenia_dns}</p>\n'}}})
+                tmp_dict[ip]['dns:wskazowka'] = f"dnsrecon -w -g -d {ip} --csv /home/user/dnsrecon{ip}.csv</b> do zapisu, musi byc podana sciezna bezwzgledna inaczej nie zapisze"
+                tmp_dict[ip]['dns:wskazowka'] = f"dnsenum --noreverse {ip}"
                 
             # port 67, 68, DHCP protocol: UDP
             
@@ -182,18 +201,20 @@ def f_odczyt_pliku_nmap(plik):
             # port 123, NTP, protocol: UDP
             
             # port 135
-            output_dcerpc_p135 = "none"
+            #output_dcerpc_p135 = "none"
             if(port == "135"):
                 output_dcerpc_p135 = f_rpc_p135(ip)
-                data['host'].append({ip:{'dcerpc_p135':f'{output_dcerpc_p135}\n'}})
+                #data['host'].append({ip:{'dcerpc_p135':f'{output_dcerpc_p135}\n'}})
+                tmp_dict[ip]['dcerpc'] = f'{output_dcerpc_p135}'
             
             # port 137
             
             # port 139, enum4linux
-            output_enum4linux = "none"
+            #output_enum4linux = "none"
             if(port == "139"):
                 output_enum4linux = f_enum4linux(ip)
-                data['host'].append({ip:{'enum4linux':f'{output_enum4linux}\n'}})
+                #data['host'].append({ip:{'enum4linux':f'{output_enum4linux}\n'}})
+                tmp_dict[ip]['dcerpc'] = f'{output_enum4linux}\n'
             
             # port 143 imap
             
@@ -210,7 +231,7 @@ def f_odczyt_pliku_nmap(plik):
             # 546 DHCPv6 client
             # 547 DHCPv6 server
             i+=1
-    
+            data['skan'].append(tmp_dict)
     ###########################################################################
     with open(path_plik_json, 'a+') as outfile:
         json.dump(data, outfile)
@@ -388,28 +409,7 @@ def f_get_links_from_web(adres):
     '''pobiera linki ze strony'''
     spis_linkow = ""
     spis_linkow_html = ""
-    # zrzut linkow
-    # if(h_prot == "http"):
-    #    try:
-    #       addrHTTP = f"http://{ip}:{port}/"
-    #        f_zapis_log("f_get_links_from_web", addrHTTP,"info")
-    #        parser = 'html.parser'
-    #        resp = urllib.request.urlopen(addrHTTP)
-    #        soup = BeautifulSoup(resp, parser, from_encoding=resp.info().get_param('charset'))
 
-    #        for link in soup.find_all('a', href=True):
-    #            spis_linkow += link['href'] + "\n"
-    #            spis_linkow_html += link['href'] + "<br />" 
-
-    #        spis_linkow = spis_linkow[:-2]
-    #        spis_linkow_html = spis_linkow_html[:-2]
-
-    #        f_zapis_log("f_get_links_from_web", spis_linkow, "info")
-    #    except Exception as e:
-    #        f_zapis_log("f_get_links_from_web", f"http {e}", "error")
-    #        spis_linkow = f"error: {e}"
-    #        spis_linkow_html = f"error: {e}"
-    #elif(h_prot == "https"):
     ctx = ssl.create_default_context()
     ctx.check_hostname = False
     ctx.verify_mode = ssl.CERT_NONE
@@ -710,7 +710,7 @@ if __name__ == '__main__':
         path_plik_json = path_plik_nmap_msfconsole + ".json"
         path_plik_html = path_plik_nmap_msfconsole + ".html"
 
-        # wywolujemy funkcje, ktara odczyta nam plik linijka po linijce
+        # wywoBujemy funkcj, kt�ra odczyta nam plik linijka po linijce
         f_odczyt_pliku_nmap(path_plik_nmap_msfconsole)
     else:
         print("Plik z danymi nie istnieje!" + path_plik_nmap_msfconsole)
