@@ -156,16 +156,16 @@ def f_odczyt_pliku_nmap(plik):
                             output_screen_shot_web = "none"
                         
                         # zapis do pliku *.json
-                        tmp_dict[ip]['wskazowka'] = f'nikto -h {ip}\n'
-                        tmp_dict[ip]['wskazowka'] = f'dirb {h_prot}://{ip} /usr/share/wordlist/dirb/common.txt\n'
+                        tmp_dict[ip]['wskazowka:nikto'] = f'nikto -h {ip}\n'
+                        tmp_dict[ip]['wskazowka:dirb'] = f'dirb {h_prot}://{ip} /usr/share/wordlist/dirb/common.txt\n'
             
             # ports / services    
             # port 21
             if(port == "21" or "ftp" in opis_nmap.lower()):
                 # zapis do pliku *.json
-                tmp_dict[ip]['wskazowka:nmap[NSE]'] = f'nmap --script ftp* -p{port} -d {ip}\n'
-                tmp_dict[ip]['wskazowka:[Brute-force]'] = f'hydra -s {port} -C /usr/share/wordlists/ftp-default-userpass.txt -u -f {ip} ftp\n'
-                tmp_dict[ip]['wskazowka:[Brute-force]'] = f"patator ftp_login host={ip} user=FILE0 0=logins.txt password=asdf -x ignore:mesg='Login incorrect.' -x ignore,reset,retry:code=500"
+                tmp_dict[ip]['wskazowka:[NSE]:nmap'] = f'nmap --script ftp* -p{port} -d {ip}\n'
+                tmp_dict[ip]['wskazowka:[Brute-force]:hydra'] = f'hydra -s {port} -C /usr/share/wordlists/ftp-default-userpass.txt -u -f {ip} ftp\n'
+                tmp_dict[ip]['wskazowka:[Brute-force]:patator'] = f"patator ftp_login host={ip} user=FILE0 0=logins.txt password=asdf -x ignore:mesg='Login incorrect.' -x ignore,reset,retry:code=500"
 
             # port 22
             #output_ssh_mechanizm = "none"
@@ -174,14 +174,14 @@ def f_odczyt_pliku_nmap(plik):
                 # zapis do pliku *.json
                 tmp_dict[ip]['ssh]'] = f'{output_ssh_mechanizm}\n'
                 # zapis do pliku *.json
-                tmp_dict[ip]['wskazowka:nmap[NSE]'] = f'nmap --script ssh-brute -d {ip}'
-                tmp_dict[ip]['wskazowka:[Brute-force]'] = f"ssh_login host={ip} user=FILE0 0=logins.txt password=$(perl -e ""print 'A'x50000"") --max-retries 0 --timeout 10 -x ignore:time=0-3"
-                tmp_dict[ip]['wskazowka:[Brute-force]'] = f"Brute-force uslugi ssh z powodu ograniczen ilosciowych zapytan, zaleca sie uzyc malego slownika"
+                tmp_dict[ip]['wskazowka:[NSE]:nmap'] = f'nmap --script ssh-brute -d {ip}'
+                tmp_dict[ip]['wskazowka:[Brute-force]:patator'] = f"patator ssh_login host={ip} user=FILE0 0=logins.txt password=$(perl -e ""print 'A'x50000"") --max-retries 0 --timeout 10 -x ignore:time=0-3"
+                tmp_dict[ip]['wskazowka:[Brute-force]:info'] = f"Brute-force uslugi ssh z powodu ograniczen ilosciowych zapytan, zaleca sie uzyc malego slownika"
 
             # port 23
             if(port == "23" or "telnet" in opis_nmap.lower()):
                 # zapis do pliku *.json
-                tmp_dict[ip]['wskazowka:nmap[NSE]'] = f"nmap --script telnet* -p23 -d {ip}"
+                tmp_dict[ip]['wskazowka:[NSE]:nmap'] = f"nmap --script telnet* -p23 -d {ip}"
                 
             # port 25
             # output_smtp = "none"
@@ -189,17 +189,17 @@ def f_odczyt_pliku_nmap(plik):
                 output_smtp = f_smtp(ip)
                 # zapis do pliku *.json
                 tmp_dict[ip]['smtp'] = f'{output_smtp}\n'
-                tmp_dict[ip]['wskazowka'] = f"smtp-user-enum -M VRFY -U users.txt -t {ip}"
-                tmp_dict[ip]['wskazowka'] = f"smtp-user-enum -M EXPN -u admin1 -t {ip}"
-                tmp_dict[ip]['wskazowka'] = f"smtp-user-enum.pl -M RCPT -U users.txt -T mail-server-ips.txt {ip}"
-                tmp_dict[ip]['wskazowka'] = f"smtp-user-enum.pl -M EXPN -D example.com -U users.txt -t {ip}"
+                tmp_dict[ip]['wskazowka:enum1'] = f"smtp-user-enum -M VRFY -U users.txt -t {ip}"
+                tmp_dict[ip]['wskazowka:enum2'] = f"smtp-user-enum -M EXPN -u admin1 -t {ip}"
+                tmp_dict[ip]['wskazowka:enum3'] = f"smtp-user-enum.pl -M RCPT -U users.txt -T mail-server-ips.txt {ip}"
+                tmp_dict[ip]['wskazowka:enum4'] = f"smtp-user-enum.pl -M EXPN -D example.com -U users.txt -t {ip}"
 
            
             # port 53, dns
             if(port == "53"):
                 # zapis do pliku *.json
-                tmp_dict[ip]['wskazowka'] = f"dnsrecon -w -g -d {ip} --csv /home/user/dnsrecon{ip}.csv</b> do zapisu, musi byc podana sciezna bezwzgledna inaczej nie zapisze"
-                tmp_dict[ip]['wskazowka'] = f"dnsenum --noreverse {ip}"
+                tmp_dict[ip]['wskazowka:dnsrecon'] = f"dnsrecon -w -g -d {ip} --csv /home/user/dnsrecon{ip}.csv</b> do zapisu, musi byc podana sciezna bezwzgledna inaczej nie zapisze"
+                tmp_dict[ip]['wskazowka:dnsenum'] = f"dnsenum --noreverse {ip}"
                 
             # port 67, 68, DHCP protocol: UDP
             
