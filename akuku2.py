@@ -151,6 +151,11 @@ def f_odczyt_pliku_nmap(plik):
                             else:
                                 # zapis do pliku *.json
                                 tmp_dict[ip][f'web_shot:'] = f'<img src="{output_screen_shot_web}">\n'
+                            
+                            #webdav
+                            output_webdav = f_webdav(h_prot, ip)
+                            # zapis do pliku *.json
+                            tmp_dict[ip]['webdav]'] = f'{output_webdav}\n'
                         except Exception as er:
                             f_zapis_log("f_odczyt_pliku_nmap/f_screen_shot_web", f"Wyjatek scr shot {h_prot}://{ip}:{port} {str(er)}", "error")
                             output_screen_shot_web = "none"
@@ -253,6 +258,31 @@ def f_odczyt_pliku_nmap(plik):
 
     otwarty_plik_nmap.close()
 
+# SOCAT
+def f_socat(ip,port,protokol):
+    '''SOCAT'''
+    protokol = str.upper(protokol)
+    # buduje polecenie
+    cmd = f"echo -ne \\x01\\x00\\x00\\x00 | socat -t 1 {protokol}:{ip}:{port},connect-timeout=2 - "
+    
+    # zapisuje do logu jakie zbudowal polecenie
+    f_zapis_log("f_socat",cmd,"info")
+    ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    output = str(ps.communicate()[0])
+    
+    if(output == "b''"):
+        output = "none"
+    
+    if(output[:2] == "b'"):
+        output = output[2:-1]
+    elif(output[:2] == 'b"'):
+        output = output[2:-1]
+
+    # zapisuje do logu jaki jest wynik polecenia
+    f_zapis_log("socat:output",output,"info")
+    
+    return output    
+    
 def f_ssh_mechanizm(ip, port):
     '''SSH'''
     # buduje polecenie
@@ -297,30 +327,6 @@ def f_smtp(ip):
     elif(output[:2] == 'b"'):
         output = output[2:-1]
 
-    return output
-
-def f_socat(ip,port,protokol):
-    '''SOCAT'''
-    protokol = str.upper(protokol)
-    # buduje polecenie
-    cmd = f"echo -ne \\x01\\x00\\x00\\x00 | socat -t 1 {protokol}:{ip}:{port},connect-timeout=2 - "
-    
-    # zapisuje do logu jakie zbudowal polecenie
-    f_zapis_log("f_socat",cmd,"info")
-    ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-    output = str(ps.communicate()[0])
-    
-    if(output == "b''"):
-        output = "none"
-    
-    if(output[:2] == "b'"):
-        output = output[2:-1]
-    elif(output[:2] == 'b"'):
-        output = output[2:-1]
-
-    # zapisuje do logu jaki jest wynik polecenia
-    f_zapis_log("socat:output",output,"info")
-    
     return output
 
 def f_curl(ip,port,protokol, h_prot):
@@ -544,6 +550,30 @@ def f_screen_shot_web(adres):
         obrazek = "error"
         
     return obrazek
+
+# webdav
+def f_webdav_test(h_prot, ip):
+    # buduje polecenie
+    cmd = f"webdav -url {h_prot}://{ip}"
+    
+    # zapisuje do logu jakie zbudowal polecenie
+    f_zapis_log("f_webdav",cmd,"info")
+    ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    output = str(ps.communicate()[0])
+
+    # zapisuje do logu jaki jest wynik polecenia
+    f_zapis_log("webdav",output,"info")
+    
+    if(output == "b''"):
+        output = "none"
+    
+    if(output[:2] == "b'"):
+        output = output[2:-1]
+    elif(output[:2] == 'b"'):
+        output = output[2:-1]
+
+    return output
+    
 
 def f_rpc_p135(ip):
     '''RPC port 135'''
