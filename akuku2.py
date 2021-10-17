@@ -153,7 +153,7 @@ def f_odczyt_pliku_nmap(plik):
                                 tmp_dict[ip][f'web_shot:'] = f'<img src="{output_screen_shot_web}">\n'
                             
                             #webdav
-                            output_webdav = f_webdav(h_prot, ip)
+                            output_webdav = f_webdav_test(h_prot, ip)
                             # zapis do pliku *.json
                             tmp_dict[ip]['webdav]'] = f'{output_webdav}\n'
                         except Exception as er:
@@ -556,12 +556,12 @@ def f_webdav_test(h_prot, ip):
     cmd = f"webdav -url {h_prot}://{ip}"
     
     # zapisuje do logu jakie zbudowal polecenie
-    f_zapis_log("f_webdav",cmd,"info")
+    f_zapis_log("f_webdav_test",cmd,"info")
     ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
     output = str(ps.communicate()[0])
 
     # zapisuje do logu jaki jest wynik polecenia
-    f_zapis_log("webdav",output,"info")
+    f_zapis_log("f_webdav_test",output,"info")
     
     if(output == "b''"):
         output = "none"
@@ -572,7 +572,6 @@ def f_webdav_test(h_prot, ip):
         output = output[2:-1]
 
     return output
-    
 
 def f_rpc_p135(ip):
     '''RPC port 135'''
