@@ -7,8 +7,9 @@ from typing import Counter
 import pyfiglet
 import json
 import urllib.request
-from urllib.parse import urlparse
 import codecs
+
+import ipaddress
 
 import re
 from re import sub
@@ -36,19 +37,60 @@ from impacket.dcerpc.v5.ndr import NULL
 from impacket.dcerpc.v5.rpcrt import RPC_C_AUTHN_LEVEL_NONE
 from impacket.dcerpc.v5.dcomrt import IObjectExporter
 
-'''Moje import'''
-import html_parser
-import f_file
+##########################################
+# plik z zasobami do skanowania
+# ---------------------------------------
+# odczytujemy generujemy z metasploit
+# w nastpujacy sposob
+# > services -u -c port,proto,name,info -o /home/user/rand1234
+##########################################
+path_plik_nmap_msfconsole = ""
 
+##########################################
+# plik logu - generowany automatycznie 
+# jak nie istnije to zostanie stworzony
+# nazywa się jak [path_plik_nmap_msfconsole] 
+# z ta roznica, ze rozszerzenie jest *.log
+##########################################
+path_plik_logu = ""
+
+##########################################
+# plik json - generowany automatycznie 
+# jak nie istnije to zostanie stworzony
+# nazywa się jak [path_plik_nmap_msfconsole]
+#  z ta roznica, ze rozszerzenie jest *.json
+##########################################
+path_plik_json = ""
 # dane do zrzutu danych zwiazane wlasnie z plikiem *.json
 data = {}
 
+##########################################
+# plik html - generowany z pliku *.json 
+# nazywa się jak [path_plik_nmap_msfconsole]
+#  z ta roznica, ze rozszerzenie jest *.html
+##########################################
+path_plik_html = ""
+
+##########################################
+# banner aplikacji
+# plik logu jak zostanie utworzony 
+# wrzuca ten baner jako pierwsza rzecz
+# do jego wynikow
+##########################################
 baner = pyfiglet.figlet_format("Rekonesans")
 print(baner)
 
 def f_odczyt_pliku_nmap(plik):
     f_zapis_log("f_odczyt_pliku_nmap", f"odczytuje plik z danymi: {plik}", "info") 
-    line_count = f_file.f_policz_wiersze_w_pliku(plik)
+    #print(f"{f_czas()} | odczytuje plik z danymi: {plik}")
+    otwarty_plik_nmap = open(plik, 'r')
+
+    # licze ile jest lini w pliku z danymi
+    line_count = 0
+    for line in otwarty_plik_nmap:
+        if line != "\n":
+            line_count += 1
+    otwarty_plik_nmap.close()
     f_zapis_log("f_odczyt_pliku_nmap",f"Ilosc zadan do wykonania: {line_count}","info")
 
     # otwieram ponownie
@@ -132,8 +174,8 @@ def f_odczyt_pliku_nmap(plik):
             if(port == "25"):
                 output_smtp = f_smtp(ip)
 
-            # port 135
-            # DCERPC
+            # OUTPUT
+            # DCERPC port 135
             output_dcerpc_p135 = "none"
             if(port == "135"):
                 output_dcerpc_p135 = f_rpc_p135(ip)
@@ -143,7 +185,7 @@ def f_odczyt_pliku_nmap(plik):
             if(port == "139"):
                 output_enum4linux = f_enum4linux(ip)
 
-            ###########################################################################
+            ########################################################################333
             # zapis do pliku *.json
             data['host'].append({ip:{
                     'ip':ip,
@@ -159,7 +201,7 @@ def f_odczyt_pliku_nmap(plik):
             # ftp
             if(port == "21" or "FTP" in opis_nmap or "ftp" in opis_nmap or "Ftp" in opis_nmap):
                 zalecenia_ftp = f"nmap: (NSE) <i><b>nmap --script ftp* -p{port} -d {ip}</b></i>"
-                data['host'].append({ip:{'ftp':{'Dodatkowo&nbsp;można:':f'<p style="color:red;">{zalecenia_ftp}</p>\n'}}})
+                data['host'].append({ip:{'ftp':{'Dodatkowo&nbsp;można:':f'<p style="color:red">{zalecenia_ftp}</p>\n'}}})
 
             # port 22
             # ssh 
@@ -168,13 +210,13 @@ def f_odczyt_pliku_nmap(plik):
 
             if(port == "22" or "ssh" in opis_nmap or "SSH" in opis_nmap or "Ssh" in opis_nmap):
                 zalecenia_ssh = f"nmap: (NSE) <i><b>nmap --script ssh-brute -d {ip}</b></i>"
-                data['host'].append({ip:{'ssh':{'Dodatkowo&nbsp;można':f'<p style="color:red;">{zalecenia_ssh}</p>\n'}}})
+                data['host'].append({ip:{'ssh':{'Dodatkowo&nbsp;można':f'<p style="color:red">{zalecenia_ssh}</p>\n'}}})
 
             # port 23
             # telnet
             zalecenia_telnet = f"nmap (NSE) <i><b>nmap --script telnet* -p23 -d {ip}</b></i>"
             if(port == "23"):
-                data['host'].append({ip:{'telnet':{'Dodatkowo&nbsp;można':f'<p style="color:red;">{zalecenia_telnet}</p>\n'}}})
+                data['host'].append({ip:{'telnet':{'Dodatkowo&nbsp;można':f'<p style="color:red">{zalecenia_telnet}</p>\n'}}})
 
             # port 25
             # smtp
@@ -217,21 +259,22 @@ def f_odczyt_pliku_nmap(plik):
         raport_html = open(path_plik_html, 'w')
         raport_html.write(json2html.convert(json = data, table_attributes='width="100%"', clubbing=True, encode=False, escape=True))
         raport_html.close()
-        html_parser.f_html_parser(path_plik_html)
     except Exception as e:
         f_zapis_log("f_odczyt_pliku_nmap-raport_html",e,"error")
 
     otwarty_plik_nmap.close()
 
+#############
+# SSH       #
+#############
 def f_ssh_mechanizm(ip, port):
-    '''SSH'''
     # buduje polecenie
     cmd = f'nmap --script "ssh* and not ssh-brute" {ip} -p22'
     
     # zapisuje do logu jakie zbudowal polecenie
     f_zapis_log("f_ssh_mechanizm",cmd,"info")
     ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-    output = str(ps.communicate()[0].decode('utf-8'))
+    output = str(ps.communicate()[0])
 
     # zapisuje do logu jaki jest wynik polecenia
     f_zapis_log("f_ssh_mechanizm",output,"info")
@@ -246,8 +289,10 @@ def f_ssh_mechanizm(ip, port):
 
     return output
 
+#############
+# SSH       #
+#############
 def f_smtp(ip):
-    '''SMTP'''
     # buduje polecenie
     cmd = f'nmap --script smtp* -p25 {ip}'
     
@@ -269,8 +314,10 @@ def f_smtp(ip):
 
     return output
 
+#############
+# SOCAT     #
+#############
 def f_socat(ip,port,protokol):
-    '''SOCAT'''
     protokol = str.upper(protokol)
     # buduje polecenie
     cmd = f"echo -ne \\x01\\x00\\x00\\x00 | socat -t 1 {protokol}:{ip}:{port},connect-timeout=2 - "
@@ -293,9 +340,10 @@ def f_socat(ip,port,protokol):
 
     return output
 
+#############
+# CURL      #
+#############
 def f_curl(ip,port,protokol, h_prot):
-    '''cURL'''
-    protokol = str.lower(protokol)
     if(protokol == "tcp"):
         # budujemy sklanie polecenie curl dla http
         cmd_curl = f"curl -I {h_prot}://{ip}:{port} --max-time 2 --no-keepalive -v"
@@ -307,7 +355,7 @@ def f_curl(ip,port,protokol, h_prot):
         ps_cmd_curl1 = subprocess.Popen(args1,shell=False,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         
         # wynik wykonania polecenia
-        curl_output = str(ps_cmd_curl1.communicate()[0].decode('utf-8'))
+        curl_output = str(ps_cmd_curl1.communicate()[0])
         
         # zmienna [wynik] ma dane, ktore zostana zwrocone przez funkcje
         output = str(curl_output)
@@ -315,13 +363,23 @@ def f_curl(ip,port,protokol, h_prot):
         # jezeli [protokol] to UDP zmienna [wynik] zwroci wynik jak ponizej
         output = "UDP - pomijam"
 
+    if(output == "b''"):
+        output = "none"
+    
+    if(output[:2] == "b'"):
+        output = output[2:-1]
+    elif(output[:2] == 'b"'):
+        output = output[2:-1]
+
     # zapisujemy do logu co zwrocila [f_curl]
     f_zapis_log("f_curl",output,"info")
 
     return output
 
+############################
+# pobiera linki ze strony
+############################
 def f_get_links_from_web(ip,port,protokol,h_prot):
-    '''pobiera linki ze strony'''
     spis_linkow = ""
     spis_linkow_html = ""
     # zrzut linkow
@@ -336,6 +394,8 @@ def f_get_links_from_web(ip,port,protokol,h_prot):
             for link in soup.find_all('a', href=True):
                 spis_linkow += link['href'] + "\n"
                 spis_linkow_html += link['href'] + "<br />" 
+                #nowy_adres = parsuje_addr(link['href'])
+                #linki['url'].append({link['href']})
 
             spis_linkow = spis_linkow[:-2]
             spis_linkow_html = spis_linkow_html[:-2]
@@ -358,6 +418,7 @@ def f_get_links_from_web(ip,port,protokol,h_prot):
 
             for link in soup.find_all('a', href=True):
                 spis_linkow += link['href'] + "\n"
+                #nowy_adres = parsuje_addr(link['href'])
                 spis_linkow_html += link['href'] + "<br />" 
 
             spis_linkow = spis_linkow[:-2]
@@ -370,8 +431,10 @@ def f_get_links_from_web(ip,port,protokol,h_prot):
 
     return spis_linkow_html[:-2]
 
+##############
+# enum4linux #
+##############
 def f_enum4linux(ip):
-    '''enum4linux'''
     # buduje polecenie
     cmd = f"enum4linux {ip}"
     
@@ -392,9 +455,24 @@ def f_enum4linux(ip):
         output = output[2:-1]
 
     return output
-      
+
+#######################
+# DIRB
+#######################
+def f_dirb(ip,port,h_proto):
+    cmd = f"dirb {h_proto}://{ip}:{port} /usr/share/wordlists/dirb/common.txt -f -S" 
+    cmd_p = f"{f_czas()} | {cmd}"
+    print (cmd_p)
+    
+    dirb = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    output = dirb.communicate()[0]
+
+    return output
+        
+###########################
+# SCREEN SHOT of WEB PAGE 
+###########################
 def f_screen_shot_web(ip,port,protokol):
-    '''SCREEN SHOT of WEB PAGE '''
     try:
         options = webdriver.ChromeOptions()
         options.add_argument('--ignore-certificate-errors')
@@ -451,8 +529,36 @@ def f_screen_shot_web(ip,port,protokol):
 
     return nazwa_pliku_jpg
 
+###########################
+# SCREEN SHOT of WEB PAGE2 
+###########################
+def scr_shot_web2 (ip,port,h_prot,reszta):
+    czas = datetime.datetime.now()
+    options = webdriver.ChromeOptions()
+    options.add_argument('--ignore-certificate-errors')
+    options.headless = True
+    driver = webdriver.Chrome(options=options)
+
+    URL = f"{h_prot}://{ip}:{port}/{reszta}"    
+
+    dopisek = randrange(1000-10000)
+
+    driver.get(URL)
+    S=lambda X: driver.execute_script('return document.body.parentNode.scroll' + X)
+    #driver.set_window_size(1200,S('Height'))
+
+    driver.set_window_size(S('Width'),S('Height'))
+    #driver.set_window_size(1200,1200)
+
+    nazwa_pliku = path_plik_nmap_msfconsole + "_" + f"{ip}_{port}_{h_prot}_{dopisek}.png"
+    driver.find_element_by_tag_name('body').screenshot(nazwa_pliku)
+
+    print(f"(-screen shot [web]-) | {czas} | {nazwa_pliku}")
+
+    driver.quit()
+    return nazwa_pliku
+
 def f_rpc_p135(ip):
-    '''RPC port 135'''
     target_ip = ip
     authLevel = RPC_C_AUTHN_LEVEL_NONE
     adresy_ip = ""
@@ -481,14 +587,45 @@ def f_rpc_p135(ip):
     f_zapis_log("f_rpc_p135",adresy_ip,"info") 
     return wynik
 
+#######################
+# URL parser
+#######################
+def parsuje_addr (adres):
+    h_port = ""
+    if("https" in adres):
+        h_port = "https"
+    elif("http" in adres):
+        h_port = "http"
+    else:
+        return "err"
+
+    host = adres[(int(str(adres).find(":")) + 3):]
+    host = host[:str(host).find(":")]
+
+    port = adres.split(host)
+    port[1]=port[1][1:]
+
+    port =port[1][:str(port[1]).find("/")]
+
+    reszta = adres.split(port)
+    reszta = reszta[1]
+
+    return [h_port, host, port, reszta]
+
+############################
+# f_czas()
+# funkcja zwracajaca w 
+# wyniku aktualny czas
+############################
 def f_czas ():
-    '''Zwraca w wyniku aktualny czas'''
     return datetime.datetime.now()
 
+######################################
+# Zapis do logu
+# plik w zmiennej: [path_plik_logu] 
+######################################
 def f_zapis_log(zrodlo, dane, typ):
-    '''Zapis wyniku dzialania do pliku logu'''
-    '''Sciezka pliku w zmiennej [path_plik_logu]'''
-    #sprawdzam istnienie pliku, jeżeli istnieje dopisze w innym przypadku nadpisze '''
+    # sprawdzam istnienie pliku, jeżeli istnieje dopisze w innym przypadku nadpisze. 
     if(os.path.isfile(path_plik_logu)):
         plik_logu = open(path_plik_logu,'a+')
     else:
@@ -512,8 +649,10 @@ def f_zapis_log(zrodlo, dane, typ):
     # zamykamy plik logu
     plik_logu.close()
 
+###########
+# MAIN    #
+###########
 if __name__ == '__main__':
-    '''MAIN'''
     parser = argparse.ArgumentParser()
     parser = argparse.ArgumentParser(description='Rekonesans MM wersja 0.1', formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('--fin', '--file-input', type=str, help='Podaj sciezke do pliku z adresami')
@@ -522,17 +661,14 @@ if __name__ == '__main__':
 
     # odczyt pliku
     if(str(args.fin) == '' or str(args.fin) == 'None'):
-        path_plik_nmap_msfconsole = '/home/user/test1'
+        path_plik_nmap_msfconsole = '/home/nano/test1'
     else:
         path_plik_nmap_msfconsole = args.fin
     
-    if(os.path.isfile(path_plik_nmap_msfconsole)):
-        '''sprawdza czy plik istnieje'''
-        path_plik_logu = path_plik_nmap_msfconsole + ".log"
-        path_plik_json = path_plik_nmap_msfconsole + ".json"
-        path_plik_html = path_plik_nmap_msfconsole + ".html"
+    #plik logu 
+    path_plik_logu = path_plik_nmap_msfconsole + ".log"
+    path_plik_json = path_plik_nmap_msfconsole + ".json"
+    path_plik_html = path_plik_nmap_msfconsole + ".html"
 
-        # wywołujemy funkcję, która odczyta nam plik linijka po linijce
-        f_odczyt_pliku_nmap(path_plik_nmap_msfconsole)
-    else:
-        print("Plik z danymi nie istnieje!" + path_plik_nmap_msfconsole)       
+    # wywołujemy funkcję, która odczyta nam plik linijka po linijce
+    f_odczyt_pliku_nmap(path_plik_nmap_msfconsole)
