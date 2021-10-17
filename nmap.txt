@@ -1,0 +1,93 @@
+[Sprawdzanie podatności ssl-poodle]
+  nmap -sV --version-light --script ssl-poodle -p 433 <host>
+
+[Skanowanie określonego portu z listy adresów z zapisem do pliku]
+  nmap -sT -A -v -T4 -p <port> -iL <ściżka_do_pliku_z_adresami> -oA <plik_wyjściowy>
+
+[Skanowanie typu "save"]
+  nmap --scritp default,save -iL <ściżka_do_pliku_z_adresami> -oA <plik_wyjściowy>
+
+[DISCOVER]
+netdiscover -r ADDRESS_IP/MASK - wyszukuje hosty w sieci
+
+[DIRB]
+dirb ADDRESS_IP - sprawdzanie ukrytych katalogów na danym adresie
+
+[NMAP]
+nmap --top-ports 2000 -T5 ADDRESS_IP -skanowanie 2000 najpopularniejszych portów dla hostów
+nmap -p80 --script http-brute ADDRESS_IP --script-args http-brute.path=/PATH/ - łamanie hasła dla określonej ścieżki
+nmap -p80 --script http-brute --script-args \
+> http-brute.path=/PATH/, \
+> userdb=./USERS_LIST, \
+> passdb-./PASS_LIST ADDRESS_IP - łamanie hasła z podaniem plików użytkowników i haseł
+
+nmap -p80 --script http-form-brute --script-args http-form-brute.path=PATH,userdb=USERS_LIST,brute.firstonly=1,passdb=./PASS_LIST ADDRESS_IP - dla określonego parametru form
+nmap -p80 --script http-wordpress-brute --script-args http-wordpress-brute.threads=10,http-wordpress-brute.uri=/PATH/,userdb=USERS_LIST,passdb=./PASS_LIST ADDRESS_IP - łamanie haseł WORDPRESS
+
+cewl -d 3 -m 6 -w cewl.txt ADDRESS_IP - generowanie listy haseł
+john –wordlist=cewl.txt –rules=TryHarder –stdout > cewlmangled.txt - permutacja listy haseł
+nmap -p80 --script http-wordpress-brute --script-args http-wordpress-brute.threads=20,http-wordpress-brute.uri=/PATH/,userdb=users.txt,passdb=cewlmangled.txt,brute.firstonly ADDRESS_IP - łamanie haseł przy pomocy wygenerowanej listy
+nmap -p21 --script ftp-brute --script-args ftp-brute.timeout=3s,userdb=ftpusers.txt ADDRESS_IP - łamanie haseł FTP
+nmap -p3306 --script mysql-brute localhost - łamanie haseł MYSQL
+nmap -p22 --script ssh-brute --script-args brute.firstonly ADDRESS_IP - łamanie haseł SSH
+nmap -p139,445 --script smb-brute ADDRESS_IP --script-args userdb=./USERS_LIST,passdb=./PASS_LIST - łamanie haseł SAMBA
+nmap -p110 --script pop3-brute --script-args brute.firstonly,userdb=users.txt ADDRESS_IP - łamanie haseł POP3
+nmap -p143 --script imap-brute --script-args brute.firstonly,userdb=users.txt ADDRESS_IP - łamanie haseł IMAP
+
+[Enumeracja katalogów/plików]
+nmap --script http-enum host
+
+(w konkretnym katalogu)
+nmap --script -http-enum --script-args http-enum.basepath='pub/' host
+
+[HTTP TITLE (informacje o stronie)]
+nmap --script http-title -sV -p 80 192.168.1.0/24
+
+[Przeszukiwanie informacji o stronie]
+
+nmap -p80 --script http-grep \ --script-args http-grep.url="contact.html" host
+
+[Poszukiwanie backupów strony]
+nmap -n -p80 --script http-config-backup host
+
+[Skaner podatności]
+nmap -sV p80 --script vuln host
+
+(Wyświetla tabelke zawierającą ID i link do podatności)
+nmap -sV --script vulscan/vulscan --script-args vulscanoutput='{id}\t{link}'
+
+[Skanowania zaawansowane]
+https://github.com/wuseman/WNMAP
+
+[Wyjście NMAP]
+Formaty wyjściowe Nmapa
+
+-oN <nazwapliku> (Format normalny)
+Powoduje zapis w formacie normalnym do wskazanego pliku. Jak napisano wyżej, format ten różni się nieco od formatu interaktywnego.
+
+-oX <nazwapliku> (Format XML)
+Powoduje zapis w formacie XML do wskazanego pliku. Nmap dołącza definicje formatu dokumentu (DTD), który pozwala innym programom na weryfikację zawartości tego pliku. Funkcja ta jest głównie przeznaczona do wykorzystania przez oprogramowanie dodatkowe, jednak może pomóc w ręcznej analizie zawartych danych. DTD opisuje jakie elementy XML mogą być legalnie uzywane w pliku i często podaje jakie wartości mogą przyjmować poszczególne znaczniki. Zawsze aktualna DTD wersja jest dostępna pod adresem https://nmap.org/data/nmap.dtd.
+
+XML jest stabilnym formatem, który może być łatwo przetwarzany przez inne programy. Darmowe biblioteki do przetwarzania XML są dostępne dla większości języków programowania, takich jak C/C++, Perl, Python czy Java. Napisano nawet wiele procedur dostosowanych specjalnie do potrzeb Nmapa. Przykładami są Nmap::Scanner i Nmap::Parser dla Perla (CPAN). W wiekszości dużych aplikacji korzystających z Nmapa preferowany jest właśnie format XML.
+
+W formacie XML jest również opisany styl XSL, który może zostać wykorzystany do konwersji do HTML. Najprostrzym sposobem jest po prostu wczytanie pliku XML do przeglądarki internetowej, takiej jak Firefox czy IE. Domyślnie zadziała to tylko na komputerze na którym był uruchamiany Nmap (lub skonfigurowanym podobnie), z powodu umieszczenia ścieżki do pliku nmap.xsl właściwej dla danego systemu. Za pomocą opcji --webxml lub --stylesheet można utworzyć przenośny raport XML, możliwy do obejrzenia w formacie HTML na każdym komputerze podłączonym do Internetu.
+
+-oS <nazwapliku> (Format ScRipT KIdd|3)
+Format script kiddie jest podobny do interaktywnego, jednak jest dodatkowo przetworzony na potrzeby l33t HaXXorZ, którzy nie byli zadowoleni z domyślnego, uporządkowanego formatu Nmapa. Osoby bez poczucia humoru powinny wiedzieć przed zarzucaniem mi „pomagania script kiddies ”, że opcja ta jest tylko żartem, a nie pomocą.
+
+-oG <nazwapliku> (Format "grepowalny")
+Ten format został opisany jako ostatni, jako że jest już przestarzały. Format XML jest dużo lepszy i jest prawie tak samo wygodny dla zaawansowanych użytkowników. XML jest standardem, do którego napisano dziesiątki bibliotek, podczas gdy format grepowalny jest moim osobistym wymysłem. XML pozwala również na łatwe rozszerzanie o nowe funkcje Nmapa w miarę ich dodawania, podczas gdy w formacie grepowalnym muszą one być pomijane z powodu braku miejsca.
+
+Niezależnie od tego, format ten jest nadal całkiem popularny. Jest prostym formatem opisującym każdy host w oddzielnej linii i umożliwiający bardzo proste wyszukiwanie i przetwarzanie za pomocą standardowych narzędzi systemów UNIX takich jak grep, awk, cut, sed, diff i Perl. Format ten jest wygodny do szybkiego odnajdywania potrzebnych danych, na przykład hostów z otwartym portem SSH lub używających systemu Solaris i jest to możliwe za pomocą wycinania interesujących informacji za pomocą prostych poleceń awk czy cut.
+
+Format grepowalny składa sie z linii komentarzy (rozpoczynających się od znaku #) i linii wyników. Linia wyników składa się z sześciu pól, oddzielonych znakami tabulacji i przecinkami. Polami tymi są Host, Ports, Protocols, Ignored State, OS, Seq Index, IPID i Status.
+
+Najważniejszymi z tych pól są najczęściej pola Ports, które zawierają informacje o interesujących portach, w postaci listy oddzielonej przecinkami. Każda pozycja na liście reprezentuje jeden otwarty port i opisuje go siedmioma, oddzielonymi znakami (/) subpolami: Port number, State, Protocol, Owner, Service, SunRPC info i Version info.
+
+Tak jak i w przypadku formaty XML, dokładny opis formatu grepowalnego przekracza zakres tej dokumentacji i jest dostępny pod adresem http://www.unspecific.com/nmap-oG-output.
+
+-oA <nazwa> (Wyjście we wszystkich formatach)
+Dla wygody można podać opcję -oA<nazwa> do zapisywania wyników w formacie normalnym, XML i grepowalnym równocześnie. Wyniki zostaną zapisane odpowiednio w plikach o nazwach <nazwa>.nmap, <nazwa>.xml i <nazwa>.gnmap. Tak jak i w przypadku innych programów, nazwa może zostać poprzedzona scieżką, na przykład ~/nmaplogs/foocorp/ w systemach UNIX lub c:\hacking\sco pod Windows.
+
+[XML na HTML]
+xsltproc <nmap-output.xml> -o <nmap-output.html>

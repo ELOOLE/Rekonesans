@@ -1,5 +1,13 @@
+###############################################################################
+## akuku for Linux,Windows... v0.1
+## Written by MM
+## Copyright 2021
+## input: metasploit(db_nmap - discover)         
+## services -u -c port,proto,name,info -o /home/user/rand1234
+###############################################################################
+
 import os
-import time
+import socket
 import shlex, subprocess, signal
 import argparse
 import datetime
@@ -18,7 +26,7 @@ from json2html import *
 from copy import Error
 
 import ssl
-from ssl import RAND_add
+from ssl import CertificateError, RAND_add
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -36,180 +44,179 @@ from impacket.dcerpc.v5.ndr import NULL
 from impacket.dcerpc.v5.rpcrt import RPC_C_AUTHN_LEVEL_NONE
 from impacket.dcerpc.v5.dcomrt import IObjectExporter
 
-'''Moje import'''
-import html_parser
-import f_file
-
 # dane do zrzutu danych zwiazane wlasnie z plikiem *.json
-data = {}
+ilosc_uslug = 0
 
 baner = pyfiglet.figlet_format("Rekonesans")
 print(baner)
 
 def f_odczyt_pliku_nmap(plik):
     f_zapis_log("f_odczyt_pliku_nmap", f"odczytuje plik z danymi: {plik}", "info") 
-    line_count = f_file.f_policz_wiersze_w_pliku(plik)
+    line_count = f_policz_wiersze_w_pliku(plik)
     f_zapis_log("f_odczyt_pliku_nmap",f"Ilosc zadan do wykonania: {line_count}","info")
 
+    global ilosc_uslug
+    ilosc_uslug = line_count
+
+    tips_color = "blue"
     # otwieram ponownie
     otwarty_plik_nmap = open(plik, 'r')
     i = 1
-
+    data = {}
     data['host'] = []
     
     # czytamy linijka po linijce 
     for linijka in otwarty_plik_nmap:
         # rozpoczynamy parsowanie pliku
-        # services -u -c port,proto,name,info - o /home/user/rand1234
         wynik = linijka.split(',')
-        ip = wynik[0].replace("\"", "").rstrip("\n")
-        port = wynik[1].replace("\"", "").rstrip("\n")
-        protokol = wynik[2].replace("\"", "").rstrip("\n")
-        usluga = wynik[3].replace("\"", "").rstrip("\n")
-        opis_nmap = wynik[4].replace("\"", "").rstrip("\n")
+        ip = wynik[0].replace("\"", "").rstrip("")
+        port = wynik[1].replace("\"", "").rstrip("")
+        protokol = wynik[2].replace("\"", "").rstrip("")
+        usluga = wynik[3].replace("\"", "").rstrip("")
+        opis_nmap = wynik[4].replace("\"", "").rstrip("")
 
         #print(f"({i}/{line_count}) | {f_czas()} | IP: {ip} proto:{protokol} port:{port} usluga: {usluga}")
-        f_zapis_log("-----------", "-----------------------------------------------------------------", "-------")
+        f_zapis_log("---------", "-----------------------------------------------------------------", "-------------------")
         f_zapis_log("f_odczyt_pliku_nmap",f"({i}/{line_count}) | proto:{protokol} IP:{ip} port:{port} usluga:{usluga}", "info")
-        i+=1
 
         r = re.compile("\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}")
         if r.match(ip) is None:
             f_zapis_log("f_odczyt_pliku_nmap", f"Wpis nie zawiera poprawnego adresu IP [{ip}]", "info")
+            ilosc_uslug -= 1
         else:
-            # OUTPUT
-            # socat
-            output_socat = f_socat(ip,port,protokol)
-
-            # OUTPUT
-            # curl - odpytuje host i daje info dla wykonania screen shota 
-            # http
-            output_curl1 = f_curl(ip,port,protokol,"http")
-            # https
-            output_curl2 = f_curl(ip,port,protokol,"https")
-            
-            # ----------------------------------------------------------
-            # wykrywany linki na stronie
-            output_links_from_web_http = "none"
-            if(" 200 " in str(output_curl1) or " 302 " in str(output_curl1) or " 404 " in str(output_curl1)):
-                output_links_from_web_http = f_get_links_from_web(ip,port,protokol,"http")
-            output_links_from_web_https = "none"
-            if(" 200 " in str(output_curl2) or " 302 " in str(output_curl2) or " 404 " in str(output_curl2)):
-                output_links_from_web_https = f_get_links_from_web(ip,port,protokol,"https")                
-
-            # ----------------------------------------------------------
-            # screen shot w przypadku kiedy curl zwroci 200, 302, 404
-            # robienie screen shota-a     
-            # http    
-            try:
-                if(" 200 " in str(output_curl1) or " 302 " in str(output_curl1) or " 404 " in str(output_curl1)):                
-                    output_screen_shot_web_http = f_screen_shot_web(ip,port,"http")   
-                else:
-                    output_screen_shot_web_http = "none"             
-            except Exception as er:
-                f_zapis_log("f_odczyt_pliku_nmap/f_screen_shot_web", f"Wyjatek scr shot http://{ip}:{port} {str(er)}", "error")
-                output_screen_shot_web_http = "none"
-            
-            # https
-            try:
-                if(" 200 " in str(output_curl2) or " 302 " in str(output_curl2) or " 404 " in str(output_curl2)):
-                    output_screen_shot_web_https = f_screen_shot_web(ip,port,"https")
-                else:
-                    output_screen_shot_web_https = "none"
-            except Exception as er:
-                f_zapis_log("f_odczyt_pliku_nmap/f_screen_shot_web", f"Wyjatek scr shot https://{ip}:{port} {str(er)}", "error")
-                output_screen_shot_web_https = "none"
-            ##########################################################################
-            # port 22
-            # ssh mechanizm
-            output_ssh_mechanizm = "none"
-            if(port == "22"):
-                output_ssh_mechanizm = f_ssh_mechanizm(ip,port)
-
-            # port 25
-            # smtp
-            output_smtp = "none"
-            if(port == "25"):
-                output_smtp = f_smtp(ip)
-
-            # port 135
-            # DCERPC
-            output_dcerpc_p135 = "none"
-            if(port == "135"):
-                output_dcerpc_p135 = f_rpc_p135(ip)
-
-            # enum4linux
-            output_enum4linux = "none"
-            if(port == "139"):
-                output_enum4linux = f_enum4linux(ip)
-
+            '''OUTPUT'''
             ###########################################################################
             # zapis do pliku *.json
             data['host'].append({ip:{
+                    'id':f'<h1>&nbsp;{i}</h1>',
                     'ip':ip,
                     'port':port,
                     'protokol':protokol,
                     'usluga':usluga,
-                    'opis':opis_nmap,
-                    'socat':f'{output_socat}\n',
+                    'opis':opis_nmap
                 }
             })
+            
+            ###########################################################################
 
-            # port 21
-            # ftp
-            if(port == "21" or "FTP" in opis_nmap or "ftp" in opis_nmap or "Ftp" in opis_nmap):
-                zalecenia_ftp = f"nmap: (NSE) <i><b>nmap --script ftp* -p{port} -d {ip}</b></i>"
-                data['host'].append({ip:{'ftp':{'Dodatkowo&nbsp;można:':f'<p style="color:red;">{zalecenia_ftp}</p>\n'}}})
+            #socat port 1-65535 TCP i UDP
+            output_socat = f_socat(ip,port,protokol)
+            if(output_socat != "none"):
+                data['host'].append({ip:{'socat:':f'{output_socat}\n'}})
 
-            # port 22
-            # ssh 
-            if(output_ssh_mechanizm != "none"):
-                data['host'].append({ip:{'ssh':{'mechanizm':f'{output_ssh_mechanizm}\n'}}})
-
-            if(port == "22" or "ssh" in opis_nmap or "SSH" in opis_nmap or "Ssh" in opis_nmap):
-                zalecenia_ssh = f"nmap: (NSE) <i><b>nmap --script ssh-brute -d {ip}</b></i>"
-                data['host'].append({ip:{'ssh':{'Dodatkowo&nbsp;można':f'<p style="color:red;">{zalecenia_ssh}</p>\n'}}})
-
-            # port 23
-            # telnet
-            zalecenia_telnet = f"nmap (NSE) <i><b>nmap --script telnet* -p23 -d {ip}</b></i>"
-            if(port == "23"):
-                data['host'].append({ip:{'telnet':{'Dodatkowo&nbsp;można':f'<p style="color:red;">{zalecenia_telnet}</p>\n'}}})
-
-            # port 25
-            # smtp
-            if(port == "25"):
-                data['host'].append({ip:{'smtp':{'mechanizm':f'{output_smtp}\n'}}})
-
-            # default port 80
-            # CURL
+            # cURL
+            # http
+            output_curl1 = f_curl(ip,port,protokol,"http")
             if(output_curl1 != "none"):
                 data['host'].append({ip:{'curl_http:':f'{output_curl1}\n'}})
+                
+            output_links_from_web_http = "none"            
+            if(" 200 " in str(output_curl1) or " 301 " in str(output_curl1) or " 302 " in str(output_curl1) or " 404 " in str(output_curl1)):
+                output_links_from_web_http = f_get_links_from_web(ip,port,protokol,"http")
+                data['host'].append({ip:{'links_http':f'{output_links_from_web_http}\n'}})
+                try:            
+                    output_screen_shot_web_http = f_screen_shot_web(ip,port,"http")
+                    data['host'].append({ip:{'screen_shot_http':f'<img src="{output_screen_shot_web_http}">'}})
+                except Exception as er:
+                    f_zapis_log("f_odczyt_pliku_nmap/f_screen_shot_web", f"Wyjatek scr shot http://{ip}:{port} {str(er)}", "error")
+                    output_screen_shot_web_http = "none"
+                
+                zalecenia_http = f"<b>nikto -h {ip}</b><br />"
+                zalecenia_http += f"<b>dirb http://{ip} /usr/share/wordlist/dirb/common.txt</b><br />"
+                data['host'].append({ip:{'http':{'Dodatkowo&nbsp;mo|na':f'<p style="color:{tips_color};">{zalecenia_http}</p>\n'}}})
+            
+            # https
+            output_curl2 = f_curl(ip,port,protokol,"https")
             if(output_curl2 != "none"):
                 data['host'].append({ip:{'curl_https':f'{output_curl2}\n'}})
-
-            # LINKS
-            if(output_links_from_web_http != "none"):
-                data['host'].append({ip:{'links_http':f'{output_links_from_web_http}\n'}})
-            if(output_links_from_web_https != "none"):
+            
+            output_links_from_web_https = "none"           
+            if(" 200 " in str(output_curl2) or " 301 " in str(output_curl2) or " 302 " in str(output_curl1) or " 404 " in str(output_curl2)):
+                output_links_from_web_https = f_get_links_from_web(ip,port,protokol,"https")
                 data['host'].append({ip:{'links_https':f'{output_links_from_web_https}\n'}})
+                try:
+                    output_screen_shot_web_https = f_screen_shot_web(ip,port,"https")
+                    data['host'].append({ip:{'screen_shot_https':f'<img src="{output_screen_shot_web_https}">'}})
+                except Exception as er:
+                    f_zapis_log("f_odczyt_pliku_nmap/f_screen_shot_web", f"Wyjatek scr shot https://{ip}:{port} {str(er)}", "error")
+                    output_screen_shot_web_https = "none"
+                
+                zalecenia_https = f"nikto -h {ip}<br />\n"
+                zalecenia_https += f"dirb https://{ip} /usr/share/wordlist/dirb/common.txt<br />\n"
+                data['host'].append({ip:{'https':{'Dodatkowo':f'<p style="color:{tips_color};">{zalecenia_https}</p>\n'}}})
+            
+            # ports / services    
+            # port 21
+            if(port == "21" or "ftp" in opis_nmap):
+                zalecenia_ftp = f"NMAP (NSE) <b>nmap --script ftp* -p{port} -d {ip}</b><br />"
+                zalecenia_ftp += f"Brute-force: <b>hydra -s {port} -C /usr/share/wordlists/ftp-default-userpass.txt -u -f {ip} ftp</b><br />"
+                zalecenia_ftp += f"Brute-force: <b>patator ftp_login host={ip} user=FILE0 0=logins.txt password=asdf -x ignore:mesg='Login incorrect.' -x ignore,reset,retry:code=500</b><br />"
+                data['host'].append({ip:{'ftp':{'Dodatkowo:':f'<p style="color:{tips_color};">{zalecenia_ftp}</p>\n'}}})
 
-            # WEB SCREEN SHOT
-            if(output_screen_shot_web_http != "none"):
-                data['host'].append({ip:{'screen_shot_http':f'<img src="{output_screen_shot_web_http}">'}})
-            if(output_screen_shot_web_https != "none"):
-                data['host'].append({ip:{'screen_shot_https':f'<img src="{output_screen_shot_web_https}">'}})
+            # port 22
+            output_ssh_mechanizm = "none"
+            if(port == "22" or "ssh" in opis_nmap):
+                output_ssh_mechanizm = f_ssh_mechanizm(ip,port)
+                data['host'].append({ip:{'ssh':{'mechanizm':f'{output_ssh_mechanizm}\n'}}})
+                zalecenia_ssh = f"nmap: (NSE) <b>nmap --script ssh-brute -d {ip}</b><br />"
+                zalecenia_ssh += f"Brute-force: <b>ssh_login host={ip} user=FILE0 0=logins.txt password=$(perl -e ""print 'A'x50000"") --max-retries 0 --timeout 10 -x ignore:time=0-3</b><br />"
+                zalecenia_ssh += "Brute-force uslugi ssh z powodu ograniczen ilosciowych zapytan, zaleca sie uzyc malego slownika<br />"
+                data['host'].append({ip:{'ssh':{'Dodatkowo':f'<p style="color:{tips_color};">{zalecenia_ssh}</p>\n'}}})
 
+            # port 23
+            if(port == "23" or "telnet" in opis_nmap):
+                zalecenia_telnet = f"nmap (NSE) <b>nmap --script telnet* -p23 -d {ip}</b><br />"
+                data['host'].append({ip:{'telnet':{'Dodatkowo':f'<p style="color:{tips_color};">{zalecenia_telnet}</p>\n'}}})
+                
+            # port 25
+            output_smtp = "none"
+            if(port == "25" or "smtp" in opis_nmap):
+                output_smtp = f_smtp(ip)
+                data['host'].append({ip:{'smtp':{'mechanizm':f'{output_smtp}\n'}}})
+           
+            # port 53, dns
+            if(port == "53"):
+                zalecenia_dns = f"<b>dnsrecon -w -g -d {ip} --csv /home/user/dnsrecon{ip}.csv</b> do zapisu, musi byc podana sciezna bezwzgledna inaczej nie zapisze<br />"
+                zalecenia_dns += f"<b>dnsenum --noreverse {ip}</b><br />"
+                data['host'].append({ip:{'dns':{'Dodatkowo':f'<p style="color:{tips_color};">{zalecenia_dns}</p>\n'}}})
+                
+            # port 67, 68, DHCP protocol: UDP
+            
+            # port 110, pop3
+            
+            # port 123, NTP, protocol: UDP
+            
             # port 135
-            # DCE RPC 
-            if(output_dcerpc_p135 != "none"):
+            output_dcerpc_p135 = "none"
+            if(port == "135"):
+                output_dcerpc_p135 = f_rpc_p135(ip)
                 data['host'].append({ip:{'dcerpc_p135':f'{output_dcerpc_p135}\n'}})
-
-            # port 139 i 445
-            # enum4linux SMB
-            if(output_enum4linux != "none"):
+            
+            # port 137
+            
+            # port 139, enum4linux
+            output_enum4linux = "none"
+            if(port == "139"):
+                output_enum4linux = f_enum4linux(ip)
                 data['host'].append({ip:{'enum4linux':f'{output_enum4linux}\n'}})
-
+            
+            # port 143 imap
+            
+            # port 161
+            
+            # port 512
+            
+            # port 513
+            
+            # port 514
+            
+            # 543 klogin, Kerberos login
+            # 544 kshell, Kerberos Remote shell
+            # 546 DHCPv6 client
+            # 547 DHCPv6 server
+            i+=1
+    
+    ###########################################################################
     with open(path_plik_json, 'a+') as outfile:
         json.dump(data, outfile)
 
@@ -217,7 +224,7 @@ def f_odczyt_pliku_nmap(plik):
         raport_html = open(path_plik_html, 'w')
         raport_html.write(json2html.convert(json = data, table_attributes='width="100%"', clubbing=True, encode=False, escape=True))
         raport_html.close()
-        html_parser.f_html_parser(path_plik_html)
+        f_html_parser(path_plik_html)
     except Exception as e:
         f_zapis_log("f_odczyt_pliku_nmap-raport_html",e,"error")
 
@@ -279,9 +286,6 @@ def f_socat(ip,port,protokol):
     f_zapis_log("f_socat",cmd,"info")
     ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
     output = str(ps.communicate()[0])
-
-    # zapisuje do logu jaki jest wynik polecenia
-    f_zapis_log("socat",output,"info")
     
     if(output == "b''"):
         output = "none"
@@ -291,6 +295,9 @@ def f_socat(ip,port,protokol):
     elif(output[:2] == 'b"'):
         output = output[2:-1]
 
+    # zapisuje do logu jaki jest wynik polecenia
+    f_zapis_log("socat",output,"info")
+    
     return output
 
 def f_curl(ip,port,protokol, h_prot):
@@ -298,8 +305,11 @@ def f_curl(ip,port,protokol, h_prot):
     protokol = str.lower(protokol)
     if(protokol == "tcp"):
         # budujemy sklanie polecenie curl dla http
-        cmd_curl = f"curl -I {h_prot}://{ip}:{port} --max-time 2 --no-keepalive -v"
-        
+        if(h_prot == "http"):
+            cmd_curl = f"curl -I -k {h_prot}://{ip}:{port} --max-time 2 --no-keepalive -v"
+        elif(h_prot == "https"):
+            cmd_curl = f"curl -I -k {h_prot}://{ip}:{port} --max-time 2 --no-keepalive -v"
+
         # zapisujemy zbudowane polecenie do pliku logu
         f_zapis_log("f_curl", cmd_curl, "info")
 
@@ -310,63 +320,68 @@ def f_curl(ip,port,protokol, h_prot):
         curl_output = str(ps_cmd_curl1.communicate()[0].decode('utf-8'))
         
         # zmienna [wynik] ma dane, ktore zostana zwrocone przez funkcje
-        output = str(curl_output)
+        output = str(curl_output).strip()
+        if(len(output) == 0):
+            output = "none"
     else:
         # jezeli [protokol] to UDP zmienna [wynik] zwroci wynik jak ponizej
-        output = "UDP - pomijam"
+        output = "none"
 
     # zapisujemy do logu co zwrocila [f_curl]
     f_zapis_log("f_curl",output,"info")
 
-    return output
+    return output.strip()
 
 def f_get_links_from_web(ip,port,protokol,h_prot):
     '''pobiera linki ze strony'''
     spis_linkow = ""
     spis_linkow_html = ""
     # zrzut linkow
-    if(h_prot == "http"):
-        try:
-            addrHTTP = f"http://{ip}:{port}/"
-            f_zapis_log("f_get_links_from_web", addrHTTP,"info")
-            parser = 'html.parser'
-            resp = urllib.request.urlopen(addrHTTP)
-            soup = BeautifulSoup(resp, parser, from_encoding=resp.info().get_param('charset'))
+    # if(h_prot == "http"):
+    #    try:
+    #       addrHTTP = f"http://{ip}:{port}/"
+    #        f_zapis_log("f_get_links_from_web", addrHTTP,"info")
+    #        parser = 'html.parser'
+    #        resp = urllib.request.urlopen(addrHTTP)
+    #        soup = BeautifulSoup(resp, parser, from_encoding=resp.info().get_param('charset'))
 
-            for link in soup.find_all('a', href=True):
-                spis_linkow += link['href'] + "\n"
-                spis_linkow_html += link['href'] + "<br />" 
+    #        for link in soup.find_all('a', href=True):
+    #            spis_linkow += link['href'] + "\n"
+    #            spis_linkow_html += link['href'] + "<br />" 
 
-            spis_linkow = spis_linkow[:-2]
-            spis_linkow_html = spis_linkow_html[:-2]
+    #        spis_linkow = spis_linkow[:-2]
+    #        spis_linkow_html = spis_linkow_html[:-2]
 
-            f_zapis_log("f_get_links_from_web", spis_linkow, "info")
-        except Exception as e:
-            f_zapis_log("f_get_links_from_web", f"http {e}", "error")
-            spis_linkow,spis_linkow_html = f"error: {e}"
-    elif(h_prot == "https"):
-        ctx = ssl.create_default_context()
-        ctx.check_hostname = False
-        ctx.verify_mode = ssl.CERT_NONE
-        try:
-            addrHTTP = f"https://{ip}:{port}/"
-            f_zapis_log("f_get_links_from_web", addrHTTP,"info")
-            parser = 'html.parser'
-            
-            resp = urllib.request.urlopen(addrHTTP, context=ctx)
-            soup = BeautifulSoup(resp, parser, from_encoding=resp.info().get_param('charset'))
+    #        f_zapis_log("f_get_links_from_web", spis_linkow, "info")
+    #    except Exception as e:
+    #        f_zapis_log("f_get_links_from_web", f"http {e}", "error")
+    #        spis_linkow = f"error: {e}"
+    #        spis_linkow_html = f"error: {e}"
+    #elif(h_prot == "https"):
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
 
-            for link in soup.find_all('a', href=True):
-                spis_linkow += link['href'] + "\n"
-                spis_linkow_html += link['href'] + "<br />" 
+    try:
+        addrHTTP = f"{h_prot}://{ip}:{port}/"
+        f_zapis_log("f_get_links_from_web", addrHTTP,"info")
+        parser = 'html.parser'
+        
+        resp = urllib.request.urlopen(addrHTTP, context=ctx)
+        soup = BeautifulSoup(resp, parser, from_encoding=resp.info().get_param('charset'))
 
-            spis_linkow = spis_linkow[:-2]
-            spis_linkow_html = spis_linkow_html[:-2]
+        for link in soup.find_all('a', href=True):
+            spis_linkow += link['href'] + "\n"
+            spis_linkow_html += link['href'] + "<br />" 
 
-            f_zapis_log("f_get_links_from_web", spis_linkow, "info")
-        except Exception as e:
-            f_zapis_log("f_get_links_from_web", f"https {e}", "error")
-            spis_linkow,spis_linkow_html =  "error"
+        spis_linkow = spis_linkow[:-2]
+        spis_linkow_html = spis_linkow_html[:-2]
+
+        f_zapis_log("f_get_links_from_web", spis_linkow, "info")
+    except Exception as e:
+        f_zapis_log("f_get_links_from_web", f"{h_prot} {e}", "error")
+        spis_linkow =  "error"
+        spis_linkow_html =  "error"
 
     return spis_linkow_html[:-2]
 
@@ -415,7 +430,7 @@ def f_screen_shot_web(ip,port,protokol):
         nazwa_pliku = path_plik_nmap_msfconsole + "_" + f"{ip}_{port}_{protokol}.png"
         f_zapis_log("f_screen_shot_web", f"nazwa pliku screen shot-a {nazwa_pliku}", "info")
 
-        # treść znaku wodnego nanoszonego na *.png
+        # tre[ znaku wodnego nanoszonego na *.png
         znak_wodny = f"{f_czas()} | Protokol: [{protokol}], adres ip: [{ip}], port: [{port}]"
         f_zapis_log("f_screen_shot_web", f"znak wodny {znak_wodny}", "info")
 
@@ -449,7 +464,9 @@ def f_screen_shot_web(ip,port,protokol):
     except Exception as img_err:
         f_zapis_log("f_screen_shot_web", f"Nie podpisano obrazka dla {protokol}://{ip}:{port} {img_err} ", "error")
 
-    return nazwa_pliku_jpg
+    obrazek = os.path.basename(nazwa_pliku_jpg)
+
+    return obrazek
 
 def f_rpc_p135(ip):
     '''RPC port 135'''
@@ -488,7 +505,7 @@ def f_czas ():
 def f_zapis_log(zrodlo, dane, typ):
     '''Zapis wyniku dzialania do pliku logu'''
     '''Sciezka pliku w zmiennej [path_plik_logu]'''
-    #sprawdzam istnienie pliku, jeżeli istnieje dopisze w innym przypadku nadpisze '''
+    #sprawdzam istnienie pliku, je|eli istnieje dopisze w innym przypadku nadpisze '''
     if(os.path.isfile(path_plik_logu)):
         plik_logu = open(path_plik_logu,'a+')
     else:
@@ -512,6 +529,94 @@ def f_zapis_log(zrodlo, dane, typ):
     # zamykamy plik logu
     plik_logu.close()
 
+def f_policz_wiersze_w_pliku(path):
+    '''liczy ilosc linijek w wierszu'''
+    '''zwraca: int, ilosc linijek w podanym pliku'''
+    # otwieram plik
+    otwarty_plik = open(path, "r")
+    line_count = 0
+    # czytam linijce po linijce
+    for line in otwarty_plik:
+        if line != "\n":
+            line_count += 1
+
+    # zamykam plik            
+    otwarty_plik.close()
+    # zwracam wynik
+    return line_count
+
+def f_count_str_in_file(path, szukana):
+    '''liczy ilosc linijek w wierszu'''
+    '''zwraca: int, ilosc linijek w podanym pliku'''
+    # otwieram plik
+    otwarty_plik = open(path, "r")
+    data = otwarty_plik.read()
+    
+    wystapien = data.count(szukana)
+    
+    otwarty_plik.close()
+    # zwracam wynik
+    return wystapien
+
+def f_html_parser(file_html):
+    file_html_new = file_html[:-5] + "_convert.html"
+
+    open_file_html = open(file_html, "r")
+    open_file_html_new = open(file_html_new, "w+")
+
+    head = '<!DOCTYPE html> \n'
+    head += '<html>\n'
+    head += '<head>\n'
+    head += '<style>\n'
+    head += 'table, th, td {'
+    head += 'font-family: "Lucida Console", Monaco, monospace;'
+    head += 'border: 1px solid #1C6EA4;'
+    head += 'background-color: #EEEEEE;'
+    head += 'width: 100%;'
+    head += 'text-align: left;'
+    head += 'border-collapse: collapse;}'
+    head += 'th {text-align: right; width: 5%;}\n'
+    head += '</style>\n'
+    head += '</head>\n'
+    head += '<body>\n'
+    head += '<table>\n'
+    head += '<tr>\n'
+    head += '<td>\n'
+    head += '<h5 style="text-align:right">autor: MM, wersja 0.1 2021 r.</h5>\n'
+    head += '<hr>\n'
+    head += f'<h1 style="text-align:center">Rekonesans {str(ilosc_uslug)} uslug.</h1>\n'
+    head += '<hr>\n'
+    head += f'SRT: {start_script}<br/>END: {str(f_czas ())}\n'
+    head += '<hr>\n'
+    head += f'Plik logu: {path_plik_logu}\n'
+    head += '<br />\n'
+    head += f'Bledow w pliku logu: {f_count_str_in_file(path_plik_logu, "error")}\n'
+    head += '</td>\n'
+    head += '</tr>\n'
+    head += '</table>\n'
+
+    open_file_html_new.write(head)
+
+    for line in open_file_html:
+        line = line.replace("&gt;", ">")
+        line = line.replace("&lt;", "<")
+        line = line.replace("&amp;", "&")
+        line = line.replace('&quot;', '"')
+        line = line.replace('&#x27;',"'")
+        line = line.replace('"<','')
+        line = line.replace('\\r\\n','<br />')
+        line = line.replace('\\n','<br />')
+        line = line.replace('</td>','</td>\n')
+        line = line.replace('</table>','</table>\n')
+        
+        open_file_html_new.write(line)
+
+    foot = "\n</body>\n</html>"    
+    open_file_html_new.write(foot)
+
+    open_file_html.close()
+    open_file_html_new .close()
+
 if __name__ == '__main__':
     '''MAIN'''
     parser = argparse.ArgumentParser()
@@ -520,9 +625,12 @@ if __name__ == '__main__':
     #parser.add_argument('--fout', '--file-output', type=str, help='Sciezka do zapisu pliku z wynikami skanowania')
     args = parser.parse_args()
 
+    # rozpoczecie
+    start_script = f_czas()
+
     # odczyt pliku
     if(str(args.fin) == '' or str(args.fin) == 'None'):
-        path_plik_nmap_msfconsole = '/home/user/test1'
+        path_plik_nmap_msfconsole = '/home/pentester/PWPW_outside'
     else:
         path_plik_nmap_msfconsole = args.fin
     
@@ -532,7 +640,7 @@ if __name__ == '__main__':
         path_plik_json = path_plik_nmap_msfconsole + ".json"
         path_plik_html = path_plik_nmap_msfconsole + ".html"
 
-        # wywołujemy funkcję, która odczyta nam plik linijka po linijce
+        # wywoBujemy funkcj, kt�ra odczyta nam plik linijka po linijce
         f_odczyt_pliku_nmap(path_plik_nmap_msfconsole)
     else:
-        print("Plik z danymi nie istnieje!" + path_plik_nmap_msfconsole)       
+        print("Plik z danymi nie istnieje!" + path_plik_nmap_msfconsole)

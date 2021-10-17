@@ -1,0 +1,64 @@
+[PROGRAMY DO BUDOWY]
+1. live-build
+2. http://www.linuxrespin.org/
+3. https://jm.iq.pl/yosild-moja-twoja-dystrybucja-linuxa/
+4. https://www.linux-live.org/
+
+[BUDOWANIE WŁASNEGO OBRAZU LINUX]
+https://manpages.debian.org/stretch/live-build/live-build.7.en.html
+#Instalacja narzędzia do budowy obrazu linux
+apt install live-build -y
+#Konfiguracja narzędzia do budowy obrazu linux
+
+lb config --apt apt 
+			--binary-filesystem ext4 -s iso 
+			--cache true 
+			--apt-recommends true -a amd64 
+			--binary-images iso-hybrid 
+			--debian-installer live 
+			--linux-flavours amd64 
+			--mode debian 
+			--debian-installer-gui true 
+			--archive-areas "main contrib non-free" 
+			--security true 
+			--interactive shell 
+			--updates true 
+			--iso-application "NAZWA TWOJEGO LINUXA" 
+			--iso-preparer "NAZWA TWOJEGO LINUXA"
+			--apt-http-proxy http://10.20.0.2:3128
+			
+#Kompilacja obrazu
+lb build
+#Instalacja aplikacji po przejściu do trybu chroot
+
+"lb chroot_interactive
+P: Begin interactive build...
+P:Pausing build: starting interactive shell...
+mesg: ttyname failed: Success
+(live)root@linux:/#"
+
+apt install "wybrana paczka"
+#Budowane obrazu
+exit
+"live-image-amd64.hybrid.iso"
+#Czyszczenie po pobraniu obrazu LINUX
+lb clean --purge
+
+#Tłumaczenia parametrów konfiguracji:
+--apt parametr ten określa nam z jakiego menadżera pakietów będziemy korzystać, ja wybrałem apt jednak do wyboru mamy jeszcze aptitude
+--binary-filesystem definuije nam jaki system plików będzie używał nasz obraz systemu. Ext4 jest domyślnie rekomendowany ale do wyboru mamy jeszcze fat16, fat32, ext2 czy ext3
+-s dzięki temu parametrowi jesteśmy wstanie zdefiniować typ obrazu. Domyślnie jest nim tar więc jeżeli od razu chcemy mieć czysty plik iso to warto uwzględnić tę konfiguracje
+--cache opcja ta umożliwia przy parametrze true zbieranie cache’a dla wszystkich operacji. Przydatna opcja do doglębnej konfiguracji
+--apt-recommends w tym miejscu jesteśmy w stanie zdefiniować czy podstawowe pakiety apt powinny zostać automatycznie zainstalowane. Ja rekomenduje opcję true podobnie jak i dokumentacja live-build’a
+-a parametr ten definiuje architekturę naszego procesora. W moim przypadku jest to architektura typu amd64
+--binary-images definiuje typ naszego obrazu. Do wyboru mamy tutaj iso, iso-hybrid, netboot, tar i hdd. Ja zdecydowałem się na iso-hybrid, ponieważ jest to najbardziej uniwersalną opcją w moim przypadku zakładając tworzenie pliku ISO
+--debian-installer opcja ta definiuje nam jaki typ pakietu Debiana ma być zawarty w naszym systemie. Do wyboru mamy true, cdrom, netinst, netboot, businesscard, live i false. Domyślnie ta opcja jest wylączona, jednak ja zdecydowałem się na pakiet live, który według mnie jest przydatny do późniejszych testów
+--linux-flavours tutaj mamy do czynienia po prostu z notatką dla kernela (jądra systemowego) z informacją o wybranej architekturze. W moim przypadku amd64
+--mode definicja dystrybucji na podstawie której budujemy nasz system
+--debian-installer-gui opcja ta decyduje o tym czy obraz systemu ma zwierać graficzną instalację
+--archive-areas notatka zawierająca informacje o typie pakietów Debiana
+--security opcja dotycząca bezpieczeństwa repozytoriów
+--interactive shell to opcja, która umożliwi nam konfigurację systemu z poziomu konsolowego chroot’a przed utworzeniem pliku iso. Jest ona o tyle ważna, że przede wszystkim dzięki niej będziemy modyfikować i konfigurować nasz system
+--updates opcja umożliwiająca auto-aktualizację pakietów podczas instalacji systemu. Polecam odpalić, tak by nasz system był aktualny niezależnie od częstotliwości zmian jakie dokonujemy na obrazie systemowym
+--iso-application i –iso-preparer to definicje nazw twojej przyszłej dystrybucji
+
