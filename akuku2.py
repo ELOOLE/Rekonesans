@@ -151,11 +151,6 @@ def f_odczyt_pliku_nmap(plik):
                             else:
                                 # zapis do pliku *.json
                                 tmp_dict[ip][f'web_shot:'] = f'<img src="{output_screen_shot_web}">\n'
-                            
-                            #webdav
-                            output_webdav = f_webdav_test(h_prot, ip)
-                            # zapis do pliku *.json
-                            tmp_dict[ip]['webdav]'] = f'{output_webdav}\n'
                         except Exception as er:
                             f_zapis_log("f_odczyt_pliku_nmap/f_screen_shot_web", f"Wyjatek scr shot {h_prot}://{ip}:{port} {str(er)}", "error")
                             output_screen_shot_web = "none"
@@ -177,7 +172,7 @@ def f_odczyt_pliku_nmap(plik):
             if(port == "22" or "ssh" in opis_nmap.lower()):
                 output_ssh_mechanizm = f_ssh_mechanizm(ip,port)
                 # zapis do pliku *.json
-                tmp_dict[ip]['ssh]'] = f'{output_ssh_mechanizm}\n'
+                tmp_dict[ip]['ssh'] = f'{output_ssh_mechanizm}\n'
                 # zapis do pliku *.json
                 tmp_dict[ip]['wskazowka:[NSE]:nmap'] = f'nmap --script ssh-brute -d {ip}'
                 tmp_dict[ip]['wskazowka:[Brute-force]:patator'] = f"patator ssh_login host={ip} user=FILE0 0=logins.txt password=$(perl -e ""print 'A'x50000"") --max-retries 0 --timeout 10 -x ignore:time=0-3"
@@ -549,29 +544,6 @@ def f_screen_shot_web(adres):
         obrazek = "error"
         
     return obrazek
-
-# webdav
-def f_webdav_test(h_prot, ip):
-    # buduje polecenie
-    cmd = f"webdav -url {h_prot}://{ip}"
-    
-    # zapisuje do logu jakie zbudowal polecenie
-    f_zapis_log("f_webdav_test",cmd,"info")
-    ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-    output = str(ps.communicate()[0])
-
-    # zapisuje do logu jaki jest wynik polecenia
-    f_zapis_log("f_webdav_test",output,"info")
-    
-    if(output == "b''"):
-        output = "none"
-    
-    if(output[:2] == "b'"):
-        output = output[2:-1]
-    elif(output[:2] == 'b"'):
-        output = output[2:-1]
-
-    return output
 
 def f_rpc_p135(ip):
     '''RPC port 135'''
