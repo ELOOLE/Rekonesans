@@ -242,7 +242,8 @@ def f_odczyt_pliku_nmap(plik):
     ###########################################################################
     #with open(path_plik_json, 'a+') as outfile:
     #    json.dump(data, outfile)
-
+    
+    # zapisuje dane do pliku *.json
     f_zapisz_dane_jako_json(data, path_plik_json)
 
     try:
