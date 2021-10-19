@@ -156,32 +156,32 @@ def f_odczyt_pliku_nmap(plik):
                             output_screen_shot_web = "none"
                         
                         # zapis do pliku *.json
-                        tmp_dict[ip]['wskazowka'] = f'nikto -h {ip}\n'
-                        tmp_dict[ip]['wskazowka'] = f'dirb {h_prot}://{ip} /usr/share/wordlist/dirb/common.txt\n'
+                        tmp_dict[ip]['wskazowka:nikto'] = f'nikto -h {ip}\n'
+                        tmp_dict[ip]['wskazowka:dirb'] = f'dirb {h_prot}://{ip} /usr/share/wordlists/dirb/common.txt\n'
             
             # ports / services    
             # port 21
             if(port == "21" or "ftp" in opis_nmap.lower()):
                 # zapis do pliku *.json
-                tmp_dict[ip]['wskazowka:nmap[NSE]'] = f'nmap --script ftp* -p{port} -d {ip}\n'
-                tmp_dict[ip]['wskazowka:[Brute-force]'] = f'hydra -s {port} -C /usr/share/wordlists/ftp-default-userpass.txt -u -f {ip} ftp\n'
-                tmp_dict[ip]['wskazowka:[Brute-force]'] = f"patator ftp_login host={ip} user=FILE0 0=logins.txt password=asdf -x ignore:mesg='Login incorrect.' -x ignore,reset,retry:code=500"
+                tmp_dict[ip]['wskazowka:[NSE]:nmap'] = f'nmap --script ftp* -p{port} -d {ip}\n'
+                tmp_dict[ip]['wskazowka:[Brute-force]:hydra'] = f'hydra -s {port} -C /usr/share/wordlists/ftp-default-userpass.txt -u -f {ip} ftp\n'
+                tmp_dict[ip]['wskazowka:[Brute-force]:patator'] = f"patator ftp_login host={ip} user=FILE0 0=logins.txt password=asdf -x ignore:mesg='Login incorrect.' -x ignore,reset,retry:code=500"
 
             # port 22
             #output_ssh_mechanizm = "none"
             if(port == "22" or "ssh" in opis_nmap.lower()):
                 output_ssh_mechanizm = f_ssh_mechanizm(ip,port)
                 # zapis do pliku *.json
-                tmp_dict[ip]['ssh]'] = f'{output_ssh_mechanizm}\n'
+                tmp_dict[ip]['ssh'] = f'{output_ssh_mechanizm}\n'
                 # zapis do pliku *.json
-                tmp_dict[ip]['wskazowka:nmap[NSE]'] = f'nmap --script ssh-brute -d {ip}'
-                tmp_dict[ip]['wskazowka:[Brute-force]'] = f"ssh_login host={ip} user=FILE0 0=logins.txt password=$(perl -e ""print 'A'x50000"") --max-retries 0 --timeout 10 -x ignore:time=0-3"
-                tmp_dict[ip]['wskazowka:[Brute-force]'] = f"Brute-force uslugi ssh z powodu ograniczen ilosciowych zapytan, zaleca sie uzyc malego slownika"
+                tmp_dict[ip]['wskazowka:[NSE]:nmap'] = f'nmap --script ssh-brute -d {ip}'
+                tmp_dict[ip]['wskazowka:[Brute-force]:patator'] = f"patator ssh_login host={ip} user=FILE0 0=logins.txt password=$(perl -e ""print 'A'x50000"") --max-retries 0 --timeout 10 -x ignore:time=0-3"
+                tmp_dict[ip]['wskazowka:[Brute-force]:info'] = f"Brute-force uslugi ssh z powodu ograniczen ilosciowych zapytan, zaleca sie uzyc malego slownika"
 
             # port 23
             if(port == "23" or "telnet" in opis_nmap.lower()):
                 # zapis do pliku *.json
-                tmp_dict[ip]['wskazowka:nmap[NSE]'] = f"nmap --script telnet* -p23 -d {ip}"
+                tmp_dict[ip]['wskazowka:[NSE]:nmap'] = f"nmap --script telnet* -p23 -d {ip}"
                 
             # port 25
             # output_smtp = "none"
@@ -189,17 +189,17 @@ def f_odczyt_pliku_nmap(plik):
                 output_smtp = f_smtp(ip)
                 # zapis do pliku *.json
                 tmp_dict[ip]['smtp'] = f'{output_smtp}\n'
-                tmp_dict[ip]['wskazowka'] = f"smtp-user-enum -M VRFY -U users.txt -t {ip}"
-                tmp_dict[ip]['wskazowka'] = f"smtp-user-enum -M EXPN -u admin1 -t {ip}"
-                tmp_dict[ip]['wskazowka'] = f"smtp-user-enum.pl -M RCPT -U users.txt -T mail-server-ips.txt {ip}"
-                tmp_dict[ip]['wskazowka'] = f"smtp-user-enum.pl -M EXPN -D example.com -U users.txt -t {ip}"
+                tmp_dict[ip]['wskazowka:enum1'] = f"smtp-user-enum -M VRFY -U users.txt -t {ip}"
+                tmp_dict[ip]['wskazowka:enum2'] = f"smtp-user-enum -M EXPN -u admin1 -t {ip}"
+                tmp_dict[ip]['wskazowka:enum3'] = f"smtp-user-enum.pl -M RCPT -U users.txt -T mail-server-ips.txt {ip}"
+                tmp_dict[ip]['wskazowka:enum4'] = f"smtp-user-enum.pl -M EXPN -D example.com -U users.txt -t {ip}"
 
            
             # port 53, dns
             if(port == "53"):
                 # zapis do pliku *.json
-                tmp_dict[ip]['wskazowka'] = f"dnsrecon -w -g -d {ip} --csv /home/user/dnsrecon{ip}.csv</b> do zapisu, musi byc podana sciezna bezwzgledna inaczej nie zapisze"
-                tmp_dict[ip]['wskazowka'] = f"dnsenum --noreverse {ip}"
+                tmp_dict[ip]['wskazowka:dnsrecon'] = f"dnsrecon -w -g -d {ip} --csv /home/user/dnsrecon{ip}.csv</b> do zapisu, musi byc podana sciezna bezwzgledna inaczej nie zapisze"
+                tmp_dict[ip]['wskazowka:dnsenum'] = f"dnsenum --noreverse {ip}"
                 
             # port 67, 68, DHCP protocol: UDP
             
@@ -240,19 +240,56 @@ def f_odczyt_pliku_nmap(plik):
             i+=1
             data['skan'].append(tmp_dict)
     ###########################################################################
-    with open(path_plik_json, 'a+') as outfile:
-        json.dump(data, outfile)
+    #with open(path_plik_json, 'a+') as outfile:
+    #    json.dump(data, outfile)
 
-    try:
-        raport_html = open(path_plik_html, 'w')
-        raport_html.write(json2html.convert(json = data, table_attributes='width="100%"', clubbing=True, encode=False, escape=True))
-        raport_html.close()
-        f_html_parser(path_plik_html)
-    except Exception as e:
-        f_zapis_log("f_odczyt_pliku_nmap-raport_html",e,"error")
+    # zapisuje dane do pliku *.json
+    f_zapisz_dane_jako_json(data, path_plik_json)
+    typ_komunikatu = ""
+    if(wynik == "sukces"):
+        typ_komunikatu = "info"
+    else:   
+        typ_komunikatu = "error"
+    f_zapis_log("wynik: f_zapisz_dane_jako_json", wynik, typ_komunikatu)
+
+    # zapisuje dane do pliku *.html
+    f_parsuj_plik_json_na_html(path_plik_json, path_plik_html)
+    
+    #try:
+    #    raport_html = open(path_plik_html, 'w')
+    #    raport_html.write(json2html.convert(json = data, table_attributes='width="100%"', clubbing=True, encode=False, escape=True))
+    #    raport_html.close()
+    #    f_html_parser(path_plik_html)
+    #except Exception as e:
+    #    f_zapis_log("f_odczyt_pliku_nmap-raport_html",e,"error")
 
     otwarty_plik_nmap.close()
 
+# SOCAT
+def f_socat(ip,port,protokol):
+    '''SOCAT'''
+    protokol = str.upper(protokol)
+    # buduje polecenie
+    cmd = f"echo -ne \\x01\\x00\\x00\\x00 | socat -t 1 {protokol}:{ip}:{port},connect-timeout=2 - "
+    
+    # zapisuje do logu jakie zbudowal polecenie
+    f_zapis_log("f_socat",cmd,"info")
+    ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    output = str(ps.communicate()[0])
+    
+    if(output == "b''"):
+        output = "none"
+    
+    if(output[:2] == "b'"):
+        output = output[2:-1]
+    elif(output[:2] == 'b"'):
+        output = output[2:-1]
+
+    # zapisuje do logu jaki jest wynik polecenia
+    f_zapis_log("socat:output",output,"info")
+    
+    return output    
+    
 def f_ssh_mechanizm(ip, port):
     '''SSH'''
     # buduje polecenie
@@ -297,30 +334,6 @@ def f_smtp(ip):
     elif(output[:2] == 'b"'):
         output = output[2:-1]
 
-    return output
-
-def f_socat(ip,port,protokol):
-    '''SOCAT'''
-    protokol = str.upper(protokol)
-    # buduje polecenie
-    cmd = f"echo -ne \\x01\\x00\\x00\\x00 | socat -t 1 {protokol}:{ip}:{port},connect-timeout=2 - "
-    
-    # zapisuje do logu jakie zbudowal polecenie
-    f_zapis_log("f_socat",cmd,"info")
-    ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-    output = str(ps.communicate()[0])
-    
-    if(output == "b''"):
-        output = "none"
-    
-    if(output[:2] == "b'"):
-        output = output[2:-1]
-    elif(output[:2] == 'b"'):
-        output = output[2:-1]
-
-    # zapisuje do logu jaki jest wynik polecenia
-    f_zapis_log("socat:output",output,"info")
-    
     return output
 
 def f_curl(ip,port,protokol, h_prot):
@@ -416,7 +429,6 @@ def f_get_links_from_web(adres):
     '''pobiera linki ze strony'''
     spis_linkow = ""
     spis_linkow_html = ""
-
     ctx = ssl.create_default_context()
     ctx.check_hostname = False
     ctx.verify_mode = ssl.CERT_NONE
@@ -634,6 +646,45 @@ def f_count_str_in_file(path, szukana):
     otwarty_plik.close()
     # zwracam wynik
     return wystapien
+
+def f_zapisz_dane_jako_json(data, dstfile):
+    wynik = ""
+    try:
+        with open(dstfile, 'a+') as outfile:
+            json.dump(data, outfile)
+        wynik = "sukces"
+    except Exception as e:
+        wynik = str(e)
+    
+    return wynik
+
+def f_parsuj_dane_json_na_html(data, dstfile):
+    wynik = ""
+    try:
+        raport_html = open(dstfile, 'w')
+        raport_html.write(json2html.convert(json = data, table_attributes='width="100%"', clubbing=True, encode=False, escape=True))
+        raport_html.close()
+        f_html_parser(dstfile)
+        wynik = "sukces"
+    except Exception as e:
+        wynik = str(e)
+
+    return wynik
+
+def f_parsuj_plik_json_na_html(srcfile, dstfile):
+    wynik = ""
+    try:
+        plik_json = open(srcfile, 'r')
+        odczyt_pliku = plik_json.read()
+        raport_html = open(dstfile, 'w')
+        raport_html.write(json2html.convert(json = odczyt_pliku, table_attributes='width="100%"', clubbing=True, encode=False, escape=True))
+        raport_html.close()
+        f_html_parser(dstfile)
+        wynik = "sukces"
+    except Exception as e:
+        wynik = str(e)
+
+    return wynik
 
 def f_html_parser(file_html):
     file_html_new = file_html[:-5] + "_convert.html"

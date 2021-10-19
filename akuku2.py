@@ -244,10 +244,16 @@ def f_odczyt_pliku_nmap(plik):
     #    json.dump(data, outfile)
 
     # zapisuje dane do pliku *.json
-    f_zapisz_dane_jako_json(data, path_plik_json)
+    wynik = f_zapisz_dane_jako_json(data, path_plik_json)
+    typ_komunikatu = ""
+    if(wynik == "sukces"):
+        typ_komunikatu = "info"
+    else:   
+        typ_komunikatu = "error"
+    f_zapis_log("wynik: f_zapisz_dane_jako_json", wynik, typ_komunikatu)
 
     # zapisuje dane do pliku *.html
-    f_parsuj_dane_json_na_html(data, path_plik_html)
+    f_parsuj_plik_json_na_html(path_plik_json, path_plik_html)
     
     #try:
     #    raport_html = open(path_plik_html, 'w')
@@ -439,8 +445,8 @@ def f_get_links_from_web(adres):
             spis_linkow += link['href'] + "\n"
             spis_linkow_html += link['href'] + "<br />" 
 
-        spis_linkow = spis_linkow[:-2]
-        spis_linkow_html = spis_linkow_html[:-2]
+        #spis_linkow = spis_linkow[:-2]
+        #spis_linkow_html = spis_linkow_html[:-2]
 
         f_zapis_log("f_get_links_from_web", spis_linkow, "info")
     except Exception as e:
@@ -448,7 +454,7 @@ def f_get_links_from_web(adres):
         spis_linkow =  "error"
         spis_linkow_html =  "error"
 
-    return spis_linkow_html[:-2]
+    return spis_linkow_html
 
 def f_enum4linux(ip):
     '''enum4linux'''
@@ -642,17 +648,43 @@ def f_count_str_in_file(path, szukana):
     return wystapien
 
 def f_zapisz_dane_jako_json(data, dstfile):
-    with open(dstfile, 'a+') as outfile:
-        json.dump(data, outfile)
+    wynik = ""
+    try:
+        with open(dstfile, 'a+') as outfile:
+            json.dump(data, outfile)
+        wynik = "sukces"
+    except Exception as e:
+        wynik = str(e)
+    
+    return wynik
 
 def f_parsuj_dane_json_na_html(data, dstfile):
+    wynik = ""
     try:
-        raport_html = open(path_plik_html, 'w')
+        raport_html = open(dstfile, 'w')
         raport_html.write(json2html.convert(json = data, table_attributes='width="100%"', clubbing=True, encode=False, escape=True))
         raport_html.close()
-        f_html_parser(path_plik_html)
+        f_html_parser(dstfile)
+        wynik = "sukces"
     except Exception as e:
-        f_zapis_log("f_odczyt_pliku_nmap-raport_html",e,"error")
+        wynik = str(e)
+
+    return wynik
+
+def f_parsuj_plik_json_na_html(srcfile, dstfile):
+    wynik = ""
+    try:
+        plik_json = open(srcfile, 'r')
+        odczyt_pliku = plik_json.read()
+        raport_html = open(dstfile, 'w')
+        raport_html.write(json2html.convert(json = odczyt_pliku, table_attributes='width="100%"', clubbing=True, encode=False, escape=True))
+        raport_html.close()
+        f_html_parser(dstfile)
+        wynik = "sukces"
+    except Exception as e:
+        wynik = str(e)
+
+    return wynik
 
 def f_html_parser(file_html):
     file_html_new = file_html[:-5] + "_convert.html"
