@@ -157,7 +157,7 @@ def f_odczyt_pliku_nmap(plik):
                         
                         # zapis do pliku *.json
                         tmp_dict[ip]['wskazowka:nikto'] = f'nikto -h {ip}\n'
-                        tmp_dict[ip]['wskazowka:dirb'] = f'dirb {h_prot}://{ip} /usr/share/wordlist/dirb/common.txt\n'
+                        tmp_dict[ip]['wskazowka:dirb'] = f'dirb {h_prot}://{ip} /usr/share/wordlists/dirb/common.txt\n'
             
             # ports / services    
             # port 21
