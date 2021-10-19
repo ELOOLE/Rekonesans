@@ -242,17 +242,20 @@ def f_odczyt_pliku_nmap(plik):
     ###########################################################################
     #with open(path_plik_json, 'a+') as outfile:
     #    json.dump(data, outfile)
-    
+
     # zapisuje dane do pliku *.json
     f_zapisz_dane_jako_json(data, path_plik_json)
 
-    try:
-        raport_html = open(path_plik_html, 'w')
-        raport_html.write(json2html.convert(json = data, table_attributes='width="100%"', clubbing=True, encode=False, escape=True))
-        raport_html.close()
-        f_html_parser(path_plik_html)
-    except Exception as e:
-        f_zapis_log("f_odczyt_pliku_nmap-raport_html",e,"error")
+    # zapisuje dane do pliku *.html
+    f_parsuj_dane_json_na_html(data, path_plik_html)
+    
+    #try:
+    #    raport_html = open(path_plik_html, 'w')
+    #    raport_html.write(json2html.convert(json = data, table_attributes='width="100%"', clubbing=True, encode=False, escape=True))
+    #    raport_html.close()
+    #    f_html_parser(path_plik_html)
+    #except Exception as e:
+    #    f_zapis_log("f_odczyt_pliku_nmap-raport_html",e,"error")
 
     otwarty_plik_nmap.close()
 
@@ -641,6 +644,15 @@ def f_count_str_in_file(path, szukana):
 def f_zapisz_dane_jako_json(data, dstfile):
     with open(dstfile, 'a+') as outfile:
         json.dump(data, outfile)
+
+def f_parsuj_dane_json_na_html(data, dstfile):
+    try:
+        raport_html = open(path_plik_html, 'w')
+        raport_html.write(json2html.convert(json = data, table_attributes='width="100%"', clubbing=True, encode=False, escape=True))
+        raport_html.close()
+        f_html_parser(path_plik_html)
+    except Exception as e:
+        f_zapis_log("f_odczyt_pliku_nmap-raport_html",e,"error")
 
 def f_html_parser(file_html):
     file_html_new = file_html[:-5] + "_convert.html"
