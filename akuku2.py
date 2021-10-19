@@ -240,8 +240,10 @@ def f_odczyt_pliku_nmap(plik):
             i+=1
             data['skan'].append(tmp_dict)
     ###########################################################################
-    with open(path_plik_json, 'a+') as outfile:
-        json.dump(data, outfile)
+    #with open(path_plik_json, 'a+') as outfile:
+    #    json.dump(data, outfile)
+
+    f_zapisz_dane_jako_json(data, path_plik_json)
 
     try:
         raport_html = open(path_plik_html, 'w')
@@ -634,6 +636,10 @@ def f_count_str_in_file(path, szukana):
     otwarty_plik.close()
     # zwracam wynik
     return wystapien
+
+def f_zapisz_dane_jako_json(data, dstfile):
+    with open(dstfile, 'a+') as outfile:
+        json.dump(data, outfile)
 
 def f_html_parser(file_html):
     file_html_new = file_html[:-5] + "_convert.html"
