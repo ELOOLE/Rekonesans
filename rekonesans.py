@@ -158,6 +158,7 @@ def f_odczyt_pliku_nmap(plik):
                         # zapis do pliku *.json
                         tmp_dict[ip]['wskazowka:nikto'] = f'nikto -h {ip}\n'
                         tmp_dict[ip]['wskazowka:dirb'] = f'dirb {h_prot}://{ip} /usr/share/wordlists/dirb/common.txt\n'
+                        tmp_dict[ip]['wskazowka:crawl:wget'] = f'wget --wait=2 --level=inf --limit-rate=20K --recursive --page-requisites --user-agent=Mozilla --no-parent --convert-links --adjust-extension --no-clobber -e robots=off {h_prot}://{ip}:{port} --no-check-certificate'
             
             # ports / services    
             # port 21
