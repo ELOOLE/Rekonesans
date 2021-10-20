@@ -1,0 +1,172 @@
+Get-FileHash -Algorithm SHA1 -Path C:\Users\...\...\ovf
+-----------------------------------------------------------------------
+[PROGRAMY DO BUDOWY]
+1. live-build
+2. http://www.linuxrespin.org/
+3. https://jm.iq.pl/yosild-moja-twoja-dystrybucja-linuxa/
+4. https://www.linux-live.org/
+
+[BUDOWANIE WŁASNEGO OBRAZU LINUX]
+https://manpages.debian.org/stretch/live-build/live-build.7.en.html
+#Instalacja narzędzia do budowy obrazu linux
+apt install live-build -y
+#Konfiguracja narzędzia do budowy obrazu linux
+
+lb config --apt apt 
+			--binary-filesystem ext4 -s iso 
+			--cache true 
+			--apt-recommends true -a amd64 
+			--binary-images iso-hybrid 
+			--debian-installer live 
+			--linux-flavours amd64 
+			--mode debian 
+			--debian-installer-gui true 
+			--archive-areas "main contrib non-free" 
+			--security true 
+			--interactive shell 
+			--updates true 
+			--iso-application "NAZWA TWOJEGO LINUXA" 
+			--iso-preparer "NAZWA TWOJEGO LINUXA"
+			--apt-http-proxy http://10.20.0.2:3128
+			
+#Kompilacja obrazu
+lb build
+#Instalacja aplikacji po przejściu do trybu chroot
+
+"lb chroot_interactive
+P: Begin interactive build...
+P:Pausing build: starting interactive shell...
+mesg: ttyname failed: Success
+(live)root@linux:/#"
+
+apt install "wybrana paczka"
+#Budowane obrazu
+exit
+"live-image-amd64.hybrid.iso"
+#Czyszczenie po pobraniu obrazu LINUX
+lb clean --purge
+
+#Tłumaczenia parametrów konfiguracji:
+--apt parametr ten określa nam z jakiego menadżera pakietów będziemy korzystać, ja wybrałem apt jednak do wyboru mamy jeszcze aptitude
+--binary-filesystem definuije nam jaki system plików będzie używał nasz obraz systemu. Ext4 jest domyślnie rekomendowany ale do wyboru mamy jeszcze fat16, fat32, ext2 czy ext3
+-s dzięki temu parametrowi jesteśmy wstanie zdefiniować typ obrazu. Domyślnie jest nim tar więc jeżeli od razu chcemy mieć czysty plik iso to warto uwzględnić tę konfiguracje
+--cache opcja ta umożliwia przy parametrze true zbieranie cache’a dla wszystkich operacji. Przydatna opcja do doglębnej konfiguracji
+--apt-recommends w tym miejscu jesteśmy w stanie zdefiniować czy podstawowe pakiety apt powinny zostać automatycznie zainstalowane. Ja rekomenduje opcję true podobnie jak i dokumentacja live-build’a
+-a parametr ten definiuje architekturę naszego procesora. W moim przypadku jest to architektura typu amd64
+--binary-images definiuje typ naszego obrazu. Do wyboru mamy tutaj iso, iso-hybrid, netboot, tar i hdd. Ja zdecydowałem się na iso-hybrid, ponieważ jest to najbardziej uniwersalną opcją w moim przypadku zakładając tworzenie pliku ISO
+--debian-installer opcja ta definiuje nam jaki typ pakietu Debiana ma być zawarty w naszym systemie. Do wyboru mamy true, cdrom, netinst, netboot, businesscard, live i false. Domyślnie ta opcja jest wylączona, jednak ja zdecydowałem się na pakiet live, który według mnie jest przydatny do późniejszych testów
+--linux-flavours tutaj mamy do czynienia po prostu z notatką dla kernela (jądra systemowego) z informacją o wybranej architekturze. W moim przypadku amd64
+--mode definicja dystrybucji na podstawie której budujemy nasz system
+--debian-installer-gui opcja ta decyduje o tym czy obraz systemu ma zwierać graficzną instalację
+--archive-areas notatka zawierająca informacje o typie pakietów Debiana
+--security opcja dotycząca bezpieczeństwa repozytoriów
+--interactive shell to opcja, która umożliwi nam konfigurację systemu z poziomu konsolowego chroot’a przed utworzeniem pliku iso. Jest ona o tyle ważna, że przede wszystkim dzięki niej będziemy modyfikować i konfigurować nasz system
+--updates opcja umożliwiająca auto-aktualizację pakietów podczas instalacji systemu. Polecam odpalić, tak by nasz system był aktualny niezależnie od częstotliwości zmian jakie dokonujemy na obrazie systemowym
+--iso-application i –iso-preparer to definicje nazw twojej przyszłej dystrybucji
+------------------------------------------
+[Lokazlizacja instalacji paczek apt]
+  W pliku /etc/apt/apt.conf
+  Dir{Cache /media/cache}
+  Dir::Cache /media/cache/;
+
+[Sprawdzanie parametrów serwera]
+  dmidecode -t memory
+
+[Wyłączanie ipv6]
+  sysctl -w net.ipv6.conf.all.disable_ipv6=1
+  sysctl -w net.ipv6.conf.default.disable_ipv6=1
+
+[Konfiguracja proxy]
+  /etc/apt/apt.conf
+  Acquire::http::Proxy "http://192.168.0.1:3128";
+  Acquire::https::Proxy "http://192.168.0.1:3128";
+
+  /etc/profile.d/proxy.sh
+  export http_proxy=http://192.168.0.1:3128
+
+  /etc/apt/apt.conf.d/99HttpProxy
+  Acquire::http::Proxy "http://192.168.0.1:3128";
+
+  /etc/wgetrc
+  http_proxy = http://192.168.0.1:3128
+
+  git config --global http.proxy http://x.x.x.x:xxxx
+
+[Wyszukiwanie najwięszych plików LINUX]
+  Wyszukiwanie 10 największych katalogów
+  du -a | sort -n -r|head -n 10
+
+  Wyszukiwanie 10 największych plików
+  ls -lSh|head -n 10
+
+  Wyszukiwanie 10 największych plików we wskazanej lokalizacji (np. opt) przy użyciu find
+  find /opt -type f -ls | sort -r -n -k 7 | head -n 10
+
+[Weryfikacja czy system jest zainstalowany na maszynie wirtualnej czy fizycznej]
+[VMware Workstation]
+# dmidecode -s system-manufacturer
+VMware, Inc.
+
+# dmidecode -s system-product-name
+VMware Virtual Platform
+
+[VirtualBox]
+$ sudo dmidecode -s system-product-name
+VirtualBox
+
+[OpenStack]
+$ sudo dmidecode -s system-product-name
+OpenStack Nova
+
+[Physical Server]
+# dmidecode -s system-manufacturer
+IBM
+
+# dmidecode -s system-product-name
+
+[Sortowanie ilości wystąpień adresu IP w pliku]
+sort ips.txt | uniq -c | sort -bgr >> ips2.txt
+
+grep -o -E [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+(:[0-9]+)? ips.txt > ips2.txt
+
+[Zliczanie ilości unikalnych adresów z pliku]
+$ awk '{ print $1 } ' log.txt | sort | uniq | wc -l
+
+[Przeliczanie czasu EPOCH]
+cat NAZWA_PLIKU | sed 's/e+09//g' | cut -c1,3-11,18- | sed 's/^/echo "/; s/\([0-9]\{10\}\)/`date -d @\1`/; s/$/"/' | bash >> NAZWA_PLIKU_2
+
+[XRDP - do połączeń przez RDP Windows]
+sudo apt update
+sudo apt install -y xrdp tigervnc-standalone-server
+
+Następnie uruchamiamy usługę xrdp oraz dodajemy ją do uruchomienia przy starcie:
+
+sudo systemctl start xrdp
+sudo systemctl enable  xrdp
+
+Jeśli używasz ufw to musimy odblokować port TCP 3389:
+
+sudo ufw allow 3389/tcp
+
+[Wymuszenie HTTPS]
+Ustawić w pliku /etc/apache2/sites-enabled/000-default.conf
+
+RewriteEngine On
+RewriteCond %{HTTPS} off
+RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI}
+</VirtualHost>
+
+[Dodanie 2 bram sieci]
+
+auto eth0
+iface eth0 inet static
+    address 10.1.248.11
+    netmask 255.255.255.0
+    up ip route add default via xxx.1.xxx.1 dev eth0  metric 100 
+    up ip route add default via xxx.1.xxx.3 dev eth0  metric 200
+
+[CERTYFIKAT SSL APACHE]
+#WERYFIKACJA ŚCIEŻKI I NAZWY CERTTYFIKATÓW
+cat /etc/apache2/sites-available/default-ssl.conf
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/apache-selfsigned.key -out /etc/ssl/certs/apache-selfsigned.crt
+----------------------------------------------------------------------------------------
