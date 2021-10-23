@@ -371,7 +371,7 @@ def f_curl(ip,port,protokol, h_prot):
 
 def f_curl_variables(addr, parametr):
     # budujemy polecenie
-    cmd_curl = f"curl -k -I -s -o /dev/null -w \"%{parametr}\" {addr}"
+    cmd_curl = "curl -k -I -s -o /dev/null -w \"%{"+parametr+"}\" " + addr
 
     # zapisujemy zbudowane polecenie do pliku logu
     f_zapis_log("f_curl_variables", cmd_curl, "info")
