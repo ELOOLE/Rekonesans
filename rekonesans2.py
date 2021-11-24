@@ -733,8 +733,8 @@ def f_html_parser(file_html):
         line = line.replace('&quot;', '"')
         line = line.replace('&#x27;',"'")
         line = line.replace('"<','')
-        line = line.replace('\\r\\n','<br />')
-        line = line.replace('\\n','<br />')
+        line = line.replace('\\r\\n','<br>')
+        line = line.replace('\\n','<br>')
         line = line.replace('</td>','</td>\n')
         line = line.replace('</table>','</table>\n')
         
