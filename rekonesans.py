@@ -769,7 +769,7 @@ if __name__ == '__main__':
         path_plik_json = path_plik_nmap_msfconsole + ".json"
         path_plik_html = path_plik_nmap_msfconsole + ".html"
 
-        # wywolujemy funkcj, ktora odczyta nam plik linijka po linijce
+        # wywolujemy funkcje, ktora odczyta nam plik linijka po linijce
         f_odczyt_pliku_nmap(path_plik_nmap_msfconsole)
     else:
         print("Plik z danymi nie istnieje!" + path_plik_nmap_msfconsole)
