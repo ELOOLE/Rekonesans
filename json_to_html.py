@@ -28,7 +28,8 @@ def f_parsuj_plik_json_na_html(srcfile, dstfile):
     return wynik
 
 def f_html_parser(file_html):
-    file_html_new = file_html[:-5] + "_convert.html"
+    sciezka_do_katalogu = os.path.dirname(file_html)
+    file_html_new = sciezka_do_katalogu + "/index.html"
 
     open_file_html = open(file_html, "r")
     open_file_html_new = open(file_html_new, "w+")
