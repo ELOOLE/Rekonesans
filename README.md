@@ -18,6 +18,6 @@ Chodzi o ścieżkę do pliku /sciezka/do/pliku powstałego z eksportu z metaspol
     /sciezka/do/pliku_IP.IP.IP.IP_http.jpg
     /sciezka/do/pliku_IP.IP.IP.IP_https.jpg
     ...
-    /sciezka/do/pliku.json - plik, na którym dalej działamy za pomocą mojej autorskiej aplikacji https://github.com/ELOOLE/ImportPassDB - podam sciezka do wersji skompilowanej.
+    /sciezka/do/pliku.json - plik, na którym dalej działamy za pomocą mojej autorskiej aplikacji https://sciezka-do--skompilowanej-wersji.zip
     /sciezka/do/pliku.html - plik przejściowy
     /sciezka/do/pliku_convert.html - ostateczna wizualizacja dzialania skryptu rekonesans.py
