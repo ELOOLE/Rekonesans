@@ -11,3 +11,13 @@ Chodzi o ścieżkę do pliku /sciezka/do/pliku powstałego z eksportu z metaspol
 
 # skladnia
     /bin/python3 /sciezka/do/rekonesans.py --fin /sciezka/do/pliku
+
+# Powstanie kilka plikow
+    /sciezka/do/pliku - plik wygenerowany przez metasploita
+    /sciezka/do/pliku.log - plik logu z dzialania skryptu rekonesans.py
+    /sciezka/do/pliku_IP.IP.IP.IP_http.jpg
+    /sciezka/do/pliku_IP.IP.IP.IP_https.jpg
+    ...
+    /sciezka/do/pliku.json - plik, na którym dalej działamy za pomocą mojej autorskiej aplikacji https://github.com/ELOOLE/ImportPassDB - podam sciezka do wersji skompilowanej.
+    /sciezka/do/pliku.html - plik przejściowy
+    /sciezka/do/pliku_convert.html - ostateczna wizualizacja dzialania skryptu rekonesans.py
