@@ -5,14 +5,8 @@ W pierwszym kroku uruchamiamy za pomocą Metasploit db_nmap i następnie eksport
 # msfconsole 
     services -u -c port,proto,name,info -o /sciezka/do/pliku
 
-Podajemy ścieżkę do wytyczonych celów (modyfikujemy plik rekonesans.py lub podajemy parametr w linii poleceń --fin)
 
-# odczyt pliku
-    if(str(args.fin) == '' or str(args.fin) == 'None'):
-        path_plik_nmap_msfconsole = '/sciezka/do/pliku'
-    else:
-        path_plik_nmap_msfconsole = args.fin
+Podajemy ścieżkę do wytyczonych celów, plik /sciezka/do/pliku 
 
-lub
-
-/bin/python3 /home/pentester/Dokumenty/PPL/json_to_html.py --fin /sciezka/do/pliku
+# skladnia
+    /bin/python3 /home/pentester/Dokumenty/PPL/json_to_html.py --fin /sciezka/do/pliku
