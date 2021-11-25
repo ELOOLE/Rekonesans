@@ -1,5 +1,4 @@
 # Rekonesans
-Rekonesans infrastruktury
 
 W pierwszym kroku uruchamiamy za pomocą Metasploit db_nmap i skanujemy adresy IP w poszukiwaniu usług. Następnie eksportujemy wyniki z metasploita do pliku plaskiego, poleceniem jak ponizej:
 
