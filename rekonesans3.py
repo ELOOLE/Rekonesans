@@ -952,7 +952,7 @@ if __name__ == '__main__':
 
     # odczyt pliku
     if(str(args.fin) == '' or str(args.fin) == 'None'):
-        path_plik_nmap_msfconsole = '/home/user/lawryn1'
+        path_plik_nmap_msfconsole = '/home/user/ltest1'
     else:
         path_plik_nmap_msfconsole = args.fin
 
