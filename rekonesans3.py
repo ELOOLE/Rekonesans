@@ -270,7 +270,7 @@ def f_odczyt_pliku_nmap(plik):
                     output = f_trim_output(dig_output[0])
                     tmp_dict[ip]['dns:dig'] = f'{output}\n'
 
-                tmp_dict[ip]['wskazowka:dnsrecon'] = f"dnsrecon -w -g -d {ip} --csv /home/user/dnsrecon{ip}.csv</b> do zapisu, musi byc podana sciezna bezwzgledna inaczej nie zapisze"
+                tmp_dict[ip]['wskazowka:dnsrecon'] = f"dnsrecon -a -w -d JAKAS.DOMENA.pl -n {ip} --csv /home/user/dnsrecon{ip}.csv</b> do zapisu, musi byc podana sciezna bezwzgledna inaczej nie zapisze"
                 tmp_dict[ip]['wskazowka:dnsenum'] = f"dnsenum --noreverse {ip}"
 
             # port 67, 68, DHCP protocol: UDP
