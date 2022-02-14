@@ -3,3 +3,6 @@ Pobierz certyfikat i oblicz fingerprint
 
 Oblicz fingerprint usługi ssh (RSA)
 # ssh-keyscan x.x.x.x 2>/dev/null | ssh-keygen -E md5 -lf -
+
+Patator
+# patator rdp_login host=x.x.x.x user='administrator' password=FILE0 0=/pwd/do/passfile.txt -x ignore:fgrep='ERRCONNECT_LOGON_FAILURE'
