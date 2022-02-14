@@ -1,0 +1,5 @@
+Pobierz certyfikat i oblicz fingerprint
+# openssl s_client -connect x.x.x.x:443 < /dev/null 2>/dev/null | openssl x509 -fingerprint -noout -in /dev/stdin
+
+Oblicz fingerprint usługi ssh (RSA)
+# ssh-keyscan x.x.x.x 2>/dev/null | ssh-keygen -E md5 -lf -
