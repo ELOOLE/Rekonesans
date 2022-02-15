@@ -218,7 +218,7 @@ def f_odczyt_pliku_nmap(plik):
             # 7 Echo
             # 19 Chargen
             # 20-21 FTP
-            if(port == "20" or port == "21" or "ftp" in opis_nmap.lower()):
+            if(port == "20" or port == "21" or "ftp" in opis_nmap.lower()) and protokol.lower() == "tcp":
                 # zapis do pliku *.json
                 tmp_dict[ip]['wskazowka:[NSE]:nmap'] = f'nmap --script ftp* -p{port} -d {ip} -Pn -n\n'
                 tmp_dict[ip]['wskazowka:[Brute-force]:hydra'] = f'hydra -s {port} -C /usr/share/wordlists/ftp-default-userpass.txt -u -f {ip} ftp\n'
@@ -226,7 +226,7 @@ def f_odczyt_pliku_nmap(plik):
 
             # port 22 - Encrypted
             #output_ssh_mechanizm = "none"
-            if(port == "22" or "ssh" in opis_nmap.lower()):
+            if(port == "22" or "ssh" in opis_nmap.lower()) and protokol.lower() == "tcp":
                 cmd = f'nmap --script "ssh* and not ssh-brute and not ssh-run" -p22 -Pn -n {ip}'
                 ssh_output = f_polecenie_uniwersalne("ssh", cmd)
 
@@ -239,12 +239,12 @@ def f_odczyt_pliku_nmap(plik):
                 tmp_dict[ip]['wskazowka:[Brute-force]:info'] = f"Brute-force uslugi ssh z powodu ograniczen ilosciowych zapytan, zaleca sie uzyc malego slownika"
 
             # port 23 telnet
-            if(port == "23" or "telnet" in opis_nmap.lower()):
+            if(port == "23" or "telnet" in opis_nmap.lower()) and protokol.lower() == "tcp":
                 tmp_dict[ip]['wskazowka:[NSE]:nmap'] = f"nmap --script telnet* -p23 -d {ip}"
 
             # port 25 smtp
             # output_smtp = "none"
-            if(port == "25" or "smtp" in opis_nmap.lower()):
+            if(port == "25" or "smtp" in opis_nmap.lower()) and protokol.lower() == "tcp":
                 cmd = f'nmap --script smtp* -p25 {ip} -Pn -n'
                 smtp_output = f_polecenie_uniwersalne("smtp", cmd)
 
@@ -262,7 +262,7 @@ def f_odczyt_pliku_nmap(plik):
             # 49 TACACS
 
             # port 53, dns
-            if(port == "53"):
+            if(port == "53") and protokol.lower() == "udp":
                 cmd = f'dig ANY @{ip}'
                 dig_output = f_polecenie_uniwersalne("dig", cmd)
 
@@ -270,7 +270,7 @@ def f_odczyt_pliku_nmap(plik):
                     output = f_trim_output(dig_output[0])
                     tmp_dict[ip]['dns:dig'] = f'{output}\n'
 
-                tmp_dict[ip]['wskazowka:dnsrecon'] = f"dnsrecon -a -w -d JAKAS.DOMENA.pl -n {ip} --csv /home/user/dnsrecon{ip}.csv</b> do zapisu, musi byc podana sciezna bezwzgledna inaczej nie zapisze"
+                tmp_dict[ip]['wskazowka:dnsrecon'] = f"dnsrecon -w -d JAKAS.DOMENA.PL -n {ip} --csv /home/user/dnsrecon{ip}.csv</b> do zapisu, musi byc podana sciezna bezwzgledna inaczej nie zapisze"
                 tmp_dict[ip]['wskazowka:dnsenum'] = f"dnsenum --noreverse {ip}"
 
             # port 67, 68, DHCP protocol: UDP
@@ -287,13 +287,13 @@ def f_odczyt_pliku_nmap(plik):
 
             # port 135
             #output_dcerpc_p135 = "none"
-            if(port == "135"):
+            if(port == "135") and protokol.lower() == "tcp":
                 output_dcerpc_p135 = f_rpc_p135(ip)
                 tmp_dict[ip]['dcerpc'] = f'{output_dcerpc_p135}'
 
             # port 137 - 139 NetBIOS
             #output_enum4linux = "none"
-            if(port == "139"):
+            if(port == "139") and protokol.lower() == "tcp":
                 cmd = f"enum4linux {ip}"
                 enum4linux_output = f_polecenie_uniwersalne("enum4linux", cmd)
 
@@ -414,7 +414,7 @@ def f_odczyt_pliku_nmap(plik):
             # 6346-6347 Gnutella - Peer to Peer
             # 6443 kubernetes
 
-            if(port == "6443"):
+            if(port == "6443") and protokol.lower() == "tcp":
                 cmd = f"curl -sk https://{ip}:{port}/version "
                 kubernetes_output = f_polecenie_uniwersalne("curl", cmd)
 
@@ -717,32 +717,38 @@ def f_rpc_p135(ip):
     authLevel = RPC_C_AUTHN_LEVEL_NONE
     adresy_ip = ""
     wynik = f"[*] Wykryte adresy sieciowe hosta [{target_ip}]\n"
+    try:
+        stringBinding = r'ncacn_ip_tcp:%s' % target_ip
+        rpctransport = transport.DCERPCTransportFactory(stringBinding)
 
-    stringBinding = r'ncacn_ip_tcp:%s' % target_ip
-    rpctransport = transport.DCERPCTransportFactory(stringBinding)
+        portmap = rpctransport.get_dce_rpc()
+        portmap.set_auth_level(authLevel)
+        portmap.connect()
 
-    portmap = rpctransport.get_dce_rpc()
-    portmap.set_auth_level(authLevel)
-    portmap.connect()
+        objExporter = IObjectExporter(portmap)
+        
+        bindings = objExporter.ServerAlive2()
 
-    objExporter = IObjectExporter(portmap)
-    bindings = objExporter.ServerAlive2()
+        #NetworkAddr = bindings[0]['aNetworkAddr']
+        for binding in bindings:
+            NetworkAddr = binding['aNetworkAddr']
+            #print ("Address: " + NetworkAddr)
+            adresy_ip += NetworkAddr + "\n"
 
-    #NetworkAddr = bindings[0]['aNetworkAddr']
-    for binding in bindings:
-        NetworkAddr = binding['aNetworkAddr']
-        #print ("Address: " + NetworkAddr)
-        adresy_ip += NetworkAddr + "\n"
+        wynik += adresy_ip
 
-    wynik += adresy_ip
+        f_zapis_log(
+            "f_rpc_p135",
+            "info",
+            wynik)
+    except Exception as error:
+        f_zapis_log(
+            "f_rpc_p135", 
+            "error", 
+            error)
+        
+        wynik = "error"
 
-    f_zapis_log(
-        "f_rpc_p135",
-        "info",
-        wynik)
-   
-    #f_zapis_log("f_rpc_p135", "info", adresy_ip)
-    
     return wynik
 
 
@@ -952,7 +958,7 @@ if __name__ == '__main__':
 
     # odczyt pliku
     if(str(args.fin) == '' or str(args.fin) == 'None'):
-        path_plik_nmap_msfconsole = '/home/user/ltest1'
+        path_plik_nmap_msfconsole = '/home/pentester/uokik_inside_ver1_sort'
     else:
         path_plik_nmap_msfconsole = args.fin
 
