@@ -1,1 +1,22 @@
-firefox https://www.komputerswiat.pl/ https://niebezpiecznik.pl/ https://sekurak.pl/ https://www.pcworld.pl/ https://www.linux.pl/ https://www.linuxiarze.pl/ https://www.cyberdefence24.pl/ https://zaufanatrzeciastrona.pl/ https://kapitanhack.pl/ https://research.securitum.com/ https://packetstormsecurity.com/ https://thehackernews.com/ https://www.theregister.co.uk/ https://www.zdnet.com/ http://lxer.com/ https://www.reddit.com/r/netsec/ https://www.reddit.com/r/hacking/ https://www.reddit.com/r/technology/ https://blog.intigriti.com/category/bugbytes/ https://apisecurity.io/ https://lifehacker.com
+firefox 
+https://www.komputerswiat.pl/ 
+https://niebezpiecznik.pl/ 
+https://sekurak.pl/ 
+https://www.pcworld.pl/ 
+https://www.linux.pl/ 
+https://www.linuxiarze.pl/ 
+https://www.cyberdefence24.pl/ 
+https://zaufanatrzeciastrona.pl/ 
+https://kapitanhack.pl/ 
+https://research.securitum.com/ 
+https://packetstormsecurity.com/ 
+https://thehackernews.com/ 
+https://www.theregister.co.uk/ 
+https://www.zdnet.com/ 
+http://lxer.com/ 
+https://www.reddit.com/r/netsec/ 
+https://www.reddit.com/r/hacking/ 
+https://www.reddit.com/r/technology/ 
+https://blog.intigriti.com/category/bugbytes/ 
+https://apisecurity.io/ 
+https://lifehacker.com
