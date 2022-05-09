@@ -42,6 +42,49 @@ def f_polecenie_uniwersalne(cmd):
         return "", str(error)
 
 
+def f_count_str_in_file(path, szukana):
+    '''liczy ilosc powtorzen ciagu znakow w tekscie'''
+    # otwieram plik
+    otwarty_plik = open(path, "r")
+    data = otwarty_plik.read()
+
+    wystapien = data.count(szukana)
+
+    otwarty_plik.close()
+    # zwracam wynik
+    return wystapien
+
+
+def f_trim_output(output):
+    output = str(output)
+    if(output == "b''"):
+        output = ""
+
+    if(output[:2] == "b'"):
+        output = output[2:-1]
+    elif(output[:2] == 'b"'):
+        output = output[2:-1]
+    
+    return output
+
+
+def f_policz_wiersze_w_pliku(path):
+    '''liczy ilosc linijek w wierszu'''
+    '''zwraca: int, ilosc linijek w podanym pliku'''
+    # otwieram plik
+    otwarty_plik = open(path, "r")
+    line_count = 0
+    # czytam linijce po linijce
+    for line in otwarty_plik:
+        if line != "\n":
+            line_count += 1
+
+    # zamykam plik
+    otwarty_plik.close()
+    # zwracam wynik
+    return line_count
+
+
 def f_dirb(adres):
     wynik = f_polecenie_uniwersalne(f"dirb {adres} /usr/share/wordlists/dirb/common.txt")
     

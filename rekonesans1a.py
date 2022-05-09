@@ -7,29 +7,11 @@
 ###############################################################################
 
 import os
-import shlex
-import subprocess
 import argparse
-
-from typing import Counter
 import pyfiglet
-import json
-
-
 import re
-from re import sub
-
-from json2html import *
-from copy import Error
-from ssl import CertificateError, RAND_add
-
-
-from random import randrange
-from PIL import Image, ImageFont, ImageDraw
-import sys
-import getopt
-
 import biblioteka
+import f_json
 
 # dane do zrzutu danych zwiazane wlasnie z plikiem *.json
 ilosc_uslug = 0
@@ -46,7 +28,7 @@ def f_odczyt_pliku_nmap(plik):
         pathLogFile="")
 
     # ilosc odczytanych wierszy w pliku zrodlowym
-    line_count = f_policz_wiersze_w_pliku(plik)
+    line_count = biblioteka.f_policz_wiersze_w_pliku(plik)
     biblioteka.biblioteka.f_zapis_log(
         "f_odczyt_pliku_nmap",
         "info",
@@ -115,7 +97,7 @@ def f_odczyt_pliku_nmap(plik):
             cmd = f"echo -ne \\x01\\x00\\x00\\x00 | socat -t 1 {protokol.upper()}:{ip}:{port},connect-timeout=5 - "
             socat_output = biblioteka.f_polecenie_uniwersalne(cmd)
             if(socat_output[1] == None):
-                output = f_trim_output(socat_output[0])
+                output = biblioteka.f_trim_output(socat_output[0])
                 if(len(output) > 0):
                     tmp_dict[ip]['socat'] = f'{output}\n'
 
@@ -143,7 +125,7 @@ def f_odczyt_pliku_nmap(plik):
                         cmd = f"curl -I -k -s {h_prot}://{ip}:{port} --max-time 3 --no-keepalive"
                         curl_output = biblioteka.f_polecenie_uniwersalne(cmd)
                         if(curl_output[1] == None):
-                            output = f_trim_output(curl_output[0])
+                            output = biblioteka.f_trim_output(curl_output[0])
                             tmp_dict[ip][f'curl:{h_prot}:info'] = f'{output}\n'
 
                         try:
@@ -222,7 +204,7 @@ def f_odczyt_pliku_nmap(plik):
                 ssh_output = biblioteka.f_polecenie_uniwersalne(cmd)
 
                 if(ssh_output[1] == None):
-                    output = f_trim_output(ssh_output[0])
+                    output = biblioteka.f_trim_output(ssh_output[0])
                     tmp_dict[ip]['ssh'] = f'{output}\n'
 
                 tmp_dict[ip]['wskazowka:[NSE]:nmap'] = f'nmap --script ssh-brute -d {ip}'
@@ -240,7 +222,7 @@ def f_odczyt_pliku_nmap(plik):
                 smtp_output = biblioteka.f_polecenie_uniwersalne(cmd)
 
                 if(smtp_output[1] == None):
-                    output = f_trim_output(smtp_output[0])
+                    output = biblioteka.f_trim_output(smtp_output[0])
                     tmp_dict[ip]['smtp'] = f'{output}\n'
 
                 tmp_dict[ip]['wskazowka:enum1'] = f"smtp-user-enum -M VRFY -U users.txt -t {ip}"
@@ -258,7 +240,7 @@ def f_odczyt_pliku_nmap(plik):
                 dig_output = biblioteka.f_polecenie_uniwersalne(cmd)
 
                 if(dig_output[1] == None):
-                    output = f_trim_output(dig_output[0])
+                    output = biblioteka.f_trim_output(dig_output[0])
                     tmp_dict[ip]['dns:dig'] = f'{output}\n'
 
                 tmp_dict[ip]['wskazowka:dnsrecon'] = f"dnsrecon -w -d JAKAS.DOMENA.PL -n {ip} --csv /home/user/dnsrecon{ip}.csv</b> do zapisu, musi byc podana sciezna bezwzgledna inaczej nie zapisze"
@@ -289,7 +271,7 @@ def f_odczyt_pliku_nmap(plik):
                 enum4linux_output = biblioteka.f_polecenie_uniwersalne(cmd)
 
                 if(enum4linux_output[1] == None):
-                    output = f_trim_output(enum4linux_output[0])
+                    output = biblioteka.f_trim_output(enum4linux_output[0])
                     tmp_dict[ip]['enum4linux'] = f'{output}\n'
 
             # port 143 imap
@@ -410,7 +392,7 @@ def f_odczyt_pliku_nmap(plik):
                 kubernetes_output = biblioteka.f_polecenie_uniwersalne(cmd)
 
                 if(kubernetes_output[1] == None):
-                    output = f_trim_output(kubernetes_output[0])
+                    output = biblioteka.f_trim_output(kubernetes_output[0])
                     tmp_dict[ip]['curl:kebernetes'] = f'{output}\n'
             
             # 6500 GameSpy Arcade - Gaming
@@ -460,12 +442,9 @@ def f_odczyt_pliku_nmap(plik):
             # 33434+ traceroute
             i += 1
             data['skan'].append(tmp_dict)
-    ###########################################################################
-    # with open(path_plik_json, 'a+') as outfile:
-    #    json.dump(data, outfile)
 
     # zapisuje dane do pliku *.json
-    wynik = f_zapisz_dane_jako_json(data, path_plik_json)
+    wynik = f_json.f_zapisz_dane_jako_json(data, path_plik_json)
     typ_komunikatu = ""
     if(wynik == "sukces"):
         typ_komunikatu = "info"
@@ -474,221 +453,10 @@ def f_odczyt_pliku_nmap(plik):
     biblioteka.f_zapis_log("wynik: f_zapisz_dane_jako_json", typ_komunikatu, wynik, pathLogFile="")
 
     # zapisuje dane do pliku *.html
-    f_parsuj_plik_json_na_html(path_plik_json, path_plik_html)
-
-    # try:
-    #    raport_html = open(path_plik_html, 'w')
-    #    raport_html.write(json2html.convert(json = data, table_attributes='width="100%"', clubbing=True, encode=False, escape=True))
-    #    raport_html.close()
-    #    f_html_parser(path_plik_html)
-    # except Exception as e:
-    #    biblioteka.f_zapis_log("f_odczyt_pliku_nmap-raport_html",e,"error")
-
+    f_json.f_parsuj_plik_json_na_html(path_plik_json, path_plik_html)
     otwarty_plik_nmap.close()
 
 #####################################################################################################################
-
-
-def f_curl_variables_JS(addr):
-    # budujemy polecenie
-    cmd_curl = f"curl -Lks {addr} | grep window "
-
-    # zapisujemy zbudowane polecenie do pliku logu
-    biblioteka.f_zapis_log("f_curl_variables_JS", "info", cmd_curl)
-
-    args1 = shlex.split(cmd_curl)
-    ps_cmd_curl1 = subprocess.Popen(
-        args1,
-        shell=False,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE)
-
-    try:
-        curl_output = str(ps_cmd_curl1.communicate(timeout=10)[0].decode('utf-8'))
-
-         # zmienna [wynik] ma dane, ktore zostana zwrocone przez funkcje
-        output = str(curl_output).strip()
-        output_window = output.split("\n")
-        link_addr = ""
-
-        for x in output_window:
-            if("window" in x):
-                link_addr = x
-
-        start = link_addr.find("/")
-        end = link_addr[start:].find('"') + start
-
-        output = link_addr[start + 1:end]
-
-        if(len(output) == 0):
-            output = "none"
-
-        biblioteka.f_zapis_log("f_curl_variables_JS", "info", output)
-    except subprocess.TimeoutExpired:
-        ps_cmd_curl1.kill()
-        output = "TimeoutExpired"
-        # zapisujemy do logu co zwrocila [f_curl]
-        biblioteka.f_zapis_log("f_curl_variables_JS", "error", output)
-
-    return output
-
-
-def f_policz_wiersze_w_pliku(path):
-    '''liczy ilosc linijek w wierszu'''
-    '''zwraca: int, ilosc linijek w podanym pliku'''
-    # otwieram plik
-    otwarty_plik = open(path, "r")
-    line_count = 0
-    # czytam linijce po linijce
-    for line in otwarty_plik:
-        if line != "\n":
-            line_count += 1
-
-    # zamykam plik
-    otwarty_plik.close()
-    # zwracam wynik
-    return line_count
-
-
-def f_count_str_in_file(path, szukana):
-    '''liczy ilosc powtorzen ciagu znakow w tekscie'''
-    # otwieram plik
-    otwarty_plik = open(path, "r")
-    data = otwarty_plik.read()
-
-    wystapien = data.count(szukana)
-
-    otwarty_plik.close()
-    # zwracam wynik
-    return wystapien
-
-
-def f_trim_output(output):
-    output = str(output)
-    if(output == "b''"):
-        output = ""
-
-    if(output[:2] == "b'"):
-        output = output[2:-1]
-    elif(output[:2] == 'b"'):
-        output = output[2:-1]
-    
-    return output
-
-def f_zapisz_dane_jako_json(data, dstfile):
-    wynik = ""
-    try:
-        with open(dstfile, 'a+') as outfile:
-            json.dump(data, outfile)
-        wynik = "sukces"
-    except Exception as e:
-        wynik = str(e)
-
-    return wynik
-
-
-def f_parsuj_dane_json_na_html(data, dstfile):
-    wynik = ""
-    try:
-        raport_html = open(dstfile, 'w')
-        raport_html.write(
-            json2html.convert(
-                json=data,
-                table_attributes='width="100%"',
-                clubbing=True,
-                encode=False,
-                escape=True))
-        raport_html.close()
-        f_html_parser(dstfile)
-        wynik = "sukces"
-    except Exception as e:
-        wynik = str(e)
-
-    return wynik
-
-
-def f_parsuj_plik_json_na_html(srcfile, dstfile):
-    wynik = ""
-    try:
-        plik_json = open(srcfile, 'r')
-        odczyt_pliku = plik_json.read()
-        raport_html = open(dstfile, 'w')
-        raport_html.write(
-            json2html.convert(
-                json=odczyt_pliku,
-                table_attributes='width="100%"',
-                clubbing=True,
-                encode=False,
-                escape=True))
-        raport_html.close()
-        f_html_parser(dstfile)
-        wynik = "sukces"
-    except Exception as e:
-        wynik = str(e)
-
-    return wynik
-
-
-def f_html_parser(file_html):
-    file_html_new = file_html[:-5] + "_convert.html"
-
-    open_file_html = open(file_html, "r")
-    open_file_html_new = open(file_html_new, "w+")
-
-    head = '<!DOCTYPE html> \n'
-    head += '<html>\n'
-    head += '<head>\n'
-    head += '<style>\n'
-    head += 'table, th, td {'
-    head += 'font-family: "Lucida Console", Monaco, monospace;'
-    head += 'border: 1px solid #1C6EA4;'
-    head += 'background-color: #EEEEEE;'
-    head += 'width: 100%;'
-    head += 'text-align: left;'
-    head += 'border-collapse: collapse;}'
-    head += 'th {text-align: right; width: 5%;}\n'
-    head += '</style>\n'
-    head += '</head>\n'
-    head += '<body>\n'
-    head += '<table>\n'
-    head += '<tr>\n'
-    head += '<td>\n'
-    head += '<h5 style="text-align:right">autor: MM, wersja 0.1 2021 r.</h5>\n'
-    head += '<hr>\n'
-    head += f'<h1 style="text-align:center">Rekonesans {str(ilosc_uslug)} uslug.</h1>\n'
-    head += '<hr>\n'
-    head += f'SRT: {start_script}<br/>END: {str(f_czas ())}\n'
-    head += '<hr>\n'
-    head += f'Plik logu: {path_plik_logu}\n'
-    head += '<br />\n'
-    head += f'Bledow w pliku logu: {f_count_str_in_file(path_plik_logu, "error")}\n'
-    head += '</td>\n'
-    head += '</tr>\n'
-    head += '</table>\n'
-
-    open_file_html_new.write(head)
-
-    for line in open_file_html:
-        line = line.replace("&gt;", ">")
-        line = line.replace("&lt;", "<")
-        line = line.replace("&amp;", "&")
-        line = line.replace('&quot;', '"')
-        line = line.replace('&#x27;', "'")
-        line = line.replace('"<', '')
-        line = line.replace('\\r\\n', '<br>')
-        line = line.replace('\\n', '<br>')
-        line = line.replace('</td>', '</td>\n')
-        line = line.replace('</table>', '</table>\n')
-
-        open_file_html_new.write(line)
-
-    foot = "\n</body>\n</html>"
-    open_file_html_new.write(foot)
-
-    open_file_html.close()
-    open_file_html_new .close()
-
-
 if __name__ == '__main__':
     '''MAIN'''
     parser = argparse.ArgumentParser()
