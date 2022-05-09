@@ -3,7 +3,7 @@ import os
 import argparse
 import sys
 
-from rekonesans3 import f_czas
+from rekonesans1a import f_czas
 from biblioteka import f_polecenie_uniwersalne
 
 def f_odczyt_pliku_lina_po_linii(plik):
