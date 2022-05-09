@@ -14,7 +14,7 @@ import argparse
 from typing import Counter
 import pyfiglet
 import json
-import urllib.request
+
 
 import re
 from re import sub
@@ -23,7 +23,7 @@ from json2html import *
 from copy import Error
 from ssl import CertificateError, RAND_add
 
-from bs4 import BeautifulSoup, SoupStrainer
+
 from random import randrange
 from PIL import Image, ImageFont, ImageDraw
 import sys

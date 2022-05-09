@@ -2,7 +2,8 @@ import os
 import subprocess
 import datetime
 import ssl
-
+import urllib.request
+from bs4 import BeautifulSoup, SoupStrainer
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.webdriver import WebDriver
@@ -39,39 +40,6 @@ def f_polecenie_uniwersalne(cmd):
         return "", "TimeoutExpired"
     except Exception as error:
         return "", str(error)
-
-
-def f_get_links_from_web(adres):
-    '''pobiera linki ze strony'''
-    spis_linkow = ""
-    spis_linkow_html = ""
-    ctx = ssl.create_default_context()
-    ctx.check_hostname = False
-    ctx.verify_mode = ssl.CERT_NONE
-
-    try:
-        addrHTTP = adres
-        f_zapis_log("f_get_links_from_web", addrHTTP, "info")
-        parser = 'html.parser'
-
-        resp = urllib.request.urlopen(addrHTTP, context=ctx,timeout=10)
-        soup = BeautifulSoup(
-            resp, parser, from_encoding=resp.info().get_param('charset'))
-
-        for link in soup.find_all('a', href=True):
-            spis_linkow += link['href'] + "\n"
-            spis_linkow_html += link['href'] + "<br />"
-
-        #spis_linkow = spis_linkow[:-2]
-        #spis_linkow_html = spis_linkow_html[:-2]
-
-        f_zapis_log("f_get_links_from_web", "info", spis_linkow)
-    except Exception as e:
-        f_zapis_log("f_get_links_from_web", "error", f"{adres} {e}")
-        spis_linkow = "error"
-        spis_linkow_html = "error"
-
-    return spis_linkow_html
 
 
 def f_dirb(adres):
