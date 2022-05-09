@@ -10,7 +10,7 @@ import os
 import argparse
 import pyfiglet
 import re
-import biblioteka
+import f_biblioteka
 import f_json
 
 # dane do zrzutu danych zwiazane wlasnie z plikiem *.json
@@ -21,15 +21,15 @@ print(baner)
 
 
 def f_odczyt_pliku_nmap(plik):
-    biblioteka.biblioteka.f_zapis_log(
+    f_biblioteka.biblioteka.f_zapis_log(
         "f_odczyt_pliku_nmap",
         "info",
         f"odczytuje plik z danymi: {plik}",
         pathLogFile="")
 
     # ilosc odczytanych wierszy w pliku zrodlowym
-    line_count = biblioteka.f_policz_wiersze_w_pliku(plik)
-    biblioteka.biblioteka.f_zapis_log(
+    line_count = f_biblioteka.f_policz_wiersze_w_pliku(plik)
+    f_biblioteka.biblioteka.f_zapis_log(
         "f_odczyt_pliku_nmap",
         "info",
         f"Ilosc zadan do wykonania: {line_count}",
@@ -55,19 +55,19 @@ def f_odczyt_pliku_nmap(plik):
         usluga = wynik[3].replace("\"", "").rstrip("")
         opis_nmap = wynik[4].replace("\"", "").rstrip("")
 
-        biblioteka.f_zapis_log(
+        f_biblioteka.f_zapis_log(
             "---------",
             "-------------------",
             "-----------------------------------------------------------------",
             pathLogFile="")
         
-        biblioteka.f_zapis_log(
+        f_biblioteka.f_zapis_log(
             "f_odczyt_pliku_nmap",
             "info   ",
             f"({i}/{line_count}) | proto:{protokol} IP:{ip} port:{port} usluga:{usluga}",
             pathLogFile="")
 
-        biblioteka.f_zapis_log(
+        f_biblioteka.f_zapis_log(
             "---------",
             "-------------------",
             "-----------------------------------------------------------------",
@@ -75,7 +75,7 @@ def f_odczyt_pliku_nmap(plik):
 
         r = re.compile("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}")
         if r.match(ip) is None:
-            biblioteka.f_zapis_log(
+            f_biblioteka.f_zapis_log(
                 "f_odczyt_pliku_nmap",
                 "info",
                 f"Wpis nie zawiera poprawnego adresu IP [{ip}]",
@@ -95,9 +95,9 @@ def f_odczyt_pliku_nmap(plik):
             # socat
             ######################################################
             cmd = f"echo -ne \\x01\\x00\\x00\\x00 | socat -t 1 {protokol.upper()}:{ip}:{port},connect-timeout=5 - "
-            socat_output = biblioteka.f_polecenie_uniwersalne(cmd)
+            socat_output = f_biblioteka.f_polecenie_uniwersalne(cmd)
             if(socat_output[1] == None):
-                output = biblioteka.f_trim_output(socat_output[0])
+                output = f_biblioteka.f_trim_output(socat_output[0])
                 if(len(output) > 0):
                     tmp_dict[ip]['socat'] = f'{output}\n'
 
@@ -110,7 +110,7 @@ def f_odczyt_pliku_nmap(plik):
                     # adres
                     adres = f"{h_prot}://{ip}:{port}"
                     cmd = "curl -k -I -s -o /dev/null -w \"%{http_code}\" " + adres
-                    curl_output = biblioteka.f_polecenie_uniwersalne(cmd)
+                    curl_output = f_biblioteka.f_polecenie_uniwersalne(cmd)
 
                     http_code = "000"
                     if(curl_output[1] == None):
@@ -123,14 +123,14 @@ def f_odczyt_pliku_nmap(plik):
                     if(http_code in lista_http_code):
                         # info 
                         cmd = f"curl -I -k -s {h_prot}://{ip}:{port} --max-time 3 --no-keepalive"
-                        curl_output = biblioteka.f_polecenie_uniwersalne(cmd)
+                        curl_output = f_biblioteka.f_polecenie_uniwersalne(cmd)
                         if(curl_output[1] == None):
-                            output = biblioteka.f_trim_output(curl_output[0])
+                            output = f_biblioteka.f_trim_output(curl_output[0])
                             tmp_dict[ip][f'curl:{h_prot}:info'] = f'{output}\n'
 
                         try:
                             # scrrenshot
-                            output_screen_shot_web = biblioteka.f_screen_shot_web(adres, path_plik_nmap_msfconsole)
+                            output_screen_shot_web = f_biblioteka.f_screen_shot_web(adres, path_plik_nmap_msfconsole)
                             if(output_screen_shot_web == "error"):
                                 tmp_dict[ip][f'web_shot'] = f'{output_screen_shot_web}\n'
                             else:
@@ -138,20 +138,20 @@ def f_odczyt_pliku_nmap(plik):
 
                             # zbierz linki ze strony
                             if(http_code == "200"):
-                                output_links_from_web = biblioteka.f_get_links_from_web(adres)
+                                output_links_from_web = f_biblioteka.f_get_links_from_web(adres)
                                 tmp_dict[ip][f'links:{h_prot}'] = f'{output_links_from_web}\n'
 
                             # przekierowanie
                             if(http_code == "301" or http_code == "302"):
                                 redirect_url = ""
                                 cmd = "curl -k -I -s -o /dev/null -w \"%{redirect_url}\" " + adres
-                                curl_output = biblioteka.f_polecenie_uniwersalne(cmd)
+                                curl_output = f_biblioteka.f_polecenie_uniwersalne(cmd)
                                 if(curl_output[1] == None):
                                     redirect_url = curl_output[0].decode('utf-8')
                                     tmp_dict[ip][f'curl:{h_prot}:redirect_url:addr'] = f'{redirect_url}\n'
 
                                     cmd = "curl -k -I -s -o /dev/null -w \"%{http_code}\" " + redirect_url
-                                    curl_output = biblioteka.f_polecenie_uniwersalne(cmd)
+                                    curl_output = f_biblioteka.f_polecenie_uniwersalne(cmd)
                                     
                                     http_code = "000"
                                     if(curl_output[1] == None):
@@ -160,7 +160,7 @@ def f_odczyt_pliku_nmap(plik):
 
                                         if(http_code == "200" or http_code== "404"):
                                             # screenshot
-                                            output_screen_shot_web = biblioteka.f_screen_shot_web(redirect_url, path_plik_nmap_msfconsole)
+                                            output_screen_shot_web = f_biblioteka.f_screen_shot_web(redirect_url, path_plik_nmap_msfconsole)
                                             if(output_screen_shot_web == "error"):
                                                 tmp_dict[ip][f'web_shot:redirect_url'] = f'{output_screen_shot_web}\n'
                                             else:
@@ -168,11 +168,11 @@ def f_odczyt_pliku_nmap(plik):
 
                                         if(http_code == "200"):
                                             # linki
-                                            output_links_from_web = biblioteka.f_get_links_from_web(redirect_url)
+                                            output_links_from_web = f_biblioteka.f_get_links_from_web(redirect_url)
                                             tmp_dict[ip][f'links:{h_prot}:redirect_url'] = f'{output_links_from_web}\n'
 
                         except Exception as er:
-                            biblioteka.f_zapis_log(
+                            f_biblioteka.f_zapis_log(
                                 "f_odczyt_pliku_nmap/f_screen_shot_web",
                                 "error",
                                 f"Wyjatek scr shot {h_prot}://{ip}:{port} {str(er)}",
@@ -201,10 +201,10 @@ def f_odczyt_pliku_nmap(plik):
             #output_ssh_mechanizm = "none"
             if(port == "22" or "ssh" in opis_nmap.lower()) and protokol.lower() == "tcp":
                 cmd = f'nmap --script "ssh* and not ssh-brute and not ssh-run" -p22 -Pn -n {ip}'
-                ssh_output = biblioteka.f_polecenie_uniwersalne(cmd)
+                ssh_output = f_biblioteka.f_polecenie_uniwersalne(cmd)
 
                 if(ssh_output[1] == None):
-                    output = biblioteka.f_trim_output(ssh_output[0])
+                    output = f_biblioteka.f_trim_output(ssh_output[0])
                     tmp_dict[ip]['ssh'] = f'{output}\n'
 
                 tmp_dict[ip]['wskazowka:[NSE]:nmap'] = f'nmap --script ssh-brute -d {ip}'
@@ -219,10 +219,10 @@ def f_odczyt_pliku_nmap(plik):
             # output_smtp = "none"
             if(port == "25" or "smtp" in opis_nmap.lower()) and protokol.lower() == "tcp":
                 cmd = f'nmap --script smtp* -p25 {ip} -Pn -n'
-                smtp_output = biblioteka.f_polecenie_uniwersalne(cmd)
+                smtp_output = f_biblioteka.f_polecenie_uniwersalne(cmd)
 
                 if(smtp_output[1] == None):
-                    output = biblioteka.f_trim_output(smtp_output[0])
+                    output = f_biblioteka.f_trim_output(smtp_output[0])
                     tmp_dict[ip]['smtp'] = f'{output}\n'
 
                 tmp_dict[ip]['wskazowka:enum1'] = f"smtp-user-enum -M VRFY -U users.txt -t {ip}"
@@ -237,10 +237,10 @@ def f_odczyt_pliku_nmap(plik):
             # port 53, dns
             if(port == "53") and protokol.lower() == "udp":
                 cmd = f'dig ANY @{ip}'
-                dig_output = biblioteka.f_polecenie_uniwersalne(cmd)
+                dig_output = f_biblioteka.f_polecenie_uniwersalne(cmd)
 
                 if(dig_output[1] == None):
-                    output = biblioteka.f_trim_output(dig_output[0])
+                    output = f_biblioteka.f_trim_output(dig_output[0])
                     tmp_dict[ip]['dns:dig'] = f'{output}\n'
 
                 tmp_dict[ip]['wskazowka:dnsrecon'] = f"dnsrecon -w -d JAKAS.DOMENA.PL -n {ip} --csv /home/user/dnsrecon{ip}.csv</b> do zapisu, musi byc podana sciezna bezwzgledna inaczej nie zapisze"
@@ -261,17 +261,17 @@ def f_odczyt_pliku_nmap(plik):
             # port 135
             #output_dcerpc_p135 = "none"
             if(port == "135") and protokol.lower() == "tcp":
-                output_dcerpc_p135 = biblioteka.f_rpc_p135(ip)
+                output_dcerpc_p135 = f_biblioteka.f_rpc_p135(ip)
                 tmp_dict[ip]['dcerpc'] = f'{output_dcerpc_p135}'
 
             # port 137 - 139 NetBIOS
             #output_enum4linux = "none"
             if(port == "139") and protokol.lower() == "tcp":
                 cmd = f"enum4linux {ip}"
-                enum4linux_output = biblioteka.f_polecenie_uniwersalne(cmd)
+                enum4linux_output = f_biblioteka.f_polecenie_uniwersalne(cmd)
 
                 if(enum4linux_output[1] == None):
-                    output = biblioteka.f_trim_output(enum4linux_output[0])
+                    output = f_biblioteka.f_trim_output(enum4linux_output[0])
                     tmp_dict[ip]['enum4linux'] = f'{output}\n'
 
             # port 143 imap
@@ -389,10 +389,10 @@ def f_odczyt_pliku_nmap(plik):
 
             if(port == "6443") and protokol.lower() == "tcp":
                 cmd = f"curl -sk https://{ip}:{port}/version "
-                kubernetes_output = biblioteka.f_polecenie_uniwersalne(cmd)
+                kubernetes_output = f_biblioteka.f_polecenie_uniwersalne(cmd)
 
                 if(kubernetes_output[1] == None):
-                    output = biblioteka.f_trim_output(kubernetes_output[0])
+                    output = f_biblioteka.f_trim_output(kubernetes_output[0])
                     tmp_dict[ip]['curl:kebernetes'] = f'{output}\n'
             
             # 6500 GameSpy Arcade - Gaming
@@ -450,7 +450,7 @@ def f_odczyt_pliku_nmap(plik):
         typ_komunikatu = "info"
     else:
         typ_komunikatu = "error"
-    biblioteka.f_zapis_log("wynik: f_zapisz_dane_jako_json", typ_komunikatu, wynik, pathLogFile="")
+    f_biblioteka.f_zapis_log("wynik: f_zapisz_dane_jako_json", typ_komunikatu, wynik, pathLogFile="")
 
     # zapisuje dane do pliku *.html
     f_json.f_parsuj_plik_json_na_html(path_plik_json, path_plik_html)
@@ -469,7 +469,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # rozpoczecie
-    start_script = biblioteka.f_czas()
+    start_script = f_biblioteka.f_czas()
 
     # odczyt pliku
     if(str(args.fin) == '' or str(args.fin) == 'None'):

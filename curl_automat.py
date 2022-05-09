@@ -3,7 +3,7 @@ import argparse
 import sys
 
 from rekonesans1a import f_czas
-from biblioteka import f_polecenie_uniwersalne, f_dirb
+from f_biblioteka import f_polecenie_uniwersalne, f_dirb
 
 def f_odczyt_pliku_lina_po_linii(plik):
     uchwyt_pliku_z_danymi = open(plik, 'r')
