@@ -3,3 +3,6 @@ $ echo | openssl s_client -showcerts -servername gnupg.org -connect gnupg.org:44
 
 #  [Oblicz fingerprint usługi ssh (RSA)]
 $ ssh-keyscan IP.IP.IP.IP 2>/dev/null | ssh-keygen -E md5 -lf -
+
+# [Pobierz certyfikat i oblicz fingerprint]
+openssl s_client -connect IP.IP.IP.IP:443 < /dev/null 2>/dev/null | openssl x509 -fingerprint -noout -in /dev/stdin
