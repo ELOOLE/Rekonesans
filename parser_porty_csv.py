@@ -36,36 +36,48 @@ def f_odczyt_pliku(filePathData,filePathDataCSV):
                 'protokol': protokol
             }}
 
+            print(f">> ip: {ip}, port: {port}, protokol: {protokol}\n")
+
             try:
-                if(array_ip.index(ip)):
-                    index_szukana = array_ip.index(ip)
+                index_szukana = array_ip.index(ip)
+                if(str.lower(protokol) == 'tcp'):
+                    port_tcp = array_ip_tcp[index_szukana]
 
-                    if(str.lower(protokol) == 'tcp'):
-                        port_tcp = array_ip_tcp[index_szukana]
-
-                        if len(port_tcp) == 0:
-                            array_ip_tcp[index_szukana] = port
-                        else:
-                            array_ip_tcp[index_szukana] = port_tcp + ',' + port
+                    if len(port_tcp) == 0:
+                        array_ip_tcp[index_szukana] = port
                     else:
-                        port_udp = array_ip_udp[index_szukana]
+                        array_ip_tcp[index_szukana] = port_tcp + ',' + port
+                    
+                    print('arr tcp: ' + str(array_ip_tcp))
+                else:
+                    port_udp = array_ip_udp[index_szukana]
 
-                        if len(port_udp) == 0:
-                            array_ip_udp[index_szukana] = port
-                        else:
-                            array_ip_udp[index_szukana] = port_udp + ',' + port
+                    if len(port_udp) == 0:
+                        array_ip_udp[index_szukana] = port
+                    else:
+                        array_ip_udp[index_szukana] = port_udp + ',' + port
+                    
+                    print('arr udp: '+str(array_ip_udp))
                 
             except Exception as e:
+                print('wyjatek'+str(e))
                 array_ip.append(ip)
                 index_szukana = array_ip.index(ip)
+
+                print('index_szukana'+str(index_szukana))
 
                 if(str.lower(protokol) == 'tcp'):              
                     array_ip_tcp.append(port)
                     array_ip_udp.append('')
+                    print('tcp: '+port)
                 else:
                     array_ip_tcp.append('')
                     array_ip_udp.append(port)
+                    print('udp: '+port)
 
+            print(str(array_ip))
+
+            #input("")
             data['skan'].append(tmp_dict)
 
     plik_csv_dane = ''
@@ -74,7 +86,7 @@ def f_odczyt_pliku(filePathData,filePathDataCSV):
         index_szukana = array_ip.index(element)
         plik_csv_dane = plik_csv_dane + element+';' + array_ip_tcp[index_szukana]+';' + array_ip_udp[index_szukana]+';\n'
         
-    print(plik_csv_dane) 
+    #print(plik_csv_dane) 
 
     try:
         with(open(filePathDataCSV, 'w')) as f:
