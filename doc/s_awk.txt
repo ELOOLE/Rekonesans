@@ -1,0 +1,2 @@
+# z pliku plik1.txt wyswietla tylko te linijki, ktore maja wiecej niz 4 znaki > zapisz do pliku plik2.txt
+awk 'length($1) > 3 {print $1 }' plik1.txt > plik2.txt
