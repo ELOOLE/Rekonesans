@@ -21,7 +21,7 @@ print(baner)
 
 
 def f_odczyt_pliku_nmap(plik):
-    f_biblioteka.biblioteka.f_zapis_log(
+    f_biblioteka.f_zapis_log(
         "f_odczyt_pliku_nmap",
         "info",
         f"odczytuje plik z danymi: {plik}",
@@ -29,7 +29,7 @@ def f_odczyt_pliku_nmap(plik):
 
     # ilosc odczytanych wierszy w pliku zrodlowym
     line_count = f_biblioteka.f_policz_wiersze_w_pliku(plik)
-    f_biblioteka.biblioteka.f_zapis_log(
+    f_biblioteka.f_zapis_log(
         "f_odczyt_pliku_nmap",
         "info",
         f"Ilosc zadan do wykonania: {line_count}",
