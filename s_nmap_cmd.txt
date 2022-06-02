@@ -1,2 +1,0 @@
-nmap -T4 -A -v -d -iL=/home/user/addr_lan_s.txt -oA=skan.gnmap;
-nmap -sU --top-ports=100 -T4 -A -v -d -iL=/home/user/addr_lan_s.txt -oA=skan_sU.gnmap
