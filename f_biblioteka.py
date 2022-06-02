@@ -238,7 +238,7 @@ def f_zapis_log(zrodlo, typ, dane, pathLogFile):
     '''Sciezka pliku w zmiennej [path_plik_logu]'''
 
     if(os.path.isfile(pathLogFile)):
-        plik_logu = open([pathLogFile], 'a+')
+        plik_logu = open(pathLogFile, 'a+')
     else:
         plik_logu = open(pathLogFile, 'w+')
 

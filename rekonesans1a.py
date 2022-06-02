@@ -25,7 +25,7 @@ def f_odczyt_pliku_nmap(plik):
         "f_odczyt_pliku_nmap",
         "info",
         f"odczytuje plik z danymi: {plik}",
-        pathLogFile="")
+        pathLogFile=plik+'.log')
 
     # ilosc odczytanych wierszy w pliku zrodlowym
     line_count = f_biblioteka.f_policz_wiersze_w_pliku(plik)
@@ -33,7 +33,7 @@ def f_odczyt_pliku_nmap(plik):
         "f_odczyt_pliku_nmap",
         "info",
         f"Ilosc zadan do wykonania: {line_count}",
-        pathLogFile="")
+        pathLogFile=plik+'.log')
 
     global ilosc_uslug
     ilosc_uslug = line_count
@@ -59,19 +59,19 @@ def f_odczyt_pliku_nmap(plik):
             "---------",
             "-------------------",
             "-----------------------------------------------------------------",
-            pathLogFile="")
+            pathLogFile=plik+'.log')
         
         f_biblioteka.f_zapis_log(
             "f_odczyt_pliku_nmap",
             "info   ",
             f"({i}/{line_count}) | proto:{protokol} IP:{ip} port:{port} usluga:{usluga}",
-            pathLogFile="")
+            pathLogFile=plik+'.log')
 
         f_biblioteka.f_zapis_log(
             "---------",
             "-------------------",
             "-----------------------------------------------------------------",
-            pathLogFile="")
+            pathLogFile=plik+'.log')
 
         r = re.compile("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}")
         if r.match(ip) is None:
@@ -79,7 +79,7 @@ def f_odczyt_pliku_nmap(plik):
                 "f_odczyt_pliku_nmap",
                 "info",
                 f"Wpis nie zawiera poprawnego adresu IP [{ip}]",
-                pathLogFile="")
+                pathLogFile=plik+'.log')
             ilosc_uslug -= 1
         else:
             # zapis do pliku *.json
@@ -176,7 +176,7 @@ def f_odczyt_pliku_nmap(plik):
                                 "f_odczyt_pliku_nmap/f_screen_shot_web",
                                 "error",
                                 f"Wyjatek scr shot {h_prot}://{ip}:{port} {str(er)}",
-                                pathLogFile="")
+                                pathLogFile=plik+'.log')
                             output_screen_shot_web = "none"
 
                         # zapis do pliku *.json
@@ -450,7 +450,7 @@ def f_odczyt_pliku_nmap(plik):
         typ_komunikatu = "info"
     else:
         typ_komunikatu = "error"
-    f_biblioteka.f_zapis_log("wynik: f_zapisz_dane_jako_json", typ_komunikatu, wynik, pathLogFile="")
+    f_biblioteka.f_zapis_log("wynik: f_zapisz_dane_jako_json", typ_komunikatu, wynik, pathLogFile=plik+'.log')
 
     # zapisuje dane do pliku *.html
     f_json.f_parsuj_plik_json_na_html(path_plik_json, path_plik_html)
