@@ -13,9 +13,6 @@ import re
 import f_biblioteka
 import f_json
 
-# dane do zrzutu danych zwiazane wlasnie z plikiem *.json
-ilosc_uslug = 0
-
 baner = pyfiglet.figlet_format("Rekonesans")
 print(baner)
 
@@ -35,7 +32,6 @@ def f_odczyt_pliku_nmap(plik):
         f"Ilosc zadan do wykonania: {line_count}",
         pathLogFile=plik+'.log')
 
-    global ilosc_uslug
     ilosc_uslug = line_count
 
     # otwieram ponownie
@@ -54,13 +50,7 @@ def f_odczyt_pliku_nmap(plik):
         protokol = wynik[2].replace("\"", "").rstrip("")
         usluga = wynik[3].replace("\"", "").rstrip("")
         opis_nmap = wynik[4].replace("\"", "").rstrip("")
-
-        f_biblioteka.f_zapis_log(
-            "---------",
-            "-------------------",
-            "-----------------------------------------------------------------",
-            pathLogFile=plik+'.log')
-        
+       
         f_biblioteka.f_zapis_log(
             "f_odczyt_pliku_nmap",
             "info   ",
@@ -88,7 +78,7 @@ def f_odczyt_pliku_nmap(plik):
                 'port': port,
                 'protokol': protokol,
                 'usluga': usluga,
-                'opis': opis_nmap
+                'opis': opis_nmap,
             }}
 
             ######################################################
@@ -109,7 +99,14 @@ def f_odczyt_pliku_nmap(plik):
                 for h_prot in lista_protokol:
                     # adres
                     adres = f"{h_prot}://{ip}:{port}"
-                    cmd = "curl -k -I -s -o /dev/null -w \"%{http_code}\" " + adres
+
+                    cmd = "curl -Ls -o /dev/null -w %{url_effective} " + adres
+                    curl_output = f_biblioteka.f_polecenie_uniwersalne(cmd)
+                    if(curl_output[1] == None):
+                        adres = curl_output[0].decode('utf-8')
+                        tmp_dict[ip][f'curl:{h_prot}:url_effective'] = f'{adres}\n'
+                    
+                    cmd = "curl -kIL -s -o /dev/null -w \"%{http_code}\" " + adres
                     curl_output = f_biblioteka.f_polecenie_uniwersalne(cmd)
 
                     http_code = "000"
@@ -122,15 +119,15 @@ def f_odczyt_pliku_nmap(plik):
                     lista_http_code = ['200','301','302','404']
                     if(http_code in lista_http_code):
                         # info 
-                        cmd = f"curl -I -k -s {h_prot}://{ip}:{port} --max-time 3 --no-keepalive"
+                        cmd = f"curl -sIL {h_prot}://{ip}:{port} --max-time 5 --no-keepalive"
                         curl_output = f_biblioteka.f_polecenie_uniwersalne(cmd)
                         if(curl_output[1] == None):
                             output = f_biblioteka.f_trim_output(curl_output[0])
                             tmp_dict[ip][f'curl:{h_prot}:info'] = f'{output}\n'
 
                         try:
-                            # scrrenshot
-                            output_screen_shot_web = f_biblioteka.f_screen_shot_web(adres, path_plik_nmap_msfconsole)
+                            # screenshot
+                            output_screen_shot_web = f_biblioteka.f_screen_shot_web(adres, path_file_data)
                             if(output_screen_shot_web == "error"):
                                 tmp_dict[ip][f'web_shot'] = f'{output_screen_shot_web}\n'
                             else:
@@ -160,7 +157,7 @@ def f_odczyt_pliku_nmap(plik):
 
                                         if(http_code == "200" or http_code== "404"):
                                             # screenshot
-                                            output_screen_shot_web = f_biblioteka.f_screen_shot_web(redirect_url, path_plik_nmap_msfconsole)
+                                            output_screen_shot_web = f_biblioteka.f_screen_shot_web(redirect_url, path_file_data)
                                             if(output_screen_shot_web == "error"):
                                                 tmp_dict[ip][f'web_shot:redirect_url'] = f'{output_screen_shot_web}\n'
                                             else:
@@ -465,25 +462,29 @@ if __name__ == '__main__':
         formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('--fin', '--file-input', type=str,
                         help='Podaj sciezke do pliku z adresami')
-    #parser.add_argument('--fout', '--file-output', type=str, help='Sciezka do zapisu pliku z wynikami skanowania')
+    parser.add_argument('--fout', '--file-output', type=str, 
+                        help='Podaj sciezke do zapisu pliku z wynikami skanowania')
     args = parser.parse_args()
 
     # rozpoczecie
     start_script = f_biblioteka.f_czas()
+    ilosc_uslug = 0
 
-    # odczyt pliku
+    ####
+    # odczyt przelacznikow
+    # sciezka do pliku z danymi
     if(str(args.fin) == '' or str(args.fin) == 'None'):
-        path_plik_nmap_msfconsole = '/home/pentester/uokik_inside_ver1_sort'
+        path_file_data = '/home/user/MKiS_ver1_inside'
     else:
-        path_plik_nmap_msfconsole = args.fin
+        path_file_data = args.fin
 
-    if(os.path.isfile(path_plik_nmap_msfconsole)):
+    if(os.path.isfile(path_file_data)):
         '''sprawdza czy plik istnieje'''
-        path_plik_logu = path_plik_nmap_msfconsole + ".log"
-        path_plik_json = path_plik_nmap_msfconsole + ".json"
-        path_plik_html = path_plik_nmap_msfconsole + ".html"
+        path_plik_logu = path_file_data + ".log"
+        path_plik_json = path_file_data + ".json"
+        path_plik_html = path_file_data + ".html"
 
         # wywolujemy funkcje, ktora odczyta nam plik linijka po linijce
-        f_odczyt_pliku_nmap(path_plik_nmap_msfconsole)
+        f_odczyt_pliku_nmap(path_file_data)
     else:
-        print("Plik z danymi nie istnieje!" + path_plik_nmap_msfconsole)
+        print("Plik z danymi nie istnieje!" + path_file_data)

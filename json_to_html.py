@@ -97,7 +97,7 @@ if __name__ == '__main__':
 
     # odczyt pliku
     if(str(args.fin) == '' or str(args.fin) == 'None'):
-        path_plik_nmap_msfconsole = '/home/pentester/Dokumenty/PPL/ppl_new7.json'
+        path_plik_nmap_msfconsole = '/home/user/Documents/2022_MKiS/ver1_outside/porty_MKiS_BB.json'
     else:
         path_plik_nmap_msfconsole = args.fin
     
