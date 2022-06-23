@@ -3,6 +3,8 @@ $ echo | openssl s_client -showcerts -servername gnupg.org -connect gnupg.org:44
 
   [Oblicz fingerprint usługi ssh (RSA)]
 $ ssh-keyscan IP.IP.IP.IP 2>/dev/null | ssh-keygen -E md5 -lf -
+$ ssh-keyscan IP.IP.IP.IP 2>/dev/null | ssh-keygen -E sha1 -lf -
+$ ssh-keyscan IP.IP.IP.IP 2>/dev/null | ssh-keygen -E sha256 -lf -
 $ nmap --script ssh-hostkey IP.IP.IP.IP --script-args ssh_hostkey=sha256  -d -p 22 -Pn -n
 
   [Pobierz certyfikat i oblicz fingerprint] - default sha1
