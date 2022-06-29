@@ -1,0 +1,2 @@
+# znajdz wszystkie pliki w aktualnym katalogu wykonaj obliczenie sumy md5, następnie oblicz ile zajmuje miejsca plik 
+find -type f -exec md5sum {} \; -exec du -sh {} \;
