@@ -1,1 +1,4 @@
 while read -r line; do echo $line; echo | openssl s_client -showcerts -servername $line -connect $line:443 2>/dev/null | opensshl x509 -inform pem -noout -text; done < dane_zrodlowe.txt 2>/dev/null > wynik.txt
+
+# czytaj linijka po linijce z pliku i zapisz do pliku
+while read -r addr;do printf "$addr,";geoiplookup $addr|cut -d ":" -f 2|cut -c 2-1000;done <addr.txt >/home/nano/Downloads/wynik_ip.txt
