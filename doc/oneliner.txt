@@ -2,3 +2,6 @@ while read -r line; do echo $line; echo | openssl s_client -showcerts -servernam
 
 # czytaj linijka po linijce z pliku i zapisz do pliku
 while read -r addr;do printf "$addr,";geoiplookup $addr|cut -d ":" -f 2|cut -c 2-1000;done <addr.txt >/home/nano/Downloads/wynik_ip.txt
+
+#
+for network in $(curl -s http://42.pl/pl/networks.html|grep -v ^#|awk '{print $1}');do printf "$network," && geoiplookup -f /usr/share/GeoIP/GeoIPASNum.dat `nmap -sL -Pn -n $network|grep "Nmap scan report for"|awk '{print $NF}'|head -1`|sed 's/GeoIP ASNum Edition: //';done > /opt/splunk/etc/system/lookups/asnum_pl.csv
