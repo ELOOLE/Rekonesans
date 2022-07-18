@@ -4,6 +4,8 @@ while read -r line; do echo $line; echo | openssl s_client -showcerts -servernam
 #: wymagania: apt-get install geoip-bin 
 while read -r addr;do printf "$addr,";geoiplookup $addr|cut -d ":" -f 2|cut -c 2-1000|sed 's/ //';done < PlikZAdresamiIP.txt > PlikWynikowy.csv
 cat ./ip_list.txt | sort | uniq | xargs -n 1 geoiplookup { }
+## Darmowy update bazy https://mailfud.org/geoip-legacy/ - gotowy skrypt do update-ów https://mailfud.org/geoip-legacy/geoip_update.sh
+
 
 #
 for network in $(curl -s http://42.pl/pl/networks.html|grep -v ^#|awk '{print $1}');do printf "$network," && geoiplookup -f /usr/share/GeoIP/GeoIPASNum.dat `nmap -sL -Pn -n $network|grep "Nmap scan report for"|awk '{print $NF}'|head -1`|sed 's/GeoIP ASNum Edition: //';done > /opt/splunk/etc/system/lookups/asnum_pl.csv
