@@ -6,8 +6,8 @@ while read -r addr;do printf "$addr,";geoiplookup $addr|cut -d ":" -f 2|cut -c 2
 cat ./ip_list.txt | sort | uniq | xargs -n 1 geoiplookup { }
 ## Darmowy update bazy https://mailfud.org/geoip-legacy/ - gotowy skrypt do update-ów https://mailfud.org/geoip-legacy/geoip_update.sh
 
-
 #
 for network in $(curl -s http://42.pl/pl/networks.html|grep -v ^#|awk '{print $1}');do printf "$network," && geoiplookup -f /usr/share/GeoIP/GeoIPASNum.dat `nmap -sL -Pn -n $network|grep "Nmap scan report for"|awk '{print $NF}'|head -1`|sed 's/GeoIP ASNum Edition: //';done > /opt/splunk/etc/system/lookups/asnum_pl.csv
 
-
+# jedziemy curl po adresach:
+$ while read -r addr;do curl1=$(curl -kIsL https://$addr);curl2=$(curl -ksL https://$addr);echo -e "-== ADRES ==-\n$addr\n---\nculr -I:\n$curl1\n---\nculr2 -k:\n$curl2";done < plik_z_ip > wynik.txt
