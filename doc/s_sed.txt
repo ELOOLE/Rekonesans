@@ -1,0 +1,1 @@
+$ sed 's/^/https:\/\/graf.kzp.pl\/kat\/zn\//' znaczki.txt | sed 's/ znaczek /\/0/' | cut -d " " -f 1 | sed 's/$/.jpg/'
