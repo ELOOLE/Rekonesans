@@ -1,4 +1,5 @@
 import os
+import random
 import subprocess
 import datetime
 import ssl
@@ -16,6 +17,8 @@ from impacket.dcerpc.v5 import transport
 from impacket.dcerpc.v5.ndr import NULL
 from impacket.dcerpc.v5.rpcrt import RPC_C_AUTHN_LEVEL_NONE
 from impacket.dcerpc.v5.dcomrt import IObjectExporter
+
+from rekonesans1a import style
 
 def f_polecenie_uniwersalne(cmd):
     '''SOCAT
@@ -225,7 +228,7 @@ def f_screen_shot_web(wwwadres, pathZapisu):
 
 def f_czas():
     '''Zwraca w wyniku aktualny czas'''
-    return datetime.datetime.now()
+    return str(datetime.datetime.now())[:19]
 
 # budowa komunikatu w celu zapisania do pliku w zmiennej [path_plik_logu] i wyswietlenia na konsoli
 # -------------------------------
@@ -245,7 +248,12 @@ def f_zapis_log(zrodlo, typ, dane, pathLogFile):
     komunikat = f"{f_czas()} | {typ} | {zrodlo} | {dane}"
 
     # wyswietlenie komunikatu w konsoli
-    print(komunikat)
+    if(typ == "info"):
+        print(style.WHITE(komunikat))
+    elif(typ == "warn"):
+        print(style.YELLOW(komunikat))
+    elif(typ == "error"):
+        print(style.RED(komunikat))
 
     # zapis komunikatu do pliku [pathLogFile]
     plik_logu.write(komunikat + '\n')
@@ -283,3 +291,86 @@ def f_rpc_p135(ip):
         wynik = "error"
 
     return wynik
+
+
+def random_ua():
+    USER_AGENT_PARTS = {
+        'os': {
+            'linux': {
+                'name': ['Linux x86_64', 'Linux i386'],
+                'ext': ['X11']
+            },
+            'windows': {
+                'name': ['Windows NT 10.0', 'Windows NT 6.1', 'Windows NT 6.3', 'Windows NT 5.1', 'Windows NT.6.2'],
+                'ext': ['WOW64', 'Win64; x64']
+            },
+            'mac': {
+                'name': ['Macintosh'],
+                'ext': ['Intel Mac OS X %d_%d_%d' % (random.randint(10, 11), random.randint(0, 9), random.randint(0, 5))
+                        for
+                        i in range(1, 10)]
+            },
+        },
+        'platform': {
+            'webkit': {
+                'name': ['AppleWebKit/%d.%d' % (random.randint(535, 537), random.randint(1, 36)) for i in range(1, 30)],
+                'details': ['KHTML, like Gecko'],
+                'extensions': ['Chrome/%d.0.%d.%d Safari/%d.%d' % (
+                    random.randint(6, 32), random.randint(100, 2000), random.randint(0, 100), random.randint(535, 537),
+                    random.randint(1, 36)) for i in range(1, 30)] + ['Version/%d.%d.%d Safari/%d.%d' % (
+                    random.randint(4, 6), random.randint(0, 1), random.randint(0, 9), random.randint(535, 537),
+                    random.randint(1, 36)) for i in range(1, 10)]
+            },
+            'iexplorer': {
+                'browser_info': {
+                    'name': ['MSIE 6.0', 'MSIE 6.1', 'MSIE 7.0', 'MSIE 7.0b', 'MSIE 8.0', 'MSIE 9.0', 'MSIE 10.0'],
+                    'ext_pre': ['compatible', 'Windows; U'],
+                    'ext_post': ['Trident/%d.0' % i for i in range(4, 6)] + [
+                        '.NET CLR %d.%d.%d' % (random.randint(1, 3), random.randint(0, 5), random.randint(1000, 30000))
+                        for
+                        i in range(1, 10)]
+                }
+            },
+            'gecko': {
+                'name': ['Gecko/%d%02d%02d Firefox/%d.0' % (
+                    random.randint(2001, 2010), random.randint(1, 31), random.randint(1, 12), random.randint(10, 25))
+                         for i
+                         in
+                         range(1, 30)],
+                'details': [],
+                'extensions': []
+            }
+        }
+    }
+    # Mozilla/[version] ([system and browser information]) [platform] ([platform details]) [extensions]
+    ## Mozilla Version
+    mozilla_version = "Mozilla/5.0"  # hardcoded for now, almost every browser is on this version except IE6
+    ## System And Browser Information
+    # Choose random OS
+    os = USER_AGENT_PARTS.get('os')[random.choice(list(USER_AGENT_PARTS.get('os').keys()))]
+    os_name = random.choice(os.get('name'))
+    sysinfo = os_name
+    # Choose random platform
+    platform = USER_AGENT_PARTS.get('platform')[random.choice(list(USER_AGENT_PARTS.get('platform').keys()))]
+    # Get Browser Information if available
+    if 'browser_info' in platform and platform.get('browser_info'):
+        browser = platform.get('browser_info')
+        browser_string = random.choice(browser.get('name'))
+        if 'ext_pre' in browser:
+            browser_string = "%s; %s" % (random.choice(browser.get('ext_pre')), browser_string)
+        sysinfo = "%s; %s" % (browser_string, sysinfo)
+        if 'ext_post' in browser:
+            sysinfo = "%s; %s" % (sysinfo, random.choice(browser.get('ext_post')))
+    if 'ext' in os and os.get('ext'):
+        sysinfo = "%s; %s" % (sysinfo, random.choice(os.get('ext')))
+    ua_string = "%s (%s)" % (mozilla_version, sysinfo)
+    if 'name' in platform and platform.get('name'):
+        ua_string = "%s %s" % (ua_string, random.choice(platform.get('name')))
+    if 'details' in platform and platform.get('details'):
+        ua_string = "%s (%s)" % (
+            ua_string,
+            random.choice(platform.get('details')) if len(platform.get('details')) > 1 else platform.get(
+                'details').pop())
+    if 'extensions' in platform and platform.get('extensions'):
+        ua_string = "%s %s" % (ua_string, random.choice(platform.get('extensions')))
+    return ua_string

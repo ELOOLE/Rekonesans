@@ -4,7 +4,7 @@ from json2html import *
 def f_zapisz_dane_jako_json(data, dstfile):
     wynik = ""
     try:
-        with open(dstfile, 'a+') as outfile:
+        with open(dstfile, 'w') as outfile:
             json.dump(data, outfile)
         wynik = "sukces"
     except Exception as e:
