@@ -205,7 +205,7 @@ def f_odczyt_pliku_nmap(plik):
                                 pathLogFile=path_plik_logu)
                 #subprocess.Popen(["nmap","--script", "ssh-brute", ip, "-oA", path_file_data+"_nmap_"+ip+".txt"])
                 os.system(f"nmap --script ssh-brute -p{port} {ip} > {FILE_OUTPUT}_nmap_ssh_{ip}_{port}.txt &")
-                tmp_dict[ip]['Raport:nmap'] = f'<a href="{FILE_OUTPUT}_nmap_ssh_{ip}_{port}.txt">{f_biblioteka.f_raport_img()}</a>' 
+                tmp_dict[ip]['Raport:nmap'] = f'<a href="{FILE_OUTPUT}_nmap_ssh_{ip}_{port}.txt">{f_biblioteka.f_raport_img()}</a><br />---<br />Time: ~10min<br />nmap --script ssh-brute -p{port} {ip}' 
                 #---
                 tmp_dict[ip]['wskazowka:patator'] = f"patator ssh_login host={ip} user=root password=FILE0 0=Rekonesans/dictionary/s_pass_admin.txt -x ignore:mesg='Authentication failed.'\nTime: ~0h 11min Rekonesans/dictionary/s_pass_admin.txt (>2300 row) <br />Time: ~1h 03min Rekonesans/dictionary/s_pass_13k.txt (>13700 row)"
                 
@@ -218,7 +218,7 @@ def f_odczyt_pliku_nmap(plik):
                                 f"uruchamiam subprocess - nmap bruteforce telnet-u",
                                 pathLogFile=path_plik_logu)
                 os.system(f"nmap --script telnet* -p{port} {ip} > {FILE_OUTPUT}_nmap_telnet_{ip}_{port}.txt &")
-                tmp_dict[ip]['Raport:nmap'] = f'<a href="{FILE_OUTPUT}_nmap_telnet_{ip}_{port}.txt">{f_biblioteka.f_raport_img()}</a>'
+                tmp_dict[ip]['Raport:nmap'] = f'<a href="{FILE_OUTPUT}_nmap_telnet_{ip}_{port}.txt">{f_biblioteka.f_raport_img()}</a><br />---<br />nmap --script telnet* -p{port} {ip}'
                 #---
                 tmp_dict[ip]['wskazowka:patator'] = f"patator telnet_login host={ip} inputs='FILE0\nFILE1' 0=dictionary/s_user.lst 1=dictionary/s_pass_admin.txt persistent=0 timeout=7 prompt_re='Username:|Password:' -x ignore:egrep='Login incorrect.+Username:'"
 
@@ -256,6 +256,7 @@ def f_odczyt_pliku_nmap(plik):
                 if(enum4linux_output[1] == None):
                     output = f_biblioteka.f_trim_output(enum4linux_output[0])
                     tmp_dict[ip]['enum4linux'] = f'{output}\n'
+                    tmp_dict[ip]['patator'] = f'patator smb_login host={ip} user=FILE0 password=FILE1 0=Rekonesans/dictionary/s_user.lst 1=Rekonesans/dictionary/s_pass_admin.txt -x ignore:fgrep=STATUS_LOGON_FAILURE'
 
             # 6443 kubernetes
             if(port == "6443") and protokol.lower() == "tcp":
