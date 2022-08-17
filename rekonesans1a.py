@@ -3,22 +3,18 @@
 # Written by MM
 # Copyright 2021
 # input: metasploit(db_nmap - discover)
-# services -u -c port,proto,name,info -o /home/user/rand1234
+# services -u -c port,proto,name,info -o /home/user/targets_ports
 ###############################################################################
 from multiprocessing.pool import ThreadPool
 import os
 import argparse
+import subprocess
 import sys
 from tkinter.ttk import Style
 import pyfiglet
 import re
 import f_biblioteka
 import f_json
-
-# BANNER
-baner = pyfiglet.figlet_format("Rekonesans")
-print(baner)
-
 
 # auxiliary funciton to make it work
 def map_helper(args):
@@ -63,12 +59,6 @@ def f_odczyt_pliku_nmap(plik):
                 f"({i}/{LINE_COUNT}) | proto:{protokol} IP:{ip} port:{port} usluga:{usluga}",
                 pathLogFile=path_plik_logu)
 
-            f_biblioteka.f_zapis_log(
-                "---------",
-                "info",
-                "-----------------------------------------------------------------",
-                pathLogFile=path_plik_logu)
-
             # zapis do pliku *.json
             tmp_dict = {ip: {
                 'ip': ip,
@@ -82,11 +72,14 @@ def f_odczyt_pliku_nmap(plik):
             # socat #
             #########
             cmd = f"echo -ne \\x01\\x00\\x00\\x00 | socat -t 1 {protokol.upper()}:{ip}:{port},connect-timeout=5 - "
+            f_biblioteka.f_zapis_log("socat","start time",str(f_biblioteka.f_czas()),pathLogFile=path_plik_logu)
             socat_output = f_biblioteka.f_polecenie_uniwersalne(cmd)
             if(socat_output[1] == None):
                 output = f_biblioteka.f_trim_output(socat_output[0])
                 if(len(output) > 0):
                     tmp_dict[ip]['socat'] = f'{output}\n'
+                    f_biblioteka.f_zapis_log("socat","results",str(output),pathLogFile=path_plik_logu)
+                    f_biblioteka.f_zapis_log("socat","end time",str(f_biblioteka.f_czas()),pathLogFile=path_plik_logu)
 
             #########################
             # cURL, links, web_shot #
@@ -180,11 +173,19 @@ def f_odczyt_pliku_nmap(plik):
                         tmp_dict[ip]['wskazowka:FUZZ:ffuf'] = f'ffuf -w Rekonesans/dictionary/s_web_fuzz.txt -u {h_prot}://{ip}:{port}/FUZZ'
 
             # 20-21 FTP
-            if(port == "20" or port == "21" or "ftp" in opis_nmap.lower()) and protokol.lower() == "tcp":
-                # zapis do pliku *.json
-                tmp_dict[ip]['wskazowka:[NSE]:nmap'] = f'nmap --script ftp* -p{port} -d {ip} -Pn -n\n'
-                tmp_dict[ip]['wskazowka:[Brute-force]:hydra'] = f'hydra -s {port} -C /usr/share/wordlists/ftp-default-userpass.txt -u -f {ip} ftp\n'
-                tmp_dict[ip]['wskazowka:[Brute-force]:patator'] = f"patator ftp_login host={ip} user=FILE0 0=logins.txt password=asdf -x ignore:mesg='Login incorrect.' -x ignore,reset,retry:code=500"
+            # port 20 data transfer
+            if(port == "21" or "ftp" in opis_nmap.lower()) and protokol.lower() == "tcp":
+                tmp_dict[ip]['wskazowka:nmap'] = f'nmap --script ftp* -p{port} -d {ip} -Pn -n<br />Time: 10min'
+                f_biblioteka.f_zapis_log(
+                                f"port {port}",
+                                "subp",
+                                f"uruchamiam subprocess - nmap bruteforce ftp",
+                                pathLogFile=path_plik_logu)
+                os.system(f"nmap --script ftp* -p{port} {ip} -Pn -n > {FILE_OUTPUT}_nmap_ftp_{ip}_{port}.txt &")
+                tmp_dict[ip]['Raport:nmap'] = f'<a href="{FILE_OUTPUT}_nmap_ftp_{ip}_{port}.txt">{f_biblioteka.f_raport_img()}</a>' 
+                #---
+                tmp_dict[ip]['wskazowka:hydra'] = f'hydra -s {port} -L dictionary/s_user.lst -P dictionary/s_pass_admin.txt -u -f {ip} ftp\n'
+                tmp_dict[ip]['wskazowka:patator'] = f"patator ftp_login host={ip} port={port} user=FILE0 0=dictionary/s_user.lst password=FILE1 1=dictionary/s_pass_admin.txt -x ignore:mesg='Login incorrect.' -x ignore,reset,retry:code=500"
 
             # port 22 - Encrypted
             #output_ssh_mechanizm = "none"
@@ -196,13 +197,30 @@ def f_odczyt_pliku_nmap(plik):
                     output = f_biblioteka.f_trim_output(ssh_output[0])
                     tmp_dict[ip]['ssh'] = f'{output}\n'
 
-                tmp_dict[ip]['[nmap]'] = f'nmap --script ssh-brute -d {ip}'
-                tmp_dict[ip]['[patator]'] = f"patator ssh_login host={ip} user=root password=FILE0 0=Rekonesans/dictionary/s_pass_admin.txt -x ignore:mesg='Authentication failed.'"
-                tmp_dict[ip]['[patator]:time'] = f"Time: ~0h 11min Rekonesans/dictionary/s_pass_admin.txt (>2300 row) <br />Time: ~1h 03min Rekonesans/dictionary/s_pass_13k.txt (>13700 row)"
+                tmp_dict[ip]['wskazowka:nmap'] = f'nmap --script ssh-brute -d {ip}'
+                f_biblioteka.f_zapis_log(
+                                f"port {port}",
+                                "subp",
+                                f"uruchamiam subprocess - nmap bruteforce ssh",
+                                pathLogFile=path_plik_logu)
+                #subprocess.Popen(["nmap","--script", "ssh-brute", ip, "-oA", path_file_data+"_nmap_"+ip+".txt"])
+                os.system(f"nmap --script ssh-brute -p{port} {ip} > {FILE_OUTPUT}_nmap_ssh_{ip}_{port}.txt &")
+                tmp_dict[ip]['Raport:nmap'] = f'<a href="{FILE_OUTPUT}_nmap_ssh_{ip}_{port}.txt">{f_biblioteka.f_raport_img()}</a>' 
+                #---
+                tmp_dict[ip]['wskazowka:patator'] = f"patator ssh_login host={ip} user=root password=FILE0 0=Rekonesans/dictionary/s_pass_admin.txt -x ignore:mesg='Authentication failed.'\nTime: ~0h 11min Rekonesans/dictionary/s_pass_admin.txt (>2300 row) <br />Time: ~1h 03min Rekonesans/dictionary/s_pass_13k.txt (>13700 row)"
                 
             # port 23 telnet
             if(port == "23" or "telnet" in opis_nmap.lower()) and protokol.lower() == "tcp":
-                tmp_dict[ip]['wskazowka:[NSE]:nmap'] = f"nmap --script telnet* -p23 -d {ip}"
+                tmp_dict[ip]['wskazowka:nmap'] = f"nmap --script telnet* -p{port} -d {ip}"
+                f_biblioteka.f_zapis_log(
+                                f"port {port}",
+                                "subp",
+                                f"uruchamiam subprocess - nmap bruteforce telnet-u",
+                                pathLogFile=path_plik_logu)
+                os.system(f"nmap --script telnet* -p{port} {ip} > {FILE_OUTPUT}_nmap_telnet_{ip}_{port}.txt &")
+                tmp_dict[ip]['Raport:nmap'] = f'<a href="{FILE_OUTPUT}_nmap_telnet_{ip}_{port}.txt">{f_biblioteka.f_raport_img()}</a>'
+                #---
+                tmp_dict[ip]['wskazowka:patator'] = f"patator telnet_login host={ip} inputs='FILE0\nFILE1' 0=dictionary/s_user.lst 1=dictionary/s_pass_admin.txt persistent=0 timeout=7 prompt_re='Username:|Password:' -x ignore:egrep='Login incorrect.+Username:'"
 
             # port 25 smtp
             # output_smtp = "none"
@@ -309,6 +327,7 @@ if __name__ == '__main__':
                 path_plik_logu = args.file_output + ".log"
                 path_plik_json = args.file_output + ".json"
                 path_plik_html = args.file_output + ".html"
+                FILE_OUTPUT = args.file_output
 
             # wyswietlenie czasu rozpoczęcia skanowania
             start_script = f_biblioteka.f_czas()
