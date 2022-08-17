@@ -175,14 +175,14 @@ def f_odczyt_pliku_nmap(plik):
             # 20-21 FTP
             # port 20 data transfer
             if(port == "21" or "ftp" in opis_nmap.lower()) and protokol.lower() == "tcp":
-                tmp_dict[ip]['wskazowka:nmap'] = f'nmap --script ftp* -p{port} -d {ip} -Pn -n<br />Time: 10min'
+                
                 f_biblioteka.f_zapis_log(
                                 f"port {port}",
                                 "subp",
                                 f"uruchamiam subprocess - nmap bruteforce ftp",
                                 pathLogFile=path_plik_logu)
                 os.system(f"nmap --script ftp* -p{port} {ip} -Pn -n > {FILE_OUTPUT}_nmap_ftp_{ip}_{port}.txt &")
-                tmp_dict[ip]['Raport:nmap'] = f'<a href="{FILE_OUTPUT}_nmap_ftp_{ip}_{port}.txt">{f_biblioteka.f_raport_img()}</a>' 
+                tmp_dict[ip]['nmap:raport'] = f'<a href="{FILE_OUTPUT}_nmap_ftp_{ip}_{port}.txt">{f_biblioteka.f_raport_img()}</a><br />---<br />Time: ~10min<br />nmap --script ftp* -p{port} -d {ip} -Pn -n'
                 #---
                 tmp_dict[ip]['wskazowka:hydra'] = f'hydra -s {port} -L dictionary/s_user.lst -P dictionary/s_pass_admin.txt -u -f {ip} ftp\n'
                 tmp_dict[ip]['wskazowka:patator'] = f"patator ftp_login host={ip} port={port} user=FILE0 0=dictionary/s_user.lst password=FILE1 1=dictionary/s_pass_admin.txt -x ignore:mesg='Login incorrect.' -x ignore,reset,retry:code=500"
