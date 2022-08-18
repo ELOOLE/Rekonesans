@@ -5,3 +5,9 @@ client$ socat -u TCP:127.0.0.1:9876 OPEN:out.dat,creat
 Server receiving file:
 server$ socat -u TCP-LISTEN:9876,reuseaddr OPEN:out.txt,creat && cat out.txt
 client$ socat -u FILE:test.txt TCP:127.0.0.1:9876
+
+-----------
+
+socat -u FILE:"${HOME}/.vimrc" TCP-LISTEN:5778,reuseaddr
+socat -u TCP:192.168.1.97:5778 STDOUT > /path/to/downloaded/file
+socat -u TCP:192.168.1.97:5778 STDOUT | pv -r > /path/to/downloaded/file (z postępem)
