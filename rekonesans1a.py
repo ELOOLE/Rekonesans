@@ -2,16 +2,17 @@
 # rekonesans v0.2
 # Written by MM
 # Copyright 2021
-# input: metasploit(db_nmap - discover)
-# services -u -c port,proto,name,info -o /home/user/targets_ports
+#---
+# nmap -sV -A -O -p- XcelX -oA PlikWynikowy
+#---
+# services -u -O 1 -c  port,proto,name,info -o /home/user/targets_ports - sort by host
+# services -u -O 2 -c  port,proto,name,info -o /home/user/targets_ports - sort by port
 ###############################################################################
 from multiprocessing.pool import ThreadPool
 import os
 import argparse
-import subprocess
 import sys
 from tkinter.ttk import Style
-import pyfiglet
 import re
 import f_biblioteka
 import f_json
