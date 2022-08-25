@@ -11,6 +11,7 @@
 from multiprocessing.pool import ThreadPool
 import os
 import argparse
+from pickle import FALSE
 import sys
 from tkinter.ttk import Style
 import re
@@ -81,6 +82,20 @@ def f_odczyt_pliku_nmap(plik):
                     tmp_dict[ip]['socat'] = f'{output}\n'
                     f_biblioteka.f_zapis_log("socat","results",str(output),pathLogFile=path_plik_logu)
                     f_biblioteka.f_zapis_log("socat","end time",str(f_biblioteka.f_czas()),pathLogFile=path_plik_logu)
+
+            ########
+            # amap #
+            ########
+            cmd = f"amap -bqv {ip} {port}"
+            f_biblioteka.f_zapis_log("amap","start time",str(f_biblioteka.f_czas()),pathLogFile=path_plik_logu)
+            amap_output = f_biblioteka.f_polecenie_uniwersalne(cmd)
+            if(amap_output[1] == None):
+                output = f_biblioteka.f_trim_output(amap_output[0])
+                if(len(output) > 0):
+                    tmp_dict[ip]['amap'] = f'{output}\n'
+                    f_biblioteka.f_zapis_log("amap","results",str(output),pathLogFile=path_plik_logu)
+                    f_biblioteka.f_zapis_log("amap","end time",str(f_biblioteka.f_czas()),pathLogFile=path_plik_logu)
+
 
             #########################
             # cURL, links, web_shot #
@@ -176,17 +191,17 @@ def f_odczyt_pliku_nmap(plik):
             # 20-21 FTP
             # port 20 data transfer
             if(port == "21" or "ftp" in opis_nmap.lower()) and protokol.lower() == "tcp":
-                
-                f_biblioteka.f_zapis_log(
-                                f"port {port}",
-                                "subp",
-                                f"uruchamiam subprocess - nmap bruteforce ftp",
-                                pathLogFile=path_plik_logu)
-                os.system(f"nmap --script ftp* -p{port} {ip} -Pn -n > {FILE_OUTPUT}_nmap_ftp_{ip}_{port}.txt &")
-                tmp_dict[ip]['nmap:raport'] = f'<a href="{FILE_OUTPUT}_nmap_ftp_{ip}_{port}.txt">{f_biblioteka.f_raport_img()}</a><br />---<br />Time: ~10min<br />nmap --script ftp* -p{port} -d {ip} -Pn -n'
+                if AGGRESIVE:
+                    f_biblioteka.f_zapis_log(
+                                    f"port {port}",
+                                    "subp",
+                                    f"uruchamiam subprocess - nmap bruteforce ftp",
+                                    pathLogFile=path_plik_logu)
+                    os.system(f"nmap --script ftp* -p{port} {ip} -Pn -n > {FILE_OUTPUT}_nmap_ftp_{ip}_{port}.txt &")
+                    tmp_dict[ip]['nmap:raport'] = f'<a href="{FILE_OUTPUT}_nmap_ftp_{ip}_{port}.txt">{f_biblioteka.f_raport_img()}</a><br />---<br />Time: ~10min<br />nmap --script ftp* -p{port} -d {ip} -Pn -n'
                 #---
-                tmp_dict[ip]['wskazowka:hydra'] = f'hydra -s {port} -L dictionary/s_user.lst -P dictionary/s_pass_admin.txt -u -f {ip} ftp\n'
-                tmp_dict[ip]['wskazowka:patator'] = f"patator ftp_login host={ip} port={port} user=FILE0 0=dictionary/s_user.lst password=FILE1 1=dictionary/s_pass_admin.txt -x ignore:mesg='Login incorrect.' -x ignore,reset,retry:code=500"
+                tmp_dict[ip]['wskazowka:hydra'] = f'hydra -s {port} -L Rekonesans/dictionary/s_user.lst -P Rekonesans/dictionary/s_pass_admin.txt -u -f {ip} ftp\n'
+                tmp_dict[ip]['wskazowka:patator'] = f"patator ftp_login host={ip} port={port} user=FILE0 0=Rekonesans/dictionary/s_user.lst password=FILE1 1=Rekonesans/dictionary/s_pass_admin.txt -x ignore:mesg='Login incorrect.' -x ignore,reset,retry:code=500"
 
             # port 22 - Encrypted
             #output_ssh_mechanizm = "none"
@@ -199,29 +214,32 @@ def f_odczyt_pliku_nmap(plik):
                     tmp_dict[ip]['ssh'] = f'{output}\n'
 
                 tmp_dict[ip]['wskazowka:nmap'] = f'nmap --script ssh-brute -d {ip}'
-                f_biblioteka.f_zapis_log(
-                                f"port {port}",
-                                "subp",
-                                f"uruchamiam subprocess - nmap bruteforce ssh",
-                                pathLogFile=path_plik_logu)
-                #subprocess.Popen(["nmap","--script", "ssh-brute", ip, "-oA", path_file_data+"_nmap_"+ip+".txt"])
-                os.system(f"nmap --script ssh-brute -p{port} {ip} > {FILE_OUTPUT}_nmap_ssh_{ip}_{port}.txt &")
-                tmp_dict[ip]['Raport:nmap'] = f'<a href="{FILE_OUTPUT}_nmap_ssh_{ip}_{port}.txt">{f_biblioteka.f_raport_img()}</a><br />---<br />Time: ~10min<br />nmap --script ssh-brute -p{port} {ip}' 
+                if AGGRESIVE:
+                    f_biblioteka.f_zapis_log(
+                                    f"port {port}",
+                                    "subp",
+                                    f"uruchamiam subprocess - nmap bruteforce ssh",
+                                    pathLogFile=path_plik_logu)
+                    #subprocess.Popen(["nmap","--script", "ssh-brute", ip, "-oA", path_file_data+"_nmap_"+ip+".txt"])
+                    os.system(f"nmap --script ssh-brute -p{port} {ip} > {FILE_OUTPUT}_nmap_ssh_{ip}_{port}.txt &")
+                    tmp_dict[ip]['Raport:nmap'] = f'<a href="{FILE_OUTPUT}_nmap_ssh_{ip}_{port}.txt">{f_biblioteka.f_raport_img()}</a><br />---<br />Time: ~10min<br />nmap --script ssh-brute -p{port} {ip}' 
                 #---
                 tmp_dict[ip]['wskazowka:patator'] = f"patator ssh_login host={ip} user=root password=FILE0 0=Rekonesans/dictionary/s_pass_admin.txt -x ignore:mesg='Authentication failed.'\nTime: ~0h 11min Rekonesans/dictionary/s_pass_admin.txt (>2300 row) <br />Time: ~1h 03min Rekonesans/dictionary/s_pass_13k.txt (>13700 row)"
                 
             # port 23 telnet
             if(port == "23" or "telnet" in opis_nmap.lower()) and protokol.lower() == "tcp":
                 tmp_dict[ip]['wskazowka:nmap'] = f"nmap --script telnet* -p{port} -d {ip}"
-                f_biblioteka.f_zapis_log(
-                                f"port {port}",
-                                "subp",
-                                f"uruchamiam subprocess - nmap bruteforce telnet-u",
-                                pathLogFile=path_plik_logu)
-                os.system(f"nmap --script telnet* -p{port} {ip} > {FILE_OUTPUT}_nmap_telnet_{ip}_{port}.txt &")
-                tmp_dict[ip]['Raport:nmap'] = f'<a href="{FILE_OUTPUT}_nmap_telnet_{ip}_{port}.txt">{f_biblioteka.f_raport_img()}</a><br />---<br />nmap --script telnet* -p{port} {ip}'
+                
+                if AGGRESIVE:
+                    f_biblioteka.f_zapis_log(
+                                    f"port {port}",
+                                    "subp",
+                                    f"uruchamiam subprocess - nmap bruteforce telnet-u",
+                                    pathLogFile=path_plik_logu)
+                    os.system(f"nmap --script telnet* -p{port} {ip} > {FILE_OUTPUT}_nmap_telnet_{ip}_{port}.txt &")
+                    tmp_dict[ip]['Raport:nmap'] = f'<a href="{FILE_OUTPUT}_nmap_telnet_{ip}_{port}.txt">{f_biblioteka.f_raport_img()}</a><br />---<br />nmap --script telnet* -p{port} {ip}'
                 #---
-                tmp_dict[ip]['wskazowka:patator'] = f"patator telnet_login host={ip} inputs='FILE0\nFILE1' 0=dictionary/s_user.lst 1=dictionary/s_pass_admin.txt persistent=0 timeout=7 prompt_re='Username:|Password:' -x ignore:egrep='Login incorrect.+Username:'"
+                tmp_dict[ip]['wskazowka:patator'] = f"patator telnet_login host={ip} inputs='FILE0\nFILE1' 0=Rekonesans/dictionary/s_user.lst 1=Rekonesans/dictionary/s_pass_admin.txt persistent=0 timeout=7 prompt_re='Username:|Password:' -x ignore:egrep='Login incorrect.+Username:'"
 
             # port 25 smtp
             # output_smtp = "none"
@@ -309,7 +327,16 @@ if __name__ == '__main__':
                         help='Ścieżke do pliku z danymi. Plik źródłowy')
     parser.add_argument('-fout', '--file-output', action='store', dest='file_output', type=str, 
                         help='Ścieżke do zapisu pliku z wynikami skanowania')
+    parser.add_argument('-b', '--behavior', action='store', dest='scan_behavior', type=str, 
+                        help='Ścieżke do zapisu pliku z wynikami skanowania')
     args = parser.parse_args()
+
+    AGGRESIVE=""
+
+    if ('scan_behavior' not in args or not args.scan_behavior):
+        AGGRESIVE=False
+    elif(args.scan_behavior==True):
+        AGGRESIVE=True
 
     if ('file_input' not in args or not args.file_input):
         parser.print_help()
