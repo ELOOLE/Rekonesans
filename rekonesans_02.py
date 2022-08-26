@@ -70,28 +70,53 @@ def f_odczyt_pliku_nmap(plik):
                 'opis': opis_nmap,
             }}
 
-            #########
+            ########################################################################################################
             # socat #
             #########
+            #
+            # polecenie:
             cmd = f"echo -ne \\x01\\x00\\x00\\x00 | socat -t 1 {protokol.upper()}:{ip}:{port},connect-timeout=5 - "
+            
+            # zapis do logu rozpoczecia:
             f_biblioteka.f_zapis_log("socat","start time",str(f_biblioteka.f_czas()),pathLogFile=path_plik_logu)
+            
+            # wykonanie polecenia:
             socat_output = f_biblioteka.f_polecenie_uniwersalne(cmd)
+            
+            # sprawdzam
+            # [0] - wynik
+            # [1] - komunikat bledu
             if(socat_output[1] == None):
+                # wynik
                 output = f_biblioteka.f_trim_output(socat_output[0])
                 if(len(output) > 0):
+                    output = f"polcenie: {cmd} \n-----\n {output}"
                     tmp_dict[ip]['socat'] = f'{output}\n'
                     f_biblioteka.f_zapis_log("socat","results",str(output),pathLogFile=path_plik_logu)
                     f_biblioteka.f_zapis_log("socat","end time",str(f_biblioteka.f_czas()),pathLogFile=path_plik_logu)
 
-            ########
+
+            #########################################################################################################
             # amap #
             ########
+            #
+            # polecenie:
             cmd = f"amap -bqv {ip} {port}"
+            
+            # zapis do logu rozpoczecia:
             f_biblioteka.f_zapis_log("amap","start time",str(f_biblioteka.f_czas()),pathLogFile=path_plik_logu)
+            
+            # wykonanie polecenia
             amap_output = f_biblioteka.f_polecenie_uniwersalne(cmd)
+
+            # sprawdzam
+            # [0] - wynik
+            # [1] - komunikat bledu
             if(amap_output[1] == None):
+                # wynik
                 output = f_biblioteka.f_trim_output(amap_output[0])
                 if(len(output) > 0):
+                    output = f"polcenie: {cmd} \n-----\n {output}"
                     tmp_dict[ip]['amap'] = f'{output}\n'
                     f_biblioteka.f_zapis_log("amap","results",str(output),pathLogFile=path_plik_logu)
                     f_biblioteka.f_zapis_log("amap","end time",str(f_biblioteka.f_czas()),pathLogFile=path_plik_logu)

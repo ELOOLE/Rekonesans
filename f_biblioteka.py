@@ -18,7 +18,7 @@ from impacket.dcerpc.v5.ndr import NULL
 from impacket.dcerpc.v5.rpcrt import RPC_C_AUTHN_LEVEL_NONE
 from impacket.dcerpc.v5.dcomrt import IObjectExporter
 
-from rekonesans1a import style
+from rekonesans import style
 
 def f_polecenie_uniwersalne(cmd):
     '''SOCAT
