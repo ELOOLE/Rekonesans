@@ -16,9 +16,9 @@
 1_0_3705_6018
 1_0_3705_6018/
 1_1_4322
-1_1_4322/
 1_1_4322 
 1_1_4322 /
+1_1_4322/
 1_1_4322_2032
 1_1_4322_2032/
 1_1_4322_2300
@@ -117,9 +117,9 @@
 4_0_30128_1
 4_0_30128_1/
 4_0_30319
-4_0_30319/
 4_0_30319 
 4_0_30319 /
+4_0_30319/
 4_0_30319_1
 4_0_30319_1/
 4_0_30319_17020
@@ -995,9 +995,9 @@ scode.asp
 /~/<script>alert('XSS')</script>.aspx
 /scripts/
 scripts
-scripts/
 scripts 
 scripts /
+scripts/
 /scripts/..%255c..%255c..%255c..%255cwinnt/system32/cmd.exe?/c+dir
 /scripts/..%c0%af..%c0%afwinnt/system32/cmd.exe?/c+dir+c:\\
 /scripts/..%c0%af../winnt/system32/cmd.exe?/c+dir+c:\\
