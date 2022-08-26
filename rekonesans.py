@@ -133,13 +133,13 @@ def f_odczyt_pliku_nmap(plik):
                     adres = f"{h_prot}://{ip}:{port}"
 
                     # CURL %{http_code}
-                    cmd = f'curl -A "{f_biblioteka.random_ua()} --max-time {CURL_MAX_TIME} "' + "-k -I -s -o /dev/null -w \"%{http_code}\" " + adres
+                    cmd = f'curl -A "{f_biblioteka.random_ua()}" --max-time {CURL_MAX_TIME} ' + "-k -I -s -o /dev/null -w \"%{http_code}\" " + adres
                     curl_output = f_biblioteka.f_polecenie_uniwersalne(cmd)
                     http_code = "000"
                     if(curl_output[1] == None):
                         http_code = curl_output[0].decode('utf-8')
                         if(http_code != "000"):
-                            tmp_dict[ip][f'curl:{h_prot}:cmd'] = f'<b>{cmd}</b>'
+                            tmp_dict[ip][f'curl:{h_prot}:http_code:cmd'] = f'<b>{cmd}</b>'
                             tmp_dict[ip][f'curl:{h_prot}:http_code'] = f'{http_code}'
 
                     # CURL FULL RESPONSE
@@ -276,7 +276,7 @@ def f_odczyt_pliku_nmap(plik):
                     tmp_dict[ip]['smtp'] = f'{output}'
 
             # port 53 | UDP | DNS
-            if(port == "53") and protokol.lower() == "udp":
+            if(port == "53" or "dns" in opis_nmap.lower()) and protokol.lower() == "udp":
                 cmd = f'dig ANY @{ip}'
                 dig_output = f_biblioteka.f_polecenie_uniwersalne(cmd)
 
@@ -287,13 +287,13 @@ def f_odczyt_pliku_nmap(plik):
 
             # port 135
             #output_dcerpc_p135 = "none"
-            if(port == "135") and protokol.lower() == "tcp":
+            if(port == "135" or "dcerpc" in opis_nmap.lower()) and protokol.lower() == "tcp":
                 output_dcerpc_p135 = f_biblioteka.f_rpc_p135(ip)
                 tmp_dict[ip]['dcerpc'] = f'{output_dcerpc_p135}'
 
             # port 137 - 139 NetBIOS
             # output_enum4linux = "none"
-            if(port == "139") and protokol.lower() == "tcp":
+            if(port == "139" or "netbios" in opis_nmap.lower()) and protokol.lower() == "tcp":
                 cmd = f"enum4linux {ip}"
                 enum4linux_output = f_biblioteka.f_polecenie_uniwersalne(cmd)
 
@@ -302,6 +302,11 @@ def f_odczyt_pliku_nmap(plik):
                     tmp_dict[ip]['enum4linux:cmd'] = f'<b>{cmd}</b>'
                     tmp_dict[ip]['enum4linux'] = f'{output}'
                     tmp_dict[ip]['patator'] = f'patator smb_login host={ip} user=FILE0 password=FILE1 0=Rekonesans/dictionary/s_user.lst 1=Rekonesans/dictionary/s_pass_admin.txt -x ignore:fgrep=STATUS_LOGON_FAILURE'
+
+            # 5900 vnc
+            if(port == "5900" or "vnc" in opis_nmap.lower()) and protokol.lower() == "tcp":
+                tmp_dict[ip]['curl:kebernetes:cmd'] = f'<b>{cmd}</b>'
+            
 
             # 6443 kubernetes
             if(port == "6443") and protokol.lower() == "tcp":
@@ -356,15 +361,23 @@ if __name__ == '__main__':
                         help='Ścieżke do zapisu pliku z wynikami skanowania')
     parser.add_argument('-b', '--behavior', action='store', dest='scan_behavior', type=boolean, 
                         help='True = agresywny tryb skanowania, brak lub False nie agresywny tryb skanowania')
+    parser.add_argument('-cmt', '--curl-max-time', action='store', dest='curl_max_time', type=int, 
+                        help='True = agresywny tryb skanowania, brak lub False nie agresywny tryb skanowania')
     args = parser.parse_args()
 
-    AGGRESIVE=""
-    CURL_MAX_TIME = 7
+    
 
     if ('scan_behavior' not in args or not args.scan_behavior):
         AGGRESIVE=False
+        print(style.YELLOW("Aggresive mode scan: default False, use -b True to change that"))
     elif(args.scan_behavior==True):
         AGGRESIVE=True
+
+    if ('curl_max_time' not in args or not args.curl_max_time):
+        CURL_MAX_TIME = 7
+        print(style.YELLOW("curl --max-time default set to 7, use -cmt int to change that"))
+    elif(args.curl_max_time != 7):
+        CURL_MAX_TIME=args.curl_max_time
 
     if ('file_input' not in args or not args.file_input):
         parser.print_help()
