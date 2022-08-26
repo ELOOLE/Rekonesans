@@ -305,7 +305,7 @@ def f_odczyt_pliku_nmap(plik):
 
             # 5900 vnc
             if(port == "5900" or "vnc" in opis_nmap.lower()) and protokol.lower() == "tcp":
-                tmp_dict[ip]['curl:kebernetes:cmd'] = f'<b>{cmd}</b>'
+                tmp_dict[ip]['curl:vnc'] = f"<i>patator vnc_login host={ip} port={port} password=FILE0 0='Rekonesans/dictionary/s_pass_4-8_vnc.txt' -t 1 -x ignore:fgrep!='Authentication failure' -x ignore:fgrep='Too many authentication failures' --max-retries 1 -x quit:code=0</i>"
             
 
             # 6443 kubernetes
