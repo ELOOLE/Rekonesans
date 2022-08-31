@@ -1,0 +1,1 @@
+ffuf -u http://adres.xx/admin/login -X POST -H "Content-Type: application/json" -d '{"login":"admin","password":"FUZZ"}' -w s_pass.txt
