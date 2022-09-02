@@ -228,7 +228,7 @@ def f_odczyt_pliku_nmap(plik):
             # port 22 - Encrypted
             #output_ssh_mechanizm = "none"
             if(port == "22" or "ssh" in opis_nmap.lower()) and protokol.lower() == "tcp":
-                cmd = f'nmap --script "ssh* and not ssh-brute and not ssh-run" -p22 -Pn -n {ip}'
+                cmd = f'nmap --script "ssh* and not ssh-brute and not ssh-run" -p {port} -Pn -n {ip}'
                 ssh_output = f_biblioteka.f_polecenie_uniwersalne(cmd)
 
                 if(ssh_output[1] == None):
