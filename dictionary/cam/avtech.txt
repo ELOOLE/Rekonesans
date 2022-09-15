@@ -1,0 +1,7 @@
+axis-cgi/mjpg/video.cgi
+cgi-bin/guest/Video.cgi?media=JPEG
+cgi-bin/guest/Video.cgi?media=JPEG&channel=1
+image/1.jpg
+live/h264_ulaw
+live/mjpeg
+videostream.asf?user=[USERNAME]&pwd=[PASSWORD]&resolution=[WIDTH]x[HEIGHT]
