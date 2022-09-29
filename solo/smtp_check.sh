@@ -37,7 +37,7 @@ do
     sleep 2
     echo "MAIL FROM: <seketariat@kprm.gov.pl>"
     sleep 2
-    echo "RCPT TO: <pentesty@abw.gov.pl>"
+    echo "RCPT TO: <pentesty@twoja_skrzynka.pl>"
     sleep 2
     echo "DATA"
     sleep 2
