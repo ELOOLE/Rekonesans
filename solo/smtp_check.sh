@@ -37,7 +37,7 @@ do
     sleep $sleep
     echo "MAIL FROM: <seketariat@kprm.gov.pl>"
     sleep $sleep
-    echo "RCPT TO: <pentesty@abw.gov.pl>"
+    echo "RCPT TO: <pentesty@twoja_skrzynka.pl>"
     sleep $sleep
     echo "DATA"
     sleep $sleep
@@ -45,7 +45,7 @@ do
     sleep $sleep
     echo "Dzien dobry,"
     sleep $sleep
-    echo "Poproszę o odesłanie tej wiadomości w formie zalaczniki na adres email: pentesty@abw.gov.pl"
+    echo "Poproszę o odesłanie tej wiadomości w formie zalaczniki na adres email: pentesty@twoja_skrzynka.pl"
     sleep $sleep
     echo "Pozdrawiam"
     sleep $sleep
@@ -72,7 +72,7 @@ do
     sleep $sleep
     echo "Dzien dobry,"
     sleep $sleep
-    echo "Poproszę o odesłanie tej wiadomości w formie zalaczniki na adres email: pentesty@abw.gov.pl"
+    echo "Poproszę o odesłanie tej wiadomości w formie zalaczniki na adres email: pentesty@twoja_skrzynka.pl"
     sleep $sleep
     echo "Pozdrawiam"
     sleep $sleep
