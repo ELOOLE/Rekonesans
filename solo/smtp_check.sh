@@ -61,6 +61,9 @@ if [ -z "$2" ]
             echo "quit"
             ) | telnet $line $port
 
+            echo -e "[*] Koniec \e[92mTestu 01\e[0m"
+            echo -e "[~]"
+
             echo -e "[*] \e[32mCheck MX $line \e[0m"
             echo -e "[*] \e[32mTest 02 wysylam z obcej skrzynki na adres w wewnątrz organizacji \e[0m"
             (echo "helo"
@@ -88,6 +91,9 @@ if [ -z "$2" ]
             echo "quit"
             ) | telnet $line $port
 
+            echo -e "[*] Koniec \e[92mTestu 02\e[0m"
+            echo -e "[~]"
+
             echo -e "[*] \e[32mCheck MX $line \e[0m"
             echo -e "[*] \e[32mTest 03 wysylam ze skrzynki wewnątrz organizacji na adres w wewnątrz organizacji \e[0m"
             (echo "helo"
@@ -114,5 +120,8 @@ if [ -z "$2" ]
             sleep $sleep
             echo "quit"
             ) | telnet $line $port
+
+            echo -e "[*] Koniec \e[92mTestu 03\e[0m"
+            echo -e "[~]"
         done < <(printf '%s\n' "$serwery")
 fi
