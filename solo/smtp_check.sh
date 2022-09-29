@@ -99,7 +99,7 @@ do
     sleep $sleep
     echo "Dzien dobry,"
     sleep $sleep
-    echo "Poproszę o odesłanie tej wiadomości w formie zalaczniki na adres email: pentesty@abw.gov.pl"
+    echo "Poproszę o odesłanie tej wiadomości w formie zalaczniki na adres email: pentesty@twoja_skrzynka.pl"
     sleep $sleep
     echo "Pozdrawiam"
     sleep $sleep
