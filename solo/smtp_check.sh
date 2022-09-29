@@ -21,92 +21,92 @@
 #                                                                     #
 #######################################################################
 
-
-
+sleep=1
+port=25
 echo -e "[*] \e[32mDIG $1 \e[0m"
 
-serwery=$(dig ANY @194.204.152.34 $1 | grep MX | awk '{print $6}')
+serwery=$(dig ANY @8.8.8.8 $1 | grep MX | awk '{print $6}')
 
 while read -r line
 do
     echo -e "[*] \e[32mCheck MX $line \e[0m"
     echo -e "[*] \e[32mTest 01 wysylam z obcej skrzynki na obcy adres w sieci Internet \e[0m"
     (echo "helo"
-    sleep 2
+    sleep $sleep
     echo "ehlo mx.kprm.gov.pl"
-    sleep 2
+    sleep $sleep
     echo "MAIL FROM: <seketariat@kprm.gov.pl>"
-    sleep 2
-    echo "RCPT TO: <pentesty@twoja_skrzynka.pl>"
-    sleep 2
+    sleep $sleep
+    echo "RCPT TO: <pentesty@abw.gov.pl>"
+    sleep $sleep
     echo "DATA"
-    sleep 2
+    sleep $sleep
     echo "Subject: Pozdrowienia z pentestow"
-    sleep 2
+    sleep $sleep
     echo "Dzien dobry,"
-    sleep 2
-    echo "Poproszę o odesłanie tej wiadomości w formie zalaczniki na adres email: pentesty@twoja_skrzynka.pl"
-    sleep 2
+    sleep $sleep
+    echo "Poproszę o odesłanie tej wiadomości w formie zalaczniki na adres email: pentesty@abw.gov.pl"
+    sleep $sleep
     echo "Pozdrawiam"
-    sleep 2
+    sleep $sleep
     echo "MM"
-    sleep 2 
+    sleep $sleep 
     echo "."
-    sleep 2
+    sleep $sleep
     echo "quit"
-    ) | telnet $line 25
+    ) | telnet $line $port
 
     echo -e "[*] \e[32mCheck MX $line \e[0m"
     echo -e "[*] \e[32mTest 02 wysylam z obcej skrzynki na adres w wewnątrz organizacji \e[0m"
     (echo "helo"
-    sleep 2
+    sleep $sleep
     echo "ehlo mx.kprm.gov.pl"
-    sleep 2
+    sleep $sleep
     echo "MAIL FROM: <seketariat@kprm.gov.pl>"
-    sleep 2
+    sleep $sleep
     echo "RCPT TO: <kontakt@$1>"
-    sleep 2
+    sleep $sleep
     echo "DATA"
-    sleep 2
+    sleep $sleep
     echo "Subject: Pozdrowienia z pentestow"
-    sleep 2
+    sleep $sleep
     echo "Dzien dobry,"
-    sleep 2
-    echo "Poproszę o odesłanie tej wiadomości w formie zalaczniki na adres email: pentesty@twoja_skrzynka.pl"
-    sleep 2
+    sleep $sleep
+    echo "Poproszę o odesłanie tej wiadomości w formie zalaczniki na adres email: pentesty@abw.gov.pl"
+    sleep $sleep
     echo "Pozdrawiam"
-    sleep 2
+    sleep $sleep
     echo "MM"
-    sleep 2 
+    sleep $sleep 
     echo "."
-    sleep 2
+    sleep $sleep
     echo "quit"
-    ) | telnet $line 25
+    ) | telnet $line $port
 
     echo -e "[*] \e[32mCheck MX $line \e[0m"
     echo -e "[*] \e[32mTest 03 wysylam ze skrzynki wewnątrz organizacji na adres w wewnątrz organizacji \e[0m"
     (echo "helo"
-    sleep 2
+    sleep $sleep
     echo "ehlo mx.kprm.gov.pl"
-    sleep 2
+    sleep $sleep
     echo "MAIL FROM: <seketariat@$1>"
-    sleep 2
+    sleep $sleep
     echo "RCPT TO: <kontakt@$1>"
-    sleep 2
+    sleep $sleep
     echo "DATA"
-    sleep 2
+    sleep $sleep
     echo "Subject: Pozdrowienia z pentestow"
-    sleep 2
+    sleep $sleep
     echo "Dzien dobry,"
-    sleep 2
-    echo "Poproszę o odesłanie tej wiadomości w formie zalaczniki na adres email: pentesty@twoja_skrzynka.pl"
-    sleep 2
+    sleep $sleep
+    echo "Poproszę o odesłanie tej wiadomości w formie zalaczniki na adres email: pentesty@abw.gov.pl"
+    sleep $sleep
     echo "Pozdrawiam"
-    sleep 2
+    sleep $sleep
     echo "MM"
-    sleep 2 
+    sleep $sleep 
     echo "."
-    sleep 2
+    sleep $sleep
     echo "quit"
-    ) | telnet $line 25
+    ) | telnet $line $port
 done < <(printf '%s\n' "$serwery")
