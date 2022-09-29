@@ -45,7 +45,7 @@ do
     sleep 2
     echo "Dzien dobry,"
     sleep 2
-    echo "Poproszę o odesłanie tej wiadomości w formie zalaczniki na adres email: pentesty@abw.gov.pl"
+    echo "Poproszę o odesłanie tej wiadomości w formie zalaczniki na adres email: pentesty@twoja_skrzynka.pl"
     sleep 2
     echo "Pozdrawiam"
     sleep 2
@@ -72,7 +72,7 @@ do
     sleep 2
     echo "Dzien dobry,"
     sleep 2
-    echo "Poproszę o odesłanie tej wiadomości w formie zalaczniki na adres email: pentesty@abw.gov.pl"
+    echo "Poproszę o odesłanie tej wiadomości w formie zalaczniki na adres email: pentesty@twoja_skrzynka.pl"
     sleep 2
     echo "Pozdrawiam"
     sleep 2
