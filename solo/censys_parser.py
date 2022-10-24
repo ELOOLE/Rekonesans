@@ -4,6 +4,8 @@ import re
 import sys
 from tkinter.messagebox import NO
 
+from numpy import number
+
 
 def f_policz_wiersze_w_pliku(path):
     '''liczy ilosc linijek w wierszu'''
@@ -31,14 +33,16 @@ def f_odczyt_pliku(plik):
     opis=""
     plik_po = f"{plik}_output"
     with open(plik_po, 'w') as file:
-                file.write("---")
+                file.write("---MM\n")
 
     r = re.compile("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}")
 
     for linijka in uchwyt_pliku_dane:
         print(f"Postep: {licznik}\{LINE_COUNT}")
         licznik+=1
+        
         linijka = linijka.strip()
+        
         if "(" in linijka:
             wynik = linijka.split('(')
             ip = wynik[0]
@@ -52,13 +56,19 @@ def f_odczyt_pliku(plik):
         elif r.match(linijka) is not None:
             IP = linijka
         
-        if "/" in linijka:    
-            linijka = linijka.replace("/",",tcp,")
-            linijka = f'{IP},{linijka},"{opis}"{os.linesep}'
+        if "/" in linijka:
+            try:
+                
+                if linijka[0:1].isnumeric():
+                    #print(f"l:{linijka[0:1]}")    
+                    linijka = linijka.replace("/",",tcp,")
+                    linijka = f'{IP},{linijka},"{opis}"{os.linesep}'
 
-            
-            with open(plik_po, 'a+') as file:
-                file.write(linijka)
+                    
+                    with open(plik_po, 'a+') as file:
+                        file.write(linijka)
+            except Exception as e:
+                print("Pomijam")
 
     
 ####################################################################################################################
