@@ -1,0 +1,6 @@
+# enum
+amass enum -d domena.pl -src -ip
+
+# intel
+amass intel -asn 999999
+amass intel -asn 999999 -active
