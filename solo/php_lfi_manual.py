@@ -389,13 +389,14 @@ def build_dic_links(url: str) -> List[WEBCrawler]:
     """ Web page crawler """
     links = []
     parser = 'html.parser'
+    UA = {'User-Agent' :random_ua()}
     
     ctx = ssl.create_default_context()
     ctx.check_hostname = False
     ctx.verify_mode = ssl.CERT_NONE
     ctx.session_stats()
     
-    resp_param = urllib.request.Request(url, data=None)
+    resp_param = urllib.request.Request(url, data=None, headers=UA)
     try:
         resp = urllib.request.urlopen(resp_param, context=ctx,timeout=10)
         soup = BeautifulSoup(resp, parser, from_encoding=resp.info().get_param('charset'))
@@ -436,8 +437,9 @@ class PHPLFIScanner:
     """ Tries to detect and verify PHP LFI vulnerabilities """
 
     def scan(self, url: str) -> None:
+        UA = {'User-Agent' :random_ua()}
         try:
-            response = requests.get(url, verify=False)
+            response = requests.get(url, verify=False, headers=UA)
         except Exception as e:
             print(f"[-] {e}")
             return
