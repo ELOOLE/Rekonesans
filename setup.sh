@@ -12,7 +12,7 @@ pip install selenium
 sleep 5
 pip install bs4
 sleep 5
-pip install impacker
+pip install impacket
 sleep 5
 pip install Pillow
 sleep 5

