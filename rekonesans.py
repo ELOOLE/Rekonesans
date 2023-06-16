@@ -81,123 +81,27 @@ def f_odczyt_pliku_nmap(plik):
                 'opis': opis_nmap,
             }}
 
-            # socat:
+            # socat
             f_biblioteka.f_zapis_log("socat","start time",str(f_biblioteka.f_czas()),pathLogFile=path_plik_logu)
-            f_tools.f_socat(protokol, ip, port)
+            socat_output = f_tools.f_socat(protokol, ip, port)
+            f_biblioteka.f_zapis_log("socat","results",str(socat_output),pathLogFile=path_plik_logu)
             f_biblioteka.f_zapis_log("socat","end time",str(f_biblioteka.f_czas()),pathLogFile=path_plik_logu)
+            tmp_dict[ip]['socat:cmd'] = f'{str(socat_output[0])}'
+            tmp_dict[ip]['socat'] = f'{str(socat_output[1])}\n'
 
-            #########################################################################################################
-            # amap #
-            ########
-            #
-            # polecenie:
-            cmd = f"amap -bqv {ip} {port}"
-            
-            # zapis do logu rozpoczecia:
+            # amap
             f_biblioteka.f_zapis_log("amap","start time",str(f_biblioteka.f_czas()),pathLogFile=path_plik_logu)
-            
-            # wykonanie polecenia
-            amap_output = f_biblioteka.f_polecenie_uniwersalne(cmd)
+            amap_output = f_tools.f_amap(protokol, ip, port)
+            f_biblioteka.f_zapis_log("amap","results",str(amap_output),pathLogFile=path_plik_logu)
+            f_biblioteka.f_zapis_log("amap","end time",str(f_biblioteka.f_czas()),pathLogFile=path_plik_logu)
+            tmp_dict[ip]['amap:cmd'] = f'{str(amap_output[0])}'
+            tmp_dict[ip]['amap'] = f'{str(amap_output[1])}\n'
 
-            # sprawdzam
-            # [0] - wynik
-            # [1] - komunikat bledu
-            if(amap_output[1] == None):
-                # wynik
-                output = f_biblioteka.f_trim_output(amap_output[0])
-                if(len(output) > 0):
-                    tmp_dict[ip]['amap:cmd'] = f'<b>{cmd}</b>'
-                    tmp_dict[ip]['amap'] = f'{output}\n'
-                    f_biblioteka.f_zapis_log("amap","results",str(output),pathLogFile=path_plik_logu)
-                    f_biblioteka.f_zapis_log("amap","end time",str(f_biblioteka.f_czas()),pathLogFile=path_plik_logu)
-
-
-            #########################
-            # cURL, links, web_shot #
-            #########################
-            if(protokol.lower() == "tcp"):
-                lista_protokol = ["http", "https"]
-                for h_prot in lista_protokol:
-                    # adres
-                    adres = f"{h_prot}://{ip}:{port}"
-
-                    # CURL %{http_code}
-                    cmd = f'curl -A "{f_biblioteka.random_ua()}" --max-time {CURL_MAX_TIME} ' + "-k -I -s -o /dev/null -w \"%{http_code}\" " + adres
-                    curl_output = f_biblioteka.f_polecenie_uniwersalne(cmd)
-                    http_code = "000"
-                    if(curl_output[1] == None):
-                        http_code = curl_output[0].decode('utf-8')
-                        if(http_code != "000"):
-                            tmp_dict[ip][f'curl:{h_prot}:http_code:cmd'] = f'<b>{cmd}</b>'
-                            tmp_dict[ip][f'curl:{h_prot}:http_code'] = f'{http_code}'
-
-                    # CURL FULL RESPONSE
-                    lista_http_code = ['200','301','302','404']
-                    if(http_code in lista_http_code):
-                        cmd = f"curl -I -k -s {h_prot}://{ip}:{port} --max-time {CURL_MAX_TIME} --no-keepalive"
-                        curl_output = f_biblioteka.f_polecenie_uniwersalne(cmd)
-                        if(curl_output[1] == None):
-                            output = f_biblioteka.f_trim_output(curl_output[0])
-                            tmp_dict[ip][f'curl:{h_prot}:cmd'] = f'<b>{cmd}</b>'
-                            tmp_dict[ip][f'curl:{h_prot}:info'] = f'{output}'
-                        
-                        try:
-                            # screenshot
-                            output_screen_shot_web = f_biblioteka.f_screen_shot_web(adres, path_plik_logu)
-                            if(output_screen_shot_web == "error"):
-                                tmp_dict[ip][f'web_shot'] = f'{output_screen_shot_web}\n'
-                            else:
-                                tmp_dict[ip][f'web_shot'] = f'<img src="{output_screen_shot_web}">\n'
-
-                            # zbierz linki ze strony
-                            if(http_code == "200"):
-                                output_links_from_web = f_biblioteka.f_get_links_from_web(adres)
-                                tmp_dict[ip][f'links:{h_prot}'] = f'{output_links_from_web}\n'
-
-                            # przekierowanie
-                            if(http_code == "301" or http_code == "302"):
-                                redirect_url = ""
-                                cmd = "curl -I -k -s -o /dev/null -w \"%{redirect_url}\" " + f" --max-time {CURL_MAX_TIME} {adres}"
-                                curl_output = f_biblioteka.f_polecenie_uniwersalne(cmd)
-                                if(curl_output[1] == None):
-                                    redirect_url = curl_output[0].decode('utf-8')
-                                    tmp_dict[ip][f'curl:{h_prot}:redirect_url:cmd'] = f'<b>{cmd}</b>'
-                                    tmp_dict[ip][f'curl:{h_prot}:redirect_url:addr'] = f'{redirect_url}'
-
-                                    cmd = "curl -I -k -s -o /dev/null -w \"%{http_code}\" " + f" --max-time {CURL_MAX_TIME} {redirect_url}"
-                                    curl_output = f_biblioteka.f_polecenie_uniwersalne(cmd)
-                                    
-                                    http_code = "000"
-                                    if(curl_output[1] == None):
-                                        http_code = curl_output[0].decode('utf-8')
-                                        tmp_dict[ip][f'curl:{h_prot}:redirect_url_follow:cmd'] = f'<b>{cmd}</b>'
-                                        tmp_dict[ip][f'curl:{h_prot}:redirect_url_follow:http_code'] = f'{http_code}'
-
-                                        if(http_code == "200" or http_code== "404"):
-                                            # screenshot
-                                            output_screen_shot_web = f_biblioteka.f_screen_shot_web(redirect_url, path_plik_logu)
-                                            if(output_screen_shot_web == "error"):
-                                                tmp_dict[ip][f'web_shot:redirect_url'] = f'{output_screen_shot_web}\n'
-                                            else:
-                                                tmp_dict[ip][f'web_shot:redirect_url'] = f'<img src="{output_screen_shot_web}">\n'
-
-                                        if(http_code == "200"):
-                                            # linki
-                                            output_links_from_web = f_biblioteka.f_get_links_from_web(redirect_url)
-                                            tmp_dict[ip][f'links:{h_prot}:redirect_url'] = f'{output_links_from_web}\n'
-                        except Exception as er:
-                            f_biblioteka.f_zapis_log(
-                                "f_odczyt_pliku_nmap/f_screen_shot_web",
-                                "error",
-                                f"Wyjatek scr shot {h_prot}://{ip}:{port} {str(er)}",
-                                pathLogFile=path_plik_logu)
-                            output_screen_shot_web = "none"
-
-                        # zapis do pliku *.json
-                        tmp_dict[ip]['wskazowka:nikto'] = f'nikto -h {ip}\n'
-                        tmp_dict[ip]['wskazowka:dirb'] = f'dirb {h_prot}://{ip} /usr/share/wordlists/dirb/common.txt\n'
-                        tmp_dict[ip]['wskazowka:crawl:wget'] = f'wget --wait=2 --level=inf --limit-rate=20K --recursive --page-requisites --user-agent=Mozilla --no-parent --convert-links --adjust-extension --no-clobber -e robots=off {h_prot}://{ip}:{port} --no-check-certificate'
-                        tmp_dict[ip]['wskazowka:FUZZ:ffuf'] = f'ffuf -w Rekonesans/dictionary/s_web_fuzz.txt -u {h_prot}://{ip}:{port}/FUZZ'
+            # http_code
+            f_biblioteka.f_zapis_log("http_code","start time",str(f_biblioteka.f_czas()),pathLogFile=path_plik_logu)
+            http_code_output = f_tools.f_http_code(protokol, ip, port, CURL_MAX_TIME)
+            f_biblioteka.f_zapis_log("http_code","results",str(http_code_output),pathLogFile=path_plik_logu)
+            f_biblioteka.f_zapis_log("http_code","end time",str(f_biblioteka.f_czas()),pathLogFile=path_plik_logu)
 
             # 20-21 FTP
             # port 20 data transfer
