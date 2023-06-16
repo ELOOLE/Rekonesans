@@ -1,12 +1,15 @@
 import f_biblioteka
 
-def f_socat(protokol, ip, port):
-    #########
-    # socat #
-    #########
-    #
-    # polecenie:
-    cmd = f"echo -ne \\x01\\x00\\x00\\x00 | socat -t 1 {protokol.upper()}:{ip}:{port},connect-timeout=5 - "
+def f_socat(proto, ip, port):
+    """ 
+    function: socat 
+
+    @param proto: Proto TCP or UDP
+    @param ip: ip address
+    @param port: port numer of the service, numerical between 1-65535
+    @return: cmd and output of this command or error message
+    """
+    cmd = f"echo -ne \\x01\\x00\\x00\\x00 | socat -t 1 {proto.upper()}:{ip}:{port},connect-timeout=5 - "
 
     # wykonanie polecenia:
     socat_output = f_biblioteka.f_polecenie_uniwersalne(cmd)
