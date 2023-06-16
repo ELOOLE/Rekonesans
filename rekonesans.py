@@ -102,6 +102,33 @@ def f_odczyt_pliku_nmap(plik):
             http_code_output = f_tools.f_http_code(protokol, ip, port, CURL_MAX_TIME)
             f_biblioteka.f_zapis_log("http_code","results",str(http_code_output),pathLogFile=path_plik_logu)
             f_biblioteka.f_zapis_log("http_code","end time",str(f_biblioteka.f_czas()),pathLogFile=path_plik_logu)
+            tmp_dict[ip]['http_code:addr'] = f'{str(http_code_output[0])}\n'
+            tmp_dict[ip]['http_code'] = f'{str(http_code_output[1])}\n'
+
+            # web page screen shot
+            lista_http_code = ['200','204','301','302','307','401','403','404','405','500']
+            if(str(http_code_output) in lista_http_code):
+                f_biblioteka.f_zapis_log("web_page_screen_shot","start time",str(f_biblioteka.f_czas()),pathLogFile=path_plik_logu)
+                adres = http_code_output[0]
+                try:
+                    # screenshot
+                    output_screen_shot_web = f_biblioteka.f_screen_shot_web(adres, path_plik_logu)
+                    if(output_screen_shot_web == "error"):
+                        tmp_dict[ip][f'web_page_screen_shot'] = f'{output_screen_shot_web}\n'
+                    else:
+                        tmp_dict[ip][f'web_page_screen_shot'] = f'<img src="{output_screen_shot_web}">\n'
+                    f_biblioteka.f_zapis_log("web_page_screen_shot","results",str(output_screen_shot_web),pathLogFile=path_plik_logu)
+                except Exception as e:
+                    f_biblioteka.f_zapis_log("web_page_screen_shot","results",str(e),pathLogFile=path_plik_logu)
+                f_biblioteka.f_zapis_log("web_page_screen_shot","end time",str(f_biblioteka.f_czas()),pathLogFile=path_plik_logu)
+
+            # zbierz linki ze strony
+            if(str(http_code_output) == "200"):
+                adres = http_code_output[0]
+                output_links_from_web = f_biblioteka.f_get_links_from_web(adres)
+                tmp_dict[ip][f'adres'] = f'{adres}\n'
+                tmp_dict[ip][f'links'] = f'{output_links_from_web}\n'
+
 
             # 20-21 FTP
             # port 20 data transfer
