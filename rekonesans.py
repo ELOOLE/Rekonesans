@@ -16,8 +16,12 @@ import sys
 from tkinter.ttk import Style
 import re
 from xmlrpc.client import boolean
-import f_biblioteka
-import f_json
+import f_biblioteka, f_tools, f_json
+
+
+# Global variables
+LINE_COUNT = 0
+
 
 # auxiliary funciton to make it work
 def map_helper(args):
@@ -25,33 +29,39 @@ def map_helper(args):
 
 
 def f_odczyt_pliku_nmap(plik):
-    # ilosc odczytanych wierszy w pliku zrodlowym
+    # How many services we will check
     LINE_COUNT = f_biblioteka.f_policz_wiersze_w_pliku(plik)
 
-    # otwieram plik            
-    uchwyt_pliku_dane = open(plik, 'r')
-    i = 1
+    # open file with data   
+    handler_file_with_data = open(plik, 'r')
+    
+    # Results set
     data = {}
     data['skan'] = []
 
-    # czytamy linijka po linijce
-    # wynik = [linijka.strip() for linijka in otwarty_plik_nmap.split(",")]
-    for linijka in uchwyt_pliku_dane:
-        # rozpoczynamy parsowanie pliku
-        # wiersz jest oddzielany poprzez "," (przecinek)
-        wynik = linijka.split(',')
-        ip = wynik[0].replace("\"", "").strip("")
-        port = wynik[1].replace("\"", "").strip("")
-        protokol = wynik[2].replace("\"", "").strip("")
-        usluga = wynik[3].replace("\"", "").strip("")
-        opis_nmap = wynik[4].replace("\"", "").strip("")
+    # counter of services
+    i = 1
+
+    # read from file line by line
+    for service_info in handler_file_with_data:
+        # array with addr and detailes of services
+        TResults = service_info.split(',')
+        
+        # variables about service information 
+        ip = TResults[0].replace("\"", "").strip("")
+        port = TResults[1].replace("\"", "").strip("")
+        protokol = TResults[2].replace("\"", "").strip("")
+        usluga = TResults[3].replace("\"", "").strip("")
+        opis_nmap = TResults[4].replace("\"", "").strip("")
        
-        r = re.compile("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}")
+        # check if ip is real ip value
+        #r = re.compile("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}")
+        r = re.compile("^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$")
         if r.match(ip) is None:
             f_biblioteka.f_zapis_log(
-                "f_odczyt_pliku_nmap",
+                "read from file",
                 "warn",
-                f"Wpis nie zawiera poprawnego adresu IP [{ip}]. Błędny adres zostanie pominięty",
+                f"Entry don't have correct IP addr [{ip}]. The wrong address will be skipped.",
                 pathLogFile=path_plik_logu)
             
             LINE_COUNT -= 1
@@ -71,31 +81,10 @@ def f_odczyt_pliku_nmap(plik):
                 'opis': opis_nmap,
             }}
 
-            ########################################################################################################
-            # socat #
-            #########
-            #
-            # polecenie:
-            cmd = f"echo -ne \\x01\\x00\\x00\\x00 | socat -t 1 {protokol.upper()}:{ip}:{port},connect-timeout=5 - "
-            
-            # zapis do logu rozpoczecia:
+            # socat:
             f_biblioteka.f_zapis_log("socat","start time",str(f_biblioteka.f_czas()),pathLogFile=path_plik_logu)
-            
-            # wykonanie polecenia:
-            socat_output = f_biblioteka.f_polecenie_uniwersalne(cmd)
-            
-            # sprawdzam
-            # [0] - wynik
-            # [1] - komunikat bledu
-            if(socat_output[1] == None):
-                # wynik
-                output = f_biblioteka.f_trim_output(socat_output[0])
-                if(len(output) > 0):
-                    tmp_dict[ip]['socat:cmd'] = f'<b>{cmd}</b>'
-                    tmp_dict[ip]['socat'] = f'{output}\n'
-                    f_biblioteka.f_zapis_log("socat","results",str(output),pathLogFile=path_plik_logu)
-                    f_biblioteka.f_zapis_log("socat","end time",str(f_biblioteka.f_czas()),pathLogFile=path_plik_logu)
-
+            f_tools.f_socat(protokol, ip, port)
+            f_biblioteka.f_zapis_log("socat","end time",str(f_biblioteka.f_czas()),pathLogFile=path_plik_logu)
 
             #########################################################################################################
             # amap #
@@ -322,17 +311,18 @@ def f_odczyt_pliku_nmap(plik):
             data['skan'].append(tmp_dict)
 
     # zapisuje dane do pliku *.json
-    wynik = f_json.f_zapisz_dane_jako_json(data, path_plik_json)
+    TResults = f_json.f_zapisz_dane_jako_json(data, path_plik_json)
     typ_komunikatu = ""
-    if(wynik == "sukces"):
+    if(TResults == "sukces"):
         typ_komunikatu = "info"
     else:
         typ_komunikatu = "error"
-    f_biblioteka.f_zapis_log("wynik: f_zapisz_dane_jako_json", typ_komunikatu, wynik, pathLogFile=path_plik_logu)
+    
+    f_biblioteka.f_zapis_log("wynik: f_zapisz_dane_jako_json", typ_komunikatu, TResults, pathLogFile=path_plik_logu)
 
     # zapisuje dane do pliku *.html
     f_json.f_parsuj_plik_json_na_html(path_plik_json, path_plik_html)
-    uchwyt_pliku_dane.close()
+    handler_file_with_data.close()
 
 class style():
     BLACK = lambda x: '\033[30m' + str(x)
