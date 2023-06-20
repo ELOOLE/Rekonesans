@@ -4,6 +4,7 @@ import subprocess
 import datetime
 import ssl
 import urllib.request
+import time
 from bs4 import BeautifulSoup, SoupStrainer
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -378,3 +379,15 @@ def random_ua():
     if 'extensions' in platform and platform.get('extensions'):
         ua_string = "%s %s" % (ua_string, random.choice(platform.get('extensions')))
     return ua_string
+
+
+def f_timed(function):
+    def wrapper(*args, **kwargs):
+        before = time.time()
+        value = function(*args, **kwargs)
+        after = time.time()
+        fname = function.__name__
+        print(f"{fname} took {after-before} sec. to execute!")
+        return value
+    return wrapper
+

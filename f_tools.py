@@ -1,8 +1,10 @@
 import requests
 requests.packages.urllib3.disable_warnings()
 
-from f_biblioteka import f_polecenie_uniwersalne, random_ua, f_trim_output, f_screen_shot_web
+from f_biblioteka import f_polecenie_uniwersalne, random_ua, f_trim_output, f_screen_shot_web, f_timed
 
+
+@f_timed
 def f_socat(proto, ip, port):
     """ 
     function: f_socat
@@ -37,6 +39,7 @@ def f_socat(proto, ip, port):
         return cmd, socat_output[1]    
     
 
+@f_timed
 def f_amap(proto, ip, port):
     """ 
     function: f_amap 
@@ -71,6 +74,7 @@ def f_amap(proto, ip, port):
         return cmd, amap_output[1]
     
 
+@f_timed
 def f_http_code(proto: str, ip: str, port: int, CURL_MAX_TIME: int):
     """ 
     function: f_http_code
