@@ -16,7 +16,7 @@ import sys
 from tkinter.ttk import Style
 import re
 from xmlrpc.client import boolean
-import f_biblioteka, f_tools, f_json
+import f_biblioteka, f_json
 
 
 # Global variables
@@ -55,8 +55,9 @@ def f_odczyt_pliku_nmap(plik):
         opis_nmap = TResults[4].replace("\"", "").strip("")
        
         # check if ip is real ip value
-        #r = re.compile("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}")
-        r = re.compile("^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$")
+        r = re.compile("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}")
+
+        #r = re.compile("^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$")
         if r.match(ip) is None:
             f_biblioteka.f_zapis_log(
                 "read from file",
@@ -64,6 +65,8 @@ def f_odczyt_pliku_nmap(plik):
                 f"Entry don't have correct IP addr [{ip}]. The wrong address will be skipped.",
                 pathLogFile=path_plik_logu)
             
+            #print(f"wynik: {r.match(ip)}, {r2.match(ip)}")
+
             LINE_COUNT -= 1
         else:
             f_biblioteka.f_zapis_log(
@@ -82,28 +85,16 @@ def f_odczyt_pliku_nmap(plik):
             }}
 
             # socat
-            f_biblioteka.f_zapis_log("socat","start time",str(f_biblioteka.f_czas()),pathLogFile=path_plik_logu)
-            socat_output = f_tools.f_socat(protokol, ip, port)
-            f_biblioteka.f_zapis_log("socat","results",str(socat_output),pathLogFile=path_plik_logu)
-            f_biblioteka.f_zapis_log("socat","end time",str(f_biblioteka.f_czas()),pathLogFile=path_plik_logu)
-            tmp_dict[ip]['socat:cmd'] = f'{str(socat_output[0])}'
-            tmp_dict[ip]['socat'] = f'{str(socat_output[1])}\n'
-
+            socat_output = f_biblioteka.f_socat(protokol, ip, port)
+            tmp_dict[ip]['socat'] = f'Start work at: {str(socat_output[1][0])}\n',f'{str(socat_output[1][4])}\n',f'Sended command: {str(socat_output[0][0])}','Results: ',[f'{str(socat_output[0][1])}\n']
+            
             # amap
-            f_biblioteka.f_zapis_log("amap","start time",str(f_biblioteka.f_czas()),pathLogFile=path_plik_logu)
-            amap_output = f_tools.f_amap(protokol, ip, port)
-            f_biblioteka.f_zapis_log("amap","results",str(amap_output),pathLogFile=path_plik_logu)
-            f_biblioteka.f_zapis_log("amap","end time",str(f_biblioteka.f_czas()),pathLogFile=path_plik_logu)
-            tmp_dict[ip]['amap:cmd'] = f'{str(amap_output[0])}'
-            tmp_dict[ip]['amap'] = f'{str(amap_output[1])}\n'
+            amap_output = f_biblioteka.f_amap(protokol, ip, port)
+            tmp_dict[ip]['amap'] = f'Start work at: {str(amap_output[1][0])}\n',f'{str(amap_output[1][4])}\n',f'Sended command: {str(amap_output[0][0])}','Results: ',[f'{str(amap_output[0][1])}\n']
 
             # http_code
-            f_biblioteka.f_zapis_log("http_code","start time",str(f_biblioteka.f_czas()),pathLogFile=path_plik_logu)
-            http_code_output = f_tools.f_http_code(protokol, ip, port, CURL_MAX_TIME)
-            f_biblioteka.f_zapis_log("http_code","results",str(http_code_output),pathLogFile=path_plik_logu)
-            f_biblioteka.f_zapis_log("http_code","end time",str(f_biblioteka.f_czas()),pathLogFile=path_plik_logu)
-            tmp_dict[ip]['http_code:addr'] = f'{str(http_code_output[0])}\n'
-            tmp_dict[ip]['http_code'] = f'{str(http_code_output[1])}\n'
+            http_code_output = f_biblioteka.f_http_code(protokol, ip, port, CURL_MAX_TIME)
+            tmp_dict[ip]['http_code'] = f'Start work at: {str(http_code_output[1][0])}\n',f'{str(http_code_output[1][4])}\n',f'Sended command: {str(http_code_output[0][0])}','Results: ',[f'{str(http_code_output[0][1])}\n']
 
             # web page screen shot
             lista_http_code = ['200','204','301','302','307','401','403','404','405','500']
@@ -255,24 +246,12 @@ def f_odczyt_pliku_nmap(plik):
     f_json.f_parsuj_plik_json_na_html(path_plik_json, path_plik_html)
     handler_file_with_data.close()
 
-class style():
-    BLACK = lambda x: '\033[30m' + str(x)
-    RED = lambda x: '\033[31m' + str(x)
-    GREEN = lambda x: '\033[32m' + str(x)
-    YELLOW = lambda x: '\033[33m' + str(x)
-    BLUE = lambda x: '\033[34m' + str(x)
-    MAGENTA = lambda x: '\033[35m' + str(x)
-    CYAN = lambda x: '\033[36m' + str(x)
-    WHITE = lambda x: '\033[37m' + str(x)
-    UNDERLINE = lambda x: '\033[4m' + str(x)
-    RESET = lambda x: '\033[0m' + str(x)
-
 #####################################################################################################################
 if __name__ == '__main__':
     '''MAIN'''
     parser = argparse.ArgumentParser(
         conflict_handler='resolve', 
-        description='Rekonesans MM wersja 0.1a',
+        description='Rekonesans MM wersja 0.1b',
         formatter_class=argparse.RawTextHelpFormatter
         )
 
@@ -283,22 +262,31 @@ if __name__ == '__main__':
     parser.add_argument('-b', '--behavior', action='store', dest='scan_behavior', type=boolean, 
                         help='True = agresywny tryb skanowania, brak lub False nie agresywny tryb skanowania')
     parser.add_argument('-cmt', '--curl-max-time', action='store', dest='curl_max_time', type=int, 
-                        help='True = agresywny tryb skanowania, brak lub False nie agresywny tryb skanowania')
+                        help='Value of max timeout')
+    parser.add_argument('-st', '--scan-tag', action='store', dest='scan_tag', type=str, 
+                        help='frendly project (scan) name')
+    
     args = parser.parse_args()
 
     
 
     if ('scan_behavior' not in args or not args.scan_behavior):
         AGGRESIVE=False
-        print(style.YELLOW("Aggresive mode scan: default False, use -b True to change that"))
+        print(f_biblioteka.style.YELLOW("Aggresive mode scan: default False, use -b True to change that"))
     elif(args.scan_behavior==True):
         AGGRESIVE=True
 
     if ('curl_max_time' not in args or not args.curl_max_time):
         CURL_MAX_TIME = 7
-        print(style.YELLOW("curl --max-time default set to 7, use -cmt int to change that"))
+        print(f_biblioteka.style.YELLOW("curl --max-time default set to 7, use -cmt int to change that"))
     elif(args.curl_max_time != 7):
         CURL_MAX_TIME=args.curl_max_time
+    
+    if ('scan_tag' not in args or not args.scan_tag):
+        scan_tag = 'projekt1'
+        print(f_biblioteka.style.YELLOW("scan_tag default set to 'projekt1', use -st str to change that"))
+    elif(args.curl_max_time != 7):
+        TAG_OF_THE_SKAN=args.scan_tag
 
     if ('file_input' not in args or not args.file_input):
         parser.print_help()
@@ -310,7 +298,7 @@ if __name__ == '__main__':
         if(os.path.isfile(path_file_data)):
             if ('file_output' not in args or not args.file_output):
                 # wynik skanowania zostanie zapisany w lokalizacji pliku z danymi.
-                print(style.YELLOW("[-fout] Nie wprowadzono docelowego miejsca zapisu przeznaczonego na wyniki. Zapis wyniku w lokalizacji pliku z danymi."), flush=True)   
+                print(f_biblioteka.style.YELLOW("[-fout] Nie wprowadzono docelowego miejsca zapisu przeznaczonego na wyniki. Zapis wyniku w lokalizacji pliku z danymi."), flush=True)   
                 path_plik_logu = args.file_input + ".log"
                 path_plik_json = args.file_input + ".json"
                 path_plik_html = args.file_input + ".html"
@@ -322,7 +310,7 @@ if __name__ == '__main__':
 
             # wyswietlenie czasu rozpoczęcia skanowania
             start_script = f_biblioteka.f_czas()
-            print(style.BLUE(f"Rozpoczynam: {start_script}"), flush=True) 
+            print(f_biblioteka.style.BLUE(f"Rozpoczynam: {start_script}"), flush=True) 
 
             # zapis do logu
             f_biblioteka.f_zapis_log('main','info',start_script,pathLogFile=path_plik_logu)
@@ -336,5 +324,5 @@ if __name__ == '__main__':
 
             f_odczyt_pliku_nmap(path_file_data)
         else:
-            print(style.RED(f"[-fin] Plik z danymi [{path_file_data}] nie istnieje!"))
+            print(f_biblioteka.style.RED(f"[-fin] Plik z danymi [{path_file_data}] nie istnieje!"))
             sys.exit(1) 
