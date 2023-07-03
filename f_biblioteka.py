@@ -23,7 +23,6 @@ from impacket.dcerpc.v5.rpcrt import RPC_C_AUTHN_LEVEL_NONE
 from impacket.dcerpc.v5.dcomrt import IObjectExporter
 
 
-
 def f_timed(function):
     def wrapper(*args, **kwargs):
         before = time.time()
@@ -31,7 +30,7 @@ def f_timed(function):
         after = time.time()
         fname = function.__name__
         
-        log = str(datetime.datetime.now())[:19], fname , str(args), results, f"Duration: {after-before} sec."
+        log = str(datetime.datetime.now())[:19], fname , str(args), results, after-before
         
         for info in log:
             #info = str(info).strip()

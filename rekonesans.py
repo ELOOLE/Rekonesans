@@ -86,11 +86,21 @@ def f_odczyt_pliku_nmap(plik):
 
             # socat
             socat_output = f_biblioteka.f_socat(protokol, ip, port)
-            tmp_dict[ip]['socat'] = f'Start work at: {str(socat_output[1][0])}\n',f'{str(socat_output[1][4])}\n',f'Sended command: {str(socat_output[0][0])}','Results: ',[f'{str(socat_output[0][1])}\n']
+            socat = {}
+            socat['Start'] = str(socat_output[1][0])
+            socat['Duration(sec.)'] = str(socat_output[1][4])
+            socat['Sended_command'] = str(socat_output[0][0])
+            socat['Results'] = str(socat_output[0][1])
+            tmp_dict[ip]['socat'] = socat
             
             # amap
             amap_output = f_biblioteka.f_amap(protokol, ip, port)
-            tmp_dict[ip]['amap'] = f'Start work at: {str(amap_output[1][0])}\n',f'{str(amap_output[1][4])}\n',f'Sended command: {str(amap_output[0][0])}','Results: ',[f'{str(amap_output[0][1])}\n']
+            amap = {}
+            amap['Start'] = str(amap_output[1][0])
+            amap['Duration(sec.)'] = str(amap_output[1][4])
+            amap['Sended_command'] = str(amap_output[0][0])
+            amap['Results'] = str(amap_output[0][1])
+            tmp_dict[ip]['amap'] = amap
 
             # http_code
             http_code_output = f_biblioteka.f_http_code(protokol, ip, port, CURL_MAX_TIME)
