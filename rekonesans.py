@@ -242,6 +242,11 @@ def f_odczyt_pliku_nmap(plik):
             i += 1
             data['skan'].append(tmp_dict)
 
+            ip_path_plik_json = f"{path_plik_json[:-5]}_{ip}_{port}.json"
+            f_json.f_zapisz_dane_jako_json(tmp_dict, ip_path_plik_json)
+            ip_path_plik_html = f"{path_plik_html[:-5]}_{ip}_{port}.html"
+            f_json.f_parsuj_plik_json_na_html(ip_path_plik_json, ip_path_plik_html)
+
     # zapisuje dane do pliku *.json
     TResults = f_json.f_zapisz_dane_jako_json(data, path_plik_json)
     typ_komunikatu = ""

@@ -1,4 +1,5 @@
 import json
+import os
 from json2html import *
 
 def f_zapisz_dane_jako_json(data, dstfile):
@@ -113,3 +114,6 @@ def f_html_parser(file_html):
 
     open_file_html.close()
     open_file_html_new .close()
+
+    os.remove(file_html)
+    os.rename(file_html_new, file_html)
