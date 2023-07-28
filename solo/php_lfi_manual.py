@@ -513,4 +513,4 @@ class PHPLFIScanner:
 
 
 if __name__ == "__main__":
-    PHPLFIScanner().scan("https://ip")
+    PHPLFIScanner().scan("https://dagpravda.ru/?p=463332")

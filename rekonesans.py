@@ -108,9 +108,9 @@ def f_odczyt_pliku_nmap(plik):
 
             # web page screen shot
             lista_http_code = ['200','204','301','302','307','401','403','404','405','500']
-            if(str(http_code_output[1]) in lista_http_code):
+            if(str(http_code_output[1][3][1]) in lista_http_code):
                 f_biblioteka.f_zapis_log("web_page_screen_shot","start time",str(f_biblioteka.f_czas()),pathLogFile=path_plik_logu)
-                adres = http_code_output[0]
+                adres = http_code_output[1][3][0]
                 try:
                     # screenshot
                     output_screen_shot_web = f_biblioteka.f_screen_shot_web(adres, path_plik_logu)
@@ -122,10 +122,13 @@ def f_odczyt_pliku_nmap(plik):
                 except Exception as e:
                     f_biblioteka.f_zapis_log("web_page_screen_shot","results",str(e),pathLogFile=path_plik_logu)
                 f_biblioteka.f_zapis_log("web_page_screen_shot","end time",str(f_biblioteka.f_czas()),pathLogFile=path_plik_logu)
-
+            else:
+                f_biblioteka.f_zapis_log("web_page_screen_shot",str(http_code_output[1]),str(f_biblioteka.f_czas()),pathLogFile=path_plik_logu)
+                
+            #print(f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! str(http_code_output[1][3][0]: {str(http_code_output[1][3][0])}")
             # zbierz linki ze strony
-            if(str(http_code_output[1]) == "200"):
-                adres = http_code_output[0]
+            if(str(http_code_output[1][3][1]) == "200"):
+                adres = http_code_output[1][3][0]
                 output_links_from_web = f_biblioteka.f_get_links_from_web(adres)
                 tmp_dict[ip][f'adres'] = f'{adres}\n'
                 tmp_dict[ip][f'links'] = f'{output_links_from_web}\n'

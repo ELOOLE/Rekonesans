@@ -505,7 +505,7 @@ def f_http_code(proto: str, ip: str, port: int, CURL_MAX_TIME: int):
 
             try:
                 # Making a get request
-                response = requests.get(adres, verify=False, headers=UA, timeout=CURL_MAX_TIME, allow_redirects=False)
+                response = requests.get(adres, verify=False, headers=UA, timeout=CURL_MAX_TIME, allow_redirects=True)
             except Exception as e:
                 return adres, str(e)
 

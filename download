@@ -1,0 +1,8 @@
+<html>
+	<head><title>Postgres exporter</title></head>
+	<body>
+	<h1>Postgres exporter</h1>
+	<p><a href='/metrics'>Metrics</a></p>
+	</body>
+	</html>
+	
