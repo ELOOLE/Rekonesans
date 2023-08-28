@@ -1,3 +1,4 @@
+import sys
 import argparse
 import csv
 import json
@@ -111,26 +112,27 @@ def f_zapisz_dane_jako_json(data, dstfile):
 
 if __name__ == '__main__':
     '''MAIN'''
-    parser = argparse.ArgumentParser()
+
     parser = argparse.ArgumentParser(
+        conflict_handler='resolve', 
         description='Parser msfconsole export services -u wersja 0.1',
         formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument('--fin', '--file-input', type=str,
+    
+    parser.add_argument('-fin', '--file-input', action='store', dest='file_input', type=str,
                         help='Podaj sciezke do pliku z adresami')
 
     args = parser.parse_args()
 
     # odczyt pliku
-    if(str(args.fin) == '' or str(args.fin) == 'None'):
-        path_plik_dane = '/home/user/MKiS_wan_bb.txt'
-    else:
-        path_plik_dane = args.fin
+    if(str(args.file_input) == '' or str(args.file_input) == 'None'):
+        print("[!] Point file with data by argument -fin")
+        sys.exit(1)
 
-    if(os.path.isfile(path_plik_dane)):
-        path_plik_json = path_plik_dane + ".json"
-        path_plik_csv = path_plik_dane + ".csv"
+    if(os.path.isfile(args.file_input)):
+        path_plik_json = args.file_input + ".json"
+        path_plik_csv = args.file_input + ".csv"
 
         # wywolujemy funkcje, ktora odczyta nam plik linijka po linijce
-        f_odczyt_pliku(path_plik_dane, path_plik_csv)
+        f_odczyt_pliku(args.file_input, path_plik_csv)
     else:
-        print("Plik z danymi nie istnieje!" + path_plik_dane)
+        print("Plik z danymi nie istnieje!" + args.file_input)
