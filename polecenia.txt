@@ -6,3 +6,7 @@ Oblicz fingerprint usługi ssh (RSA)
 
 Patator
 # patator rdp_login host=x.x.x.x user='administrator' password=FILE0 0=/pwd/do/passfile.txt -x ignore:fgrep='ERRCONNECT_LOGON_FAILURE'
+
+
+1. nmap
+1a. nmap script nse
