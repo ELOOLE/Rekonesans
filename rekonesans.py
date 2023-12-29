@@ -264,6 +264,7 @@ def f_odczyt_pliku_nmap(plik):
     f_json.f_parsuj_plik_json_na_html(path_plik_json, path_plik_html)
     handler_file_with_data.close()
 
+
 #####################################################################################################################
 if __name__ == '__main__':
     '''MAIN'''
@@ -282,11 +283,9 @@ if __name__ == '__main__':
     parser.add_argument('-cmt', '--curl-max-time', action='store', dest='curl_max_time', type=int, 
                         help='Value of max timeout')
     parser.add_argument('-st', '--scan-tag', action='store', dest='scan_tag', type=str, 
-                        help='frendly project (scan) name')
-    
+                        help='frendly project (scan) name')    
     args = parser.parse_args()
 
-    
 
     if ('scan_behavior' not in args or not args.scan_behavior):
         AGGRESIVE=False
