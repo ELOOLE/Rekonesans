@@ -26,3 +26,11 @@ $ cd /usr/lib/dradis;bundle exec thor dradis:reset;chown dradis:dradis /usr/lib/
 4a. nmap
 4b. nmap script nse
 
+./hashcat64.bin -m 1600 -a 3 $apr1$xxxxxx
+
+--
+-a 0 dictionary attack
+ .\hashcat.exe --user -a 0 -m 1000 .\tocrack.txt .\rockyou.txt --show
+---
+Apache:
+hashcat.exe -a 0 -m 1600 tocrack.txt rockyou.txt
