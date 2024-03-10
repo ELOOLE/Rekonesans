@@ -24,6 +24,7 @@ def f_odczyt_pliku(plik):
                 #print(f"[*] ({protokol},{usluga},{opis_nmap}) nmap {ip} -p {port} ")
                 # socat
                 print(f"[*] ({protokol},{usluga},{opis_nmap}) socat {ip} {port} ")
+                cmd = f"echo -ne \\x01\\x00\\x00\\x00 | socat -t 1 {protokol}:{ip}:{port},connect-timeout=5 - "
                 with open(plik+f".do.socat") as my_file:
                     print(my_file.read())
 
