@@ -1,7 +1,7 @@
 from f_biblioteka import f_policz_wiersze_w_pliku,f_socat,f_amap
 import re
 
-def f_odczyt_pliku_nmap(plik):
+def f_odczyt_pliku(plik):
     # How many services we will check
     line_count = f_policz_wiersze_w_pliku(plik)
 
