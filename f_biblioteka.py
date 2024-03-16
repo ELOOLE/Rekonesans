@@ -5,6 +5,8 @@ import datetime
 import ssl
 import urllib.request
 import time
+import re
+
 from bs4 import BeautifulSoup, SoupStrainer
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -88,6 +90,11 @@ def f_trim_output(output):
         output = output[2:-1]
     
     return output
+
+
+def extract_ip_addresses(line):
+    ip_regex = r"(?:\d{1,3}\.){3}\d{1,3}"
+    return re.match(ip_regex, line)
 
 
 def f_policz_wiersze_w_pliku(path):

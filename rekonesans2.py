@@ -14,6 +14,7 @@ import sys
 from f_biblioteka import style, f_czas, f_zapis_log
 from read_data_file import f_odczyt_pliku
 
+
 #####################################################################################################################
 if __name__ == '__main__':
     '''MAIN'''
@@ -27,9 +28,9 @@ if __name__ == '__main__':
                         help='Ścieżke do pliku z danymi. Plik źródłowy')
     parser.add_argument('-fout', '--file-output', action='store', dest='file_output', type=str, 
                         help='Ścieżke do zapisu pliku z wynikami skanowania')
-    parser.add_argument('-b', '--behavior', action='store', dest='scan_behavior', const=True, type=bool, 
+    parser.add_argument('-b', '--behavior', action='store', dest='scan_behavior', type=str, default=False,
                         help='True = agresywny tryb skanowania, brak lub False nie agresywny tryb skanowania')
-    parser.add_argument('-cmt', '--curl-max-time', action='store', dest='curl_max_time', const=7, type=int, 
+    parser.add_argument('-cmt', '--curl-max-time', action='store', dest='curl_max_time', type=int, default=7,
                         help='Value of max timeout')
     args = parser.parse_args()
 
