@@ -6,7 +6,7 @@ import ssl
 import urllib.request
 import time
 import re
-
+import socket
 from bs4 import BeautifulSoup, SoupStrainer
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -40,6 +40,64 @@ def f_timed(function):
         print("")
         return results, log
     return wrapper
+
+
+def f_make_index(data_file, results_path):
+    # How many services we will check
+    line_count = f_policz_wiersze_w_pliku(data_file)
+    #print(f"[i] {line_count} sum of all rows in file")
+
+    # open file with data   
+    handler_data_file = open(data_file, 'r')
+    l_addr =  []
+    # counter of services
+    i = 1
+
+    with open(f"{results_path}/index.html", 'w') as result_file:
+        result_file.write("<table>\n")
+
+    # read from file line by line
+    for service_info in handler_data_file:
+        ip = service_info.replace("\"","").lower().strip().split(',')
+              
+        if extract_ip_addresses(ip[0]) is None:
+            line_count -= 1
+            print(f"[-] adres ip: [{ip[0]}] niepoprawny")
+        else:
+            l_addr.append(ip[0])
+
+    l_addr = dict.fromkeys(l_addr)
+
+    for item in l_addr:
+        #print(f"[*] Looking for {item} ...")
+        
+        line_count = len(l_addr)
+        #print(f"[*] Progress... {(i*100)/line_count}%")
+        with open(f"{results_path}/index.html", 'a') as result_file:
+            result_file.write("<tr>\n")
+            result_file.write(f"<td>{i}/{line_count}</td>\n")
+
+            if(os.path.isfile(results_path+"/"+item+".html")):
+                result_file.write(f'<td><a href="{results_path}/{item}.html">{results_path}/{item}.html</a></td>\n')
+                result_file.write(f'<td>')
+                file = f"{results_path}/{item}.html"
+                size = os.stat(file).st_size
+                #size = os.path.getctime(file)
+                result_file.write(human_readable_size(size))
+                result_file.write(f'</td>\n')
+            else:
+                result_file.write(f'<td>brak wyniku</td>\n')
+                result_file.write(f'<td>&nbsp;</td>\n')
+            
+            result_file.write("</tr>\n")
+        
+        i+=1
+
+    with open(f"{results_path}/index.html", 'a') as result_file:
+        result_file.write("</table>\n")
+
+    return
+
 
 def f_polecenie_uniwersalne(cmd):
     '''SOCAT
@@ -90,6 +148,11 @@ def f_trim_output(output):
         output = output[2:-1]
     
     return output
+
+
+def human_readable_size(bytes, units=[' bytes','KB','MB','GB','TB', 'PB', 'EB']):
+    """ Returns a human readable string representation of bytes """
+    return str(bytes) + units[0] if bytes < 1024 else human_readable_size(bytes>>10, units[1:])
 
 
 def extract_ip_addresses(line):
@@ -419,7 +482,6 @@ class style():
     RESET = lambda x: '\033[0m' + str(x)
     
 
-@f_timed
 def f_socat(proto, ip, port):
     """ 
     function: f_socat
@@ -454,7 +516,6 @@ def f_socat(proto, ip, port):
         return cmd, socat_output[1]    
     
 
-@f_timed
 def f_amap(proto, ip, port):
     """ 
     function: f_amap 
@@ -517,3 +578,50 @@ def f_http_code(proto: str, ip: str, port: int, CURL_MAX_TIME: int):
                 return adres, str(e)
 
             return adres, response.status_code
+        
+
+
+def get_tcp_banner(ip, port):
+    try:
+        port = int(port)
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.settimeout(5)  # Set a timeout for the connection
+        s.connect((ip, port))
+        banner = s.recv(1024).decode('utf-8')
+        s.close()
+        return banner
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+
+def get_udp_banner(ip, port):
+    try:
+        port = int(port)
+        socket.setdefaulttimeout(5)
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.sendto(b'\x00\x01\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00\x03www\x06google\x03com\x00\x00\x01\x00\x01', (ip, port))
+        response, _ = s.recvfrom(1024)
+        return response
+    except:
+        return None
+
+
+def save_results_in_file(content, ip, port,protokol,usluga, opis_nmap, results_path, action):
+    with open(f"{results_path}/{ip}.html", 'a') as result_file:
+        result_file.write(f"[*] Service {ip} on port {port} / {protokol}, {usluga}, {opis_nmap} <br/>")
+        if(len(str(content))> 0 ):
+            result_file.write(f"[*] {datetime.datetime.now()} <br/>")
+            result_file.write(f"[*] Results of {action}:<br/>")
+            result_file.write(str(content)+"<br/>")
+            result_file.write("---<br/>")
+            result_file.write("<br/>")
+
+
+def print_result(conten, ip, port,severity):
+    if(severity == 0):
+        msg = f"[*] ip:{ip}:{port} {conten}"
+    elif(severity == 1):
+        msg = f"[+] ip:{ip}:{port} {conten}"
+    elif(severity == 2):
+        msg = f"[-] ip:{ip}:{port} {conten}"
+    return print(msg)

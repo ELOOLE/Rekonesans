@@ -1,66 +1,54 @@
-from f_biblioteka import f_policz_wiersze_w_pliku, extract_ip_addresses
-import socket
+import f_biblioteka
 
-def f_odczyt_pliku(plik):
+
+def f_odczyt_pliku(data_file, results_path):
     # How many services we will check
-    line_count = f_policz_wiersze_w_pliku(plik)
-    print(f"[i] {line_count} wierszy w pliku ")
+    line_count = f_biblioteka.f_policz_wiersze_w_pliku(data_file)
+    print(f"[i] {line_count} sum of all rows in file")
 
     # open file with data   
-    handler_file_with_data = open(plik, 'r')
+    handler_data_file = open(data_file, 'r')
 
     # counter of services
     i = 1
 
     # read from file line by line
-    for service_info in handler_file_with_data:
+    for service_info in handler_data_file:
         (ip, port, protokol, usluga, opis_nmap) = service_info.replace("\"","").lower().strip().split(',')
               
-        if extract_ip_addresses(ip) is None:
+        if f_biblioteka.extract_ip_addresses(ip) is None:
             line_count -= 1
             print(f"[-] adres ip: [{ip}] niepoprawny")
         else:
             if(protokol.lower() == "tcp"):
-                #print(f"[*] ({protokol},{usluga},{opis_nmap}) nmap {ip} -p {port} ")
-                # socat
-                cmd = f"echo -ne \\x01\\x00\\x00\\x00 | socat -t 1 {protokol.upper()}:{ip}:{port},connect-timeout=5 - "
-                print(f"[*] do wykonania: {cmd}")
-                print(get_tcp_banner(ip, port))
-                # amap
+                # Get banner
+                gb = f_biblioteka.get_tcp_banner(ip=ip, port=port)
+                f_biblioteka.print_result(gb,ip,port,0)
+                f_biblioteka.save_results_in_file(gb, ip, port, protokol,usluga, opis_nmap, results_path, "banner grabbing")
+
+                if "error" not in str(gb).lower():
+                    # execute command socat
+                    socat_output = f_biblioteka.f_socat(protokol, ip, port)
+                    f_biblioteka.print_result(socat_output,ip,port,0)
+                    f_biblioteka.save_results_in_file(socat_output, ip, port, protokol,usluga, opis_nmap, results_path, "execute command socat")
+                    
+                    # execute command amap
+                    amap_output = f_biblioteka.f_amap(protokol, ip, port)
+                    f_biblioteka.print_result(amap_output,ip,port,0)
+                    f_biblioteka.save_results_in_file(amap_output, ip, port, protokol,usluga, opis_nmap, results_path, "execute command amap")
+            elif(protokol == "udp"):             
+                # Get banner
+                gb = f_biblioteka.get_udp_banner(ip=ip, port=port)
+                print(f"[*] ip:{ip}:{port} {gb}")
+                f_biblioteka.save_results_in_file(gb, ip, port, protokol,usluga, opis_nmap, results_path, "banner grabbing")
                 
-                # curl
-                
-                # web screen shot
-                
-                # web links
-            elif(protokol == "udp"):
-                cmd = f"echo -ne \\x01\\x00\\x00\\x00 | socat -t 1 {protokol.upper()}:{ip}:{port},connect-timeout=5 - "
-                print(get_udp_banner(ip, port))
-                print(f"[*] do wykonania: {cmd}")
-        
-    return 
+                if "error" not in str(gb).lower():
+                    # execute command socat
+                    socat_output = f_biblioteka.f_socat(protokol, ip, port)
+                    f_biblioteka.print_result(socat_output,ip,port,0)
+                    f_biblioteka.save_results_in_file(socat_output, ip, port, protokol,usluga, opis_nmap, results_path, "execute command socat")
+
+        f_biblioteka.f_make_index(data_file, results_path)
+    return
 
 
-def get_tcp_banner(ip, port):
-    try:
-        port = int(port)
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(5)  # Set a timeout for the connection
-        s.connect((ip, port))
-        banner = s.recv(1024).decode('utf-8')
-        s.close()
-        return banner
-    except Exception as e:
-        return f"Error: {str(e)}"
-
-
-def get_udp_banner(ip, port):
-    try:
-        port = int(port)
-        socket.setdefaulttimeout(2)
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.sendto(b'\x00\x01\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00\x03www\x06google\x03com\x00\x00\x01\x00\x01', (ip, port))
-        response, _ = s.recvfrom(1024)
-        return response
-    except:
-        return None
