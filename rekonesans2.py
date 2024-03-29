@@ -39,22 +39,17 @@ if __name__ == '__main__':
     else:
         path_file_data = args.file_input
 
-        # sprawdza czy plik istnieje
+        # check if data file exists
         if(os.path.isfile(path_file_data)):
-            #if ('file_output' not in args or not args.file_output):
-            #    # wynik skanowania zostanie zapisany w lokalizacji pliku z danymi.
-            #    print(style.YELLOW("[-fout] Nie wprowadzono docelowego miejsca zapisu przeznaczonego na wyniki. Zapis wyniku w lokalizacji pliku z danymi."), flush=True)
-            #    path_file_output = path_file_data+".out"
-
-            # wyswietlenie czasu rozpoczęcia skanowania
             start_script = f_czas()
-            print(style.BLUE(f"Rozpoczynam: {start_script}"), flush=True) 
 
+            # path to save results 
             path_to_results = os.path.dirname(path_file_data)
 
+            # read data file line by line
             f_odczyt_pliku(path_file_data, path_to_results)
         else:
-            print(style.RED(f"[-fin] Plik z danymi [{path_file_data}] nie istnieje!"))
+            print(style.RED(f"[-] Data file [{path_file_data}] do not exists!"))
             sys.exit(1) 
 
 

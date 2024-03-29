@@ -4,22 +4,23 @@ import f_biblioteka
 def f_odczyt_pliku(data_file, results_path):
     # How many services we will check
     line_count = f_biblioteka.f_policz_wiersze_w_pliku(data_file)
-    print(f"[i] {line_count} sum of all rows in file")
 
     # open file with data   
     handler_data_file = open(data_file, 'r')
 
-    # counter of services
+    # services counter
     i = 1
 
     # read from file line by line
     for service_info in handler_data_file:
         (ip, port, protokol, usluga, opis_nmap) = service_info.replace("\"","").lower().strip().split(',')
               
+        # check if line from file is ip addr
         if f_biblioteka.extract_ip_addresses(ip) is None:
             line_count -= 1
-            print(f"[-] adres ip: [{ip}] niepoprawny")
+            print(f"[-] IP addr: [{ip}] is incorrect")
         else:
+            print(f"[i] {line_count} sum of all rows in file")
             if(protokol.lower() == "tcp"):
                 # Get banner
                 gb = f_biblioteka.get_tcp_banner(ip=ip, port=port)
