@@ -59,10 +59,11 @@ def f_make_index(data_file, results_path):
     # read from file line by line
     for service_info in handler_data_file:
         ip = service_info.replace("\"","").lower().strip().split(',')
-              
-        if extract_ip_addresses(ip[0]) is None:
-            line_count -= 1
-            print(f"[-] adres ip: [{ip[0]}] niepoprawny")
+
+        if ip[0].count(".") == 0:
+            if (extract_ip_addresses(ip[0]) is None):
+                line_count -= 1
+                #print(f"[-] adres ip: [{ip[0]}] niepoprawny")
         else:
             l_addr.append(ip[0])
 
@@ -245,35 +246,26 @@ def f_screen_shot_web(wwwadres, pathZapisu):
         else:
             port = netloc[1]
 
-        #URL = f"{protokol}://{ip}:{port}"
         URL = wwwadres
-        ####f_zapis_log("f_screen_shot_web", "info", URL)
 
         driver.get(URL)
         def S(X): return driver.execute_script(
             'return document.body.parentNode.scroll' + X)
-        # driver.set_window_size(1200,S('Height'))
 
         driver.set_window_size(S('Width'), S('Height'))
-        # driver.set_window_size(1200,1200)
 
-        # nazwa pliku *.png
-        nazwa_pliku = f"{pathZapisu}_{ip}_{port}_{protokol}.png"
-        ####f_zapis_log(
-        ####    "f_screen_shot_web",
-        ####    "info",
-        ####    f"nazwa pliku screen shot-a {nazwa_pliku}")
+        nazwa_pliku = f"{ip}_{port}_{protokol}.png"
 
         # tresc znaku wodnego nanoszonego na *.png
         znak_wodny = f"{f_czas()} | Protokol: [{protokol}], adres ip: [{ip}], port: [{port}]"
-        ####f_zapis_log("f_screen_shot_web", "info", f"znak wodny {znak_wodny}")
 
-        # driver.find_element_by_tag_name('body').screenshot(nazwa_pliku)
-        driver.save_screenshot(nazwa_pliku)
+        save_pic_to_file = f"{pathZapisu}/{nazwa_pliku}"
+
+        driver.save_screenshot(save_pic_to_file)
         driver.quit()
 
         # nanosimy znak wodny na img
-        podpisz_screena = Image.open(nazwa_pliku)
+        podpisz_screena = Image.open(save_pic_to_file)
         title_font = ImageFont.truetype(
             '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 13)
         title_text = znak_wodny
@@ -289,23 +281,15 @@ def f_screen_shot_web(wwwadres, pathZapisu):
             fill='blue')
         image_editable.text((15, wysokosc_img + 5),
                             str(title_text), (165, 230, 211), font=title_font)
-        podpisz_screena.save(nazwa_pliku)
-        ####f_zapis_log(
-        ####    "f_screen_shot_web",
-        ####    "info",
-        ####    f"Naniesiono podpis na obrazek: {nazwa_pliku}")
+        podpisz_screena.save(save_pic_to_file)
 
         # convert png to jpg
-        nazwa_pliku_jpg = nazwa_pliku[:-3] + "jpg"
+        nazwa_pliku_jpg = save_pic_to_file[:-3] + "jpg"
         img_to_jpg = podpisz_screena.convert('RGB')
         img_to_jpg.save(nazwa_pliku_jpg)
-        ####f_zapis_log(
-        ####    "f_screen_shot_web",
-        ####    "info",
-        ####    f"konversja {nazwa_pliku} -> {nazwa_pliku_jpg}")
 
         # skasowac png
-        os.remove(nazwa_pliku)
+        os.remove(save_pic_to_file)
         ####f_zapis_log("f_screen_shot_web","info",f"skanowano plik {nazwa_pliku}")
         obrazek = os.path.basename(nazwa_pliku_jpg)
     except Exception as error:
@@ -550,7 +534,6 @@ def f_amap(proto, ip, port):
         return cmd, amap_output[1]
     
 
-@f_timed
 def f_http_code(proto: str, ip: str, port: int, CURL_MAX_TIME: int):
     """ 
     function: f_http_code
@@ -562,22 +545,20 @@ def f_http_code(proto: str, ip: str, port: int, CURL_MAX_TIME: int):
     @return: http_code from server
     """
     
-    if(proto.lower() == "tcp"):
-        UA = {'User-Agent' :random_ua()}
-        lista_protokol = ["http", "https"]
-        for h_prot in lista_protokol:
-            # adres
-            adres = f"{h_prot}://{ip}:{port}"
+    UA = {'User-Agent' :random_ua()}
 
-            response = []
+    # adres
+    adres = f"{proto}://{ip}:{port}"
 
-            try:
-                # Making a get request
-                response = requests.get(adres, verify=False, headers=UA, timeout=CURL_MAX_TIME, allow_redirects=True)
-            except Exception as e:
-                return adres, str(e)
+    response = []
 
-            return adres, response.status_code
+    try:
+        # Making a get request
+        response = requests.get(adres, verify=False, headers=UA, timeout=CURL_MAX_TIME, allow_redirects=True)
+    except Exception as e:
+        return adres, str(e)
+
+    return adres, response.status_code
         
 
 
