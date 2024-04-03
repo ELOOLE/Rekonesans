@@ -47,17 +47,14 @@ def f_odczyt_pliku(data_file, results_path):
                     f_biblioteka.print_result(http_code_output,ip,port,0)
                     f_biblioteka.save_results_in_file(http_code_output, ip, port, protokol, usluga, opis_nmap, results_path, "http return code")
 
-                    # http code
-                    http_code = http_code_output[1]
-
-                    # http address
-                    http_addr = http_code_output[0]
+                    # http: addr, code
+                    http_addr, http_code = http_code_output
 
                     if http_code in lista_http_code:
                         print(f"[+] http code: {http_code_output[1]}")
 
+                        # screenshot
                         try:
-                            # screenshot
                             output_screen_shot_web = f_biblioteka.f_screen_shot_web(http_addr, results_path)
 
                             print(output_screen_shot_web)
@@ -74,6 +71,13 @@ def f_odczyt_pliku(data_file, results_path):
                         except Exception as e:
                             pass
 
+                        # get links from web
+                        try:
+                            output_links_from_web = f_biblioteka.f_get_links_from_web(http_addr)
+                            f_biblioteka.save_results_in_file(output_links_from_web, ip, port, proto, usluga, opis_nmap, results_path, "grep links from web")
+                        except Exception as e:
+                            f_biblioteka.print_result("[-] fail of grab links from web",ip,port,2)
+                            f_biblioteka.save_results_in_file("[-] fail of grab links from web", ip, port, proto, usluga, opis_nmap, results_path, "grep links from web")
             elif(protokol == "udp"):             
                 # Get banner
                 gb = f_biblioteka.get_udp_banner(ip=ip, port=port)

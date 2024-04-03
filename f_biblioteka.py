@@ -561,7 +561,6 @@ def f_http_code(proto: str, ip: str, port: int, CURL_MAX_TIME: int):
     return adres, response.status_code
         
 
-
 def get_tcp_banner(ip, port):
     try:
         port = int(port)
