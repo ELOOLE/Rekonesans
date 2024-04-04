@@ -1,5 +1,5 @@
 import f_biblioteka
-
+import threading
 
 def f_odczyt_pliku(data_file, results_path):
     # How many services we will check
@@ -13,10 +13,16 @@ def f_odczyt_pliku(data_file, results_path):
 
     todo_file = data_file+".done"
     todo_lines = 1;
-    with open(todo_file,"r") as file_done:
-        #last_line = file_done.readlines()[-1]
-        for line in file_done:
-            todo_lines+=1
+    
+    try:
+        with open(todo_file,"r") as file_done:
+            #last_line = file_done.readlines()[-1]
+            for line in file_done:
+                todo_lines+=1
+    except:
+        with open(todo_file,"w") as file_done:
+            file_done.write("\n")
+            
 
     # read from file line by line
     read_from_line = 0
@@ -42,7 +48,10 @@ def f_odczyt_pliku(data_file, results_path):
                 
                 if(protokol.lower() == "tcp"):
                     # Get banner
-                    f_biblioteka.get_tcp_banner(ip, port, protokol, usluga, opis_nmap, results_path)
+                    my_thread = threading.Thread(target=f_biblioteka.get_tcp_banner, args=(ip, port, protokol, usluga, opis_nmap, results_path))
+                    my_thread.start()
+                    my_thread.join()
+                    #f_biblioteka.get_tcp_banner(ip, port, protokol, usluga, opis_nmap, results_path)
         
                     # CURL check http code
                     lista_protokol = ["http", "https"]
