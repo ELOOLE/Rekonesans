@@ -45,6 +45,7 @@ def f_odczyt_pliku(data_file, results_path):
                 my_thread1 = threading.Thread(target=f_biblioteka.f_socat, args=(ip, port, protokol, usluga, opis_nmap, results_path))
                 my_thread1.start()
                 my_thread1.join()
+                
                 # execute command amap
                 #f_biblioteka.f_amap(ip, port, protokol, usluga, opis_nmap, results_path)
                 my_thread2 = threading.Thread(target=f_biblioteka.f_amap, args=(ip, port, protokol, usluga, opis_nmap, results_path))
