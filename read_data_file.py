@@ -21,7 +21,7 @@ def f_odczyt_pliku(data_file, results_path):
                 todo_lines+=1
     except:
         with open(todo_file,"w") as file_done:
-            file_done.write("\n")
+            file_done.write("")
             
 
     # read from file line by line
@@ -41,16 +41,21 @@ def f_odczyt_pliku(data_file, results_path):
                     print(f"[-] IP addr: [{ip}] is incorrect")
             else:
                 # execute command socat
-                f_biblioteka.f_socat(ip, port, protokol, usluga, opis_nmap, results_path)
-
+                #f_biblioteka.f_socat(ip, port, protokol, usluga, opis_nmap, results_path)
+                my_thread1 = threading.Thread(target=f_biblioteka.f_socat, args=(ip, port, protokol, usluga, opis_nmap, results_path))
+                my_thread1.start()
+                my_thread1.join()
                 # execute command amap
-                f_biblioteka.f_amap(ip, port, protokol, usluga, opis_nmap, results_path)
+                #f_biblioteka.f_amap(ip, port, protokol, usluga, opis_nmap, results_path)
+                my_thread2 = threading.Thread(target=f_biblioteka.f_amap, args=(ip, port, protokol, usluga, opis_nmap, results_path))
+                my_thread2.start()
+                my_thread2.join()
                 
                 if(protokol.lower() == "tcp"):
                     # Get banner
-                    my_thread = threading.Thread(target=f_biblioteka.get_tcp_banner, args=(ip, port, protokol, usluga, opis_nmap, results_path))
-                    my_thread.start()
-                    my_thread.join()
+                    my_thread3 = threading.Thread(target=f_biblioteka.get_tcp_banner, args=(ip, port, protokol, usluga, opis_nmap, results_path))
+                    my_thread3.start()
+                    my_thread3.join()
                     #f_biblioteka.get_tcp_banner(ip, port, protokol, usluga, opis_nmap, results_path)
         
                     # CURL check http code
