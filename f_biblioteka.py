@@ -42,6 +42,21 @@ def f_timed(function):
     return wrapper
 
 
+def f_results(function):
+    def wrapper(*args, **kwargs):
+        before = time.time()
+        results = function(*args, **kwargs)
+        after = time.time()
+        fname = function.__name__
+        
+        (ip,port,protokol,usluga,opis_nmap,results_path) = args
+        
+        print(f"[*] {fname}: {ip}:{port}")
+
+        save_results_in_file(content=results, ip=ip, port=port, protokol=protokol, usluga=usluga, opis_nmap=opis_nmap, results_path=results_path, action=fname)
+        return results, fname 
+    return wrapper
+
 def f_make_index(data_file, results_path):
     # How many services we will check
     line_count = f_policz_wiersze_w_pliku(data_file)
@@ -215,7 +230,6 @@ def f_get_links_from_web(adres):
         spis_linkow_html = "error"
 
     return spis_linkow_html
-
 
 def f_screen_shot_web(wwwadres, pathZapisu):
     '''SCREEN SHOT of WEB PAGE '''
@@ -464,9 +478,10 @@ class style():
     WHITE = lambda x: '\033[37m' + str(x)
     UNDERLINE = lambda x: '\033[4m' + str(x)
     RESET = lambda x: '\033[0m' + str(x)
-    
 
-def f_socat(proto, ip, port):
+
+@f_results
+def f_socat(ip, port, proto, usluga, opis_nmap, results_path):
     """ 
     function: f_socat
 
@@ -498,9 +513,10 @@ def f_socat(proto, ip, port):
             return cmd, "none"
     else:
         return cmd, socat_output[1]    
-    
 
-def f_amap(proto, ip, port):
+
+@f_results
+def f_amap(ip, port, proto, usluga, opis_nmap, results_path):
     """ 
     function: f_amap 
 
@@ -559,9 +575,10 @@ def f_http_code(proto: str, ip: str, port: int, CURL_MAX_TIME: int):
         return adres, str(e)
 
     return adres, response.status_code
-        
 
-def get_tcp_banner(ip, port):
+
+@f_results
+def get_tcp_banner(ip, port, protokol,usluga, opis_nmap, results_path):
     try:
         port = int(port)
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -574,6 +591,7 @@ def get_tcp_banner(ip, port):
         return f"Error: {str(e)}"
 
 
+@f_results
 def get_udp_banner(ip, port):
     try:
         port = int(port)
