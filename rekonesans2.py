@@ -51,5 +51,3 @@ if __name__ == '__main__':
         else:
             print(style.RED(f"[-] Data file [{path_file_data}] do not exists!"))
             sys.exit(1) 
-
-

@@ -548,9 +548,10 @@ def f_amap(ip, port, proto, usluga, opis_nmap, results_path):
             return cmd, "none"
     else:
         return cmd, amap_output[1]
-    
 
-def f_http_code(proto: str, ip: str, port: int, CURL_MAX_TIME: int):
+
+@f_results
+def f_http_code(ip, port, proto, usluga, opis_nmap, results_path):
     """ 
     function: f_http_code
 
@@ -560,7 +561,7 @@ def f_http_code(proto: str, ip: str, port: int, CURL_MAX_TIME: int):
     @CURL_MAX_TIME: int, value of max time for whole curl operation recomended between 1-30
     @return: http_code from server
     """
-    
+    CURL_MAX_TIME = 7
     UA = {'User-Agent' :random_ua()}
 
     # adres

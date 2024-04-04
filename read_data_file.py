@@ -36,21 +36,12 @@ def f_odczyt_pliku(data_file, results_path):
                 lista_http_code = [200,204,301,302,307,401,403,404,405,500]
 
                 for proto in lista_protokol:
-                    http_code_output = f_biblioteka.f_http_code(proto, ip, port, 7)
-                    f_biblioteka.save_results_in_file(http_code_output[0], ip, port, protokol, usluga, opis_nmap, results_path, "http return code")
-
-                    #print(f"######: {http_code_output}")
-
-                    # http: addr, code
-                    http_addr, http_code = http_code_output
+                    http_addr, http_code = f_biblioteka.f_http_code(ip, port, proto, usluga, opis_nmap, results_path)[0]
 
                     if http_code in lista_http_code:
-                        #print(f"[+] http code: {http_code_output[1]}")
                         # screenshot
                         try:
                             output_screen_shot_web = f_biblioteka.f_screen_shot_web(http_addr, results_path)
-
-                            #print(output_screen_shot_web)
 
                             if(output_screen_shot_web[0] == "error"):
                                 f_biblioteka.print_result("[-] fail of maiking web shot",ip,port,2)
