@@ -3,7 +3,7 @@ import threading
 
 def f_odczyt_pliku(data_file, results_path):
     # How many services we will check
-    line_count = f_biblioteka.f_policz_wiersze_w_pliku(data_file)
+    line_count = f_biblioteka.count_lines_in_file(data_file)
 
     # open file with data   
     handler_data_file = open(data_file, 'r')
@@ -64,7 +64,14 @@ def f_odczyt_pliku(data_file, results_path):
                     lista_http_code = [200,204,301,302,307,401,403,404,405,500]
 
                     for proto in lista_protokol:
-                        http_addr, http_code = f_biblioteka.f_http_code(ip, port, proto, usluga, opis_nmap, results_path)[0]
+                        #http_addr, http_code = f_biblioteka.f_http_code(ip, port, proto, usluga, opis_nmap, results_path)[0]
+                        results_from_http = f_biblioteka.get_result_thread(f_biblioteka.f_http_code, ip, port, proto, usluga, opis_nmap, results_path)
+                        #my_thread4 = threading.Thread(target=f_biblioteka.f_http_code, args=(ip, port, proto, usluga, opis_nmap, results_path))
+                        #my_thread4.start()
+                        #my_thread4.join()
+                        #print(f"results_from_http: {results_from_http}")
+                        
+                        http_addr, http_code = results_from_http[0]
 
                         if http_code in lista_http_code:
                             # screenshot
@@ -94,7 +101,6 @@ def f_odczyt_pliku(data_file, results_path):
                     
                 f_biblioteka.f_make_index(data_file, results_path)          
 
-        
     handler_data_file.close()
     return
 

@@ -7,6 +7,8 @@ import urllib.request
 import time
 import re
 import socket
+import threading
+import concurrent.futures
 from bs4 import BeautifulSoup, SoupStrainer
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -59,7 +61,7 @@ def f_results(function):
 
 def f_make_index(data_file, results_path):
     # How many services we will check
-    line_count = f_policz_wiersze_w_pliku(data_file)
+    line_count = count_lines_in_file(data_file)
     #print(f"[i] {line_count} sum of all rows in file")
 
     # open file with data   
@@ -114,6 +116,11 @@ def f_make_index(data_file, results_path):
 
     return
 
+
+def get_result_thread(func, *args):
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        future = executor.submit(func, *args)
+        return future.result()
 
 def f_polecenie_uniwersalne(cmd):
     '''SOCAT
@@ -176,21 +183,27 @@ def extract_ip_addresses(line):
     return re.match(ip_regex, line)
 
 
-def f_policz_wiersze_w_pliku(path):
-    '''liczy ilosc linijek w wierszu'''
-    '''zwraca: int, ilosc linijek w podanym pliku'''
+#def f_policz_wiersze_w_pliku(path):
+#    '''liczy ilosc linijek w wierszu'''
+#    '''zwraca: int, ilosc linijek w podanym pliku'''
     # otwieram plik
-    otwarty_plik = open(path, "r")
-    line_count = 0
+#    otwarty_plik = open(path, "r")
+#    line_count = 0
     # czytam linijce po linijce
-    for line in otwarty_plik:
-        if line != "\n":
-            line_count += 1
+#    for line in otwarty_plik:
+#        if line != "\n":
+#            line_count += 1
 
-    # zamykam plik
-    otwarty_plik.close()
-    # zwracam wynik
-    return line_count
+#    # zamykam plik
+#    otwarty_plik.close()
+#    # zwracam wynik
+#    return line_count
+
+
+def count_lines_in_file(data_file: str):
+    with open(data_file, 'r') as file:
+        lines = file.readlines()
+    return sum(1 for i, _ in enumerate(lines, start=1))
 
 
 def f_dirb(adres):
