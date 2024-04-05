@@ -179,25 +179,12 @@ def human_readable_size(bytes, units=[' bytes','KB','MB','GB','TB', 'PB', 'EB'])
 
 
 def extract_ip_addresses(line):
-    ip_regex = r"(?:\d{1,3}\.){3}\d{1,3}"
-    return re.match(ip_regex, line)
-
-
-#def f_policz_wiersze_w_pliku(path):
-#    '''liczy ilosc linijek w wierszu'''
-#    '''zwraca: int, ilosc linijek w podanym pliku'''
-    # otwieram plik
-#    otwarty_plik = open(path, "r")
-#    line_count = 0
-    # czytam linijce po linijce
-#    for line in otwarty_plik:
-#        if line != "\n":
-#            line_count += 1
-
-#    # zamykam plik
-#    otwarty_plik.close()
-#    # zwracam wynik
-#    return line_count
+    ipv4_regex = r"(?:\d{1,3}\.){3}\d{1,3}"
+    ipv6_regex = r"(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}"
+    domain_regex = r"(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}"
+    #ip_regex = r"(?:\d{1,3}\.){3}\d{1,3}"
+    #return re.match(ip_regex, line)
+    return re.findall(ipv4_regex, line) + re.findall(ipv6_regex, line) + re.findall(domain_regex, line)
 
 
 def count_lines_in_file(data_file: str):
