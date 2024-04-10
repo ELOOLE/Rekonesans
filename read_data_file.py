@@ -1,5 +1,4 @@
 import f_biblioteka
-import threading
 
 def f_odczyt_pliku(data_file, results_path):
     # How many services we will check
@@ -41,60 +40,29 @@ def f_odczyt_pliku(data_file, results_path):
                     print(f"[-] IP addr: [{ip}] is incorrect")
             else:
                 # execute command socat
-                #f_biblioteka.f_socat(ip, port, protokol, usluga, opis_nmap, results_path)
-                my_thread1 = threading.Thread(target=f_biblioteka.f_socat, args=(ip, port, protokol, usluga, opis_nmap, results_path))
-                my_thread1.start()
-                my_thread1.join()
+                f_biblioteka.f_make_thread(f_biblioteka.f_socat, ip, port, protokol, usluga, opis_nmap, results_path)
                 
                 # execute command amap
-                #f_biblioteka.f_amap(ip, port, protokol, usluga, opis_nmap, results_path)
-                my_thread2 = threading.Thread(target=f_biblioteka.f_amap, args=(ip, port, protokol, usluga, opis_nmap, results_path))
-                my_thread2.start()
-                my_thread2.join()
+                f_biblioteka.f_make_thread(f_biblioteka.f_amap, ip, port, protokol, usluga, opis_nmap, results_path)
                 
                 if(protokol.lower() == "tcp"):
                     # Get banner
-                    my_thread3 = threading.Thread(target=f_biblioteka.get_tcp_banner, args=(ip, port, protokol, usluga, opis_nmap, results_path))
-                    my_thread3.start()
-                    my_thread3.join()
-                    #f_biblioteka.get_tcp_banner(ip, port, protokol, usluga, opis_nmap, results_path)
+                    f_biblioteka.f_make_thread(f_biblioteka.get_tcp_banner, ip, port, protokol, usluga, opis_nmap, results_path)
         
                     # CURL check http code
-                    lista_protokol = ["http", "https"]
+                    lista_protokol = ["http","https"]
                     lista_http_code = [200,204,301,302,307,401,403,404,405,500]
 
                     for proto in lista_protokol:
-                        #http_addr, http_code = f_biblioteka.f_http_code(ip, port, proto, usluga, opis_nmap, results_path)[0]
-                        results_from_http = f_biblioteka.get_result_thread(f_biblioteka.f_http_code, ip, port, proto, usluga, opis_nmap, results_path)
-                        #my_thread4 = threading.Thread(target=f_biblioteka.f_http_code, args=(ip, port, proto, usluga, opis_nmap, results_path))
-                        #my_thread4.start()
-                        #my_thread4.join()
-                        #print(f"results_from_http: {results_from_http}")
-                        
+                        results_from_http = f_biblioteka.f_http_code(ip, port, proto, usluga, opis_nmap, results_path)
                         http_addr, http_code = results_from_http[0]
 
                         if http_code in lista_http_code:
                             # screenshot
-                            try:
-                                output_screen_shot_web = f_biblioteka.f_screen_shot_web(http_addr, results_path)
-
-                                if(output_screen_shot_web[0] == "error"):
-                                    f_biblioteka.print_result("[-] fail of maiking web shot",ip,port,2)
-                                else:
-                                    pic_file_img_html = f'<img src="{results_path}/{ip}_{port}_{proto}.jpg">'
-                                    f_biblioteka.save_results_in_file(pic_file_img_html, ip, port, proto, usluga, opis_nmap, results_path, "webshot")
-                                    pic_file = f'<a href="{results_path}/{ip}_{port}_{proto}.jpg">{results_path}/{ip}_{port}_{proto}.jpg</a>'
-                                    f_biblioteka.save_results_in_file(pic_file, ip, port, proto, usluga, opis_nmap, results_path, "webshot")
-                                
-                            except Exception as e:
-                                pass
+                            f_biblioteka.f_make_thread(f_biblioteka.f_screen_shot_web, ip, port, proto, usluga, opis_nmap, results_path)
 
                             # get links from web
-                            try:
-                                output_links_from_web = f_biblioteka.f_get_links_from_web(http_addr)
-                                f_biblioteka.save_results_in_file(output_links_from_web, ip, port, proto, usluga, opis_nmap, results_path, "grep links from web")
-                            except Exception as e:
-                                f_biblioteka.save_results_in_file("[-] fail of grab links from web", ip, port, proto, usluga, opis_nmap, results_path, "grep links from web")
+                            f_biblioteka.f_make_thread(f_biblioteka.f_get_links_from_web, ip, port, proto, usluga, opis_nmap, results_path)
                 elif(protokol == "udp"):             
                     # Get banner
                     f_biblioteka.get_udp_banner(ip, port, protokol, usluga, opis_nmap, results_path)
