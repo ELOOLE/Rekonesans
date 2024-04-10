@@ -153,18 +153,16 @@ def f_polecenie_uniwersalne(cmd):
     ps = subprocess.Popen(
         cmd,
         shell=True,
+        text=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT)
 
     try:
-        output, errs = ps.communicate(timeout=20)
+        output, errs = ps.communicate(timeout=7)
 
         return output, errs
-    except subprocess.TimeoutExpired:
-        ps.kill()
-
-        return "", "TimeoutExpired"
     except Exception as error:
+        ps.kill()
         return "", str(error)
 
 
@@ -523,13 +521,19 @@ def f_socat(ip, port, proto, usluga, opis_nmap, results_path):
     # [1] - komunikat bledu
     if(socat_output[1] == None):
         # wynik
-        output = f_trim_output(socat_output[0])
-        if(len(output) > 0):
-            return cmd, output
-        else:
-            return cmd, "none"
+        #output = f_trim_output(socat_output[0])
+        #if(len(output) > 0):
+        #    return cmd, output
+        #else:
+        #    return cmd, "none"
+        try:
+            output = socat_output[0].decode('utf-8')
+            return cmd+"\n\n"+output
+        except:
+            return cmd+"\n\n"+f_trim_output(socat_output[0])
     else:
-        return cmd, socat_output[1]    
+        #return cmd, socat_output[1]    
+        return cmd+"\n\n"+socat_output[1]
 
 
 @f_results
@@ -560,11 +564,11 @@ def f_amap(ip, port, proto, usluga, opis_nmap, results_path):
         # wynik
         output = f_trim_output(amap_output[0])
         if(len(output) > 0):
-             return cmd, output
+             return cmd+"\n\n"+output
         else:
-            return cmd, "none"
+            return cmd+"\n\n"+"none"
     else:
-        return cmd, amap_output[1]
+        return cmd+"\n\n"+amap_output[1]
 
 
 @f_results
@@ -629,13 +633,29 @@ def get_udp_banner(ip, port):
 
 def save_results_in_file(content, ip, port,protokol,usluga, opis_nmap, results_path, action):
     with open(f"{results_path}/{ip}.html", 'a') as result_file:
-        result_file.write(f"[*] Service {ip} on port {port} / {protokol}, {usluga}, {opis_nmap} <br/>")
+        result_file.write('<table border="1">')
+                
+        result_file.write("<tr>")
+        result_file.write('<th colspan="3" style="text-align:left;background-color:#EFEFEF">')
+        result_file.write(f"[*] Service {ip} on port {port} / {protokol}, {usluga}, {opis_nmap} {datetime.datetime.now()}")
+        result_file.write("</th>")
+        result_file.write("</tr>")
+        
+        result_file.write(f"<tr>")
         if(len(str(content))> 0 ):
-            result_file.write(f"[*] {datetime.datetime.now()} <br/>")
-            result_file.write(f"[*] Results of {action}:<br/>")
-            result_file.write(str(content)+"<br/>")
-            result_file.write("---<br/>")
-            result_file.write("<br/>")
+            #result_file.write("<td>")
+            #result_file.write(f"[*] {datetime.datetime.now()} <br/>")
+            #result_file.write("</td>")
+
+            result_file.write("<td>")
+            result_file.write(f"[*] Results of {action}")
+            result_file.write("</td>")
+
+            result_file.write("<td>")
+            result_file.write(str(content).replace("\\r\\n", "\n"))
+            result_file.write("</td>")
+
+        result_file.write(f"</table><br/><br/>")
 
 
 def print_result(conten, ip, port,severity):
