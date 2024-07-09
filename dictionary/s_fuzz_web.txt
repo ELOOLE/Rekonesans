@@ -1,4 +1,3 @@
-sites/default/settings.php
 .
 ..
 ...
@@ -146,6 +145,7 @@ sites/default/settings.php
 2_0_50727_4927
 2_0_50727_4952
 2_0_50727_832
+%25%25target%25%25
 %252e%252e
 ..%252f..%252f..%252f..%252f..%252f..%252f..%252f..%252f..%252f..%252f..%252f..%252fetc%252fpasswd
 ..%252f..%252f..%252f..%252f..%252f..%252f..%252f..%252f..%252f..%252f..%252f..%252ftmp%252fpoc
@@ -232,11 +232,17 @@ a
 a1disp.cgi
 a1stats
 a%5c.aspx
+aaa9
+aab8
+aab9
 aadmin
 Aaspose-pdf-exporter
+ab2g
+about
 about.asp
 about.aspx
 aboutme.asp
+about.php
 abs
 acceptance_config.yml
 acceso
@@ -257,6 +263,7 @@ AccessPlatform
 AccessTopic.asp
 access.txt
 account
+Account
 Account.aspx
 account.html
 accountmanage
@@ -286,6 +293,7 @@ add.asp
 Add.aspx
 Add_entry.aspx
 addfile.asp
+__Additional
 AdditionalConfiguration.php
 addnews.asp
 add.php
@@ -496,12 +504,14 @@ admin_zhiliang.asp
 admin_zlglzn.asp
 admission_controller_config.yaml
 admloginuser.php
+\..\adm\management.asp
 admpar
 adm.php
 admpw
 admrev
 adovbs.inc
 adsamples
+ads.txt
 advanced-dewplayer
 AdvWorks
 aexp2b.htr
@@ -552,6 +562,7 @@ apidoc
 api-docs
 apidocs
 api.ini
+api.ipify.org:443
 api.log
 api_log.txt
 api.php
@@ -564,6 +575,7 @@ apiserver-client.crt
 apiserver-key.pem
 apisix
 app
+app-ads.txt
 app.aspx
 appcache.manifest
 app.config
@@ -571,6 +583,7 @@ AppData.config
 appdev
 app_dev.php
 appengine-generated
+appGet.cgi?hook=get_cfg_clien
 appGet.cgi?hook=get_cfg_clientlist()
 app.js
 .AppleDB
@@ -599,6 +612,7 @@ archi~1
 .arch-internal-preview.css
 .architect
 archiv~1
+archivarix.cms.php
 archive.7z
 archive.aspx
 archive.rar
@@ -639,6 +653,9 @@ asterisk.log
 AT-admin.cgi
 Atendimento.asp
 atlassian-ide-plugin.xml
+atomlib.php
+atom.xml
+audio
 auditevents
 auditevents.json
 audit.log
@@ -671,6 +688,7 @@ auto
 autoconfig
 autoconfig.asp
 autoconfig.json
+autodiscove
 autodiscover
 autoload
 autologin
@@ -828,7 +846,9 @@ Blogs.aspx
 blogs.dir
 bmc
 bmjj.asp
+boaform
 Board.asp
+board.cgi
 boardDataWW.php
 Boardhelp.asp
 boardpermission.asp
@@ -898,6 +918,7 @@ build.xml
 .bundle
 bundle
 BundleArtifacts
+bundle.js
 bundler
 bundles
 b_user.csv
@@ -976,6 +997,7 @@ cc-errors.txt
 cc-log.txt
 ccp14admin
 c+dir
+cdn-cgi
 celerybeat-schedule
 cell.xml
 centreon
@@ -1046,6 +1068,7 @@ checkcode.asp
 checked_accounts.txt
 checked.cache
 CheckInput.asp
+checkip.amazonaws.com:443
 checklogin
 checklogin.asp
 checklogin.php
@@ -1085,9 +1108,11 @@ classic.json
 classic.jsonp
 .classpath
 class_upload.asp
+classwithtostring.php
 cleanup.log
 ClearCache.asp
 cli
+client
 ClientAccessPolicy.xml
 ClientBin
 cliente
@@ -1189,6 +1214,7 @@ config
 Config
 config.asp
 config.bak
+config.cjs
 config.codekit
 config.codekit3
 config.core
@@ -1260,6 +1286,7 @@ configure
 configure.php~
 configure.scan
 config.xml
+config.yaml
 config.yml
 Confirm.aspx
 Confirmation.aspx
@@ -1331,6 +1358,7 @@ COPYRIGHT.txt
 .coq-native
 .core
 core
+Core
 core.asp
 core.php
 count_admin
@@ -1400,6 +1428,7 @@ CS_GeneratedScaffoldMarkup.aspx
 CS_ODSController.aspx
 csp
 css
+CSS
 CSS.asp
 css.php
 CS_SPTemplate.aspx
@@ -1684,6 +1713,7 @@ d.php
 dra.php
 DrawMagicFace.asp
 .drone.yml
+dropdown.php
 druid
 drush_stats.iml
 dsmgr
@@ -1824,6 +1854,7 @@ env
 ENV
 .env_1
 .env.backup
+.env.bak
 env.bak
 envConfig.js
 .env.dev
@@ -1844,12 +1875,16 @@ env.list
 .env.php
 .env.prod
 .env.prod.local
+.env.production
 .env.production.local
 .env_sample
 .env.sample.php
 .env.save
 .env.stage
+.env.swp
 .env.test.sample
+.env.uat
+.env.www
 eokedit1.asp
 eokedit.asp
 equipment
@@ -1858,6 +1893,7 @@ err
 err.log
 error
 error404.aspx
+error404.php
 error.asp
 Error.aspx
 error.cpp
@@ -1913,6 +1949,7 @@ ews
 Exadmin
 exair
 example.asp
+example.com:443
 example.php
 example_project
 examples
@@ -1948,6 +1985,7 @@ extensions
 .external
 .externalNativeBuild
 .externalToolBuilders
+ext-js
 extjs
 extras
 ezsqliteadmin
@@ -1958,6 +1996,7 @@ FakesAssemblies
 FAQ
 FAQ.aspx
 fastlane
+favicon-32x32.png
 favicon.ico
 favlist.asp
 .FBCIndex
@@ -2069,6 +2108,7 @@ ForgotPassword.aspx
 form.asp
 Form.aspx
 FORMAT.asp
+form.html
 formslogin
 formslogin.asp
 forum
@@ -2119,6 +2159,7 @@ ftp.txt
 fuel
 func.asp
 function.asp
+function.php
 function.require
 functions
 functions.asp
@@ -2140,6 +2181,8 @@ gen
 general
 Generate.aspx
 Generated_Code
+geoip
+geoserver
 get.asp
 getcfg.php
 GetChallengeWord.asp
@@ -2150,6 +2193,7 @@ getIndexableContent
 get.php
 .gfclient
 ggnews.asp
+\.gif\..\adm\management.asp
 .git
 git
 .git2
@@ -2192,6 +2236,7 @@ global.asax.temp
 global.asax.tmp
 Global.asp
 global.json
+global-protect
 globals
 globals.inc
 globals.jsa
@@ -2202,7 +2247,9 @@ glzn.asp
 goform
 gonggao.asp
 google.com
+google.com:443
 google-services.json
+GponForm
 grabbed.html
 gracemedia-media-player
 grade.asp
@@ -2299,6 +2346,7 @@ HNAP1
 hndUnblock.cgi
 home
 homeaction.php
+home.asp
 Home.aspx
 home.html
 home.php
@@ -2370,6 +2418,7 @@ htpasswd.bak
 .htpasswds
 .htpasswd_test
 http
+http:
 Http
 http_access.log
 httpd
@@ -2384,10 +2433,12 @@ httptrace
 .ht_wsr.txt
 hudson
 hue
+human.aspx
 hybridconfig
 .hypothesis
 hystrix
 icinga
+icons
 id_dsa
 id_dsa.ppk
 .idea
@@ -2411,6 +2462,7 @@ iisadmin
 iisadmpwd
 iishelp
 iissamples
+image
 ImageGallery.aspx
 imagemanager
 imagemap.exe?2,2
@@ -2463,6 +2515,7 @@ index.php-bak
 index.php.bak
 index.php?class=..
 index.php?id=50&file=..
+index.php?lang=..
 index.php?m=member&f=login_save
 index.php?option=com_abbrev&controller=..
 index.php?option=com_advertising&controller=..
@@ -2502,6 +2555,7 @@ index.php?p=..
 index.php?page=
 index.php?page_slug=..
 index.php?plot=;wget%20http:
+index.php?s
 index.php?s=Admin-Data-down&id=..
 index.php.svn-base
 index.php?upgrade
@@ -2513,6 +2567,8 @@ index.tar.gz
 index-test.php
 index.xml
 index.zip
+indice.html
+indice.jsa
 Indy_admin
 inetpub
 inetsrv
@@ -2714,6 +2770,7 @@ joom.save
 joom.tgz
 jo.php
 .jpilot
+jquery-3.3.1.slim.min.js
 jqueryplugins
 js
 jscripts
@@ -2783,6 +2840,7 @@ Label.asp
 lander.logs
 language.asp
 languages
+laravel
 laravel.log
 .last_cover_stats
 latest
@@ -2815,6 +2873,7 @@ lib
 lib64
 lib-cov
 libraries
+library
 librepag.log
 .libs
 libs
@@ -2838,6 +2897,7 @@ lindex.php
 Link.asp
 linkhub
 linkhub.log
+link.php
 links.asp
 Links.aspx
 linktous.html
@@ -2957,6 +3017,7 @@ login.php
 login.php?action=login&type=admin
 login.php?user=admin
 login-redirect
+login.rsp
 loginsave
 loginServlet
 login?_spring_security_remember_me=false
@@ -2977,6 +3038,7 @@ logo-eoffice.php
 LogOff.asp
 Logoff.aspx
 LogOn.aspx
+logon.htm
 logo_sysadmin
 logou.php
 logout
@@ -3031,6 +3093,7 @@ mailer
 mailingupgrade.php
 mail.log
 mailman
+mail.php
 .mailrc
 main
 main.asp
@@ -3074,6 +3137,7 @@ manuallogin
 mappings
 mappings.json
 market
+mar.php
 master
 master.key
 master.passwd
@@ -3297,6 +3361,7 @@ netdata
 .netrc
 .netrwhist
 networkDiag.cgi
+new
 New%20Folder
 New%20folder%20(2)
 new.7z
@@ -3335,6 +3400,7 @@ NewsAdmin_News_Del.asp
 NewsAdmin_Type.asp
 news.asp
 News.aspx
+newsite
 NewsList.aspx
 newsshow.asp
 new.tar
@@ -3357,6 +3423,7 @@ nginx_template.conf
 ngx_pagespeed_beacon
 .nia.cache
 nia.cache
+nice%20ports
 nimcache
 .nlia.cache
 nlia.cache
@@ -3546,6 +3613,7 @@ password.html
 password.jsn
 password.log
 password.mdb
+password.php
 .passwords
 passwords
 passwords.html
@@ -3598,6 +3666,7 @@ php5.fcgi
 php5.ini
 phpadmin
 phpadminmy
+?=PHPB8B5F2A0-3C92-11d3-A3A9-
 php-backdoor.php
 php.cgi
 php-cgi.core
@@ -3605,6 +3674,7 @@ php_cli_errors.log
 php-cli.ini
 php.core
 php-cs-fixer.phar
+?=PHPE9568F36-D428-11d2-A769-
 php-error.log
 php.error.log
 php_error.log
@@ -3679,6 +3749,7 @@ phpmyadmin
 phpmyAdmin
 phpMyadmin
 phpMyAdmin
+PHPMYADMIN
 phpmyadmin0
 phpMyAdmin0
 phpmyadmin1
@@ -3715,6 +3786,7 @@ phpMyAdmin-2.11.8.1
 phpMyAdmin-2.11.8.1-all-languages
 phpMyAdmin-2.11.8.1-all-languages-utf-8-only
 phpMyAdmin-2.11.9
+phpMyAdmin-2.11.9.2
 phpMyAdmin-2.2.3
 phpMyAdmin-2.2.6
 phpMyAdmin-2.5.1
@@ -3927,6 +3999,8 @@ pom.xml.tag
 pom.xml.versionsBackup
 PopUp.asp
 portal
+Portal
+Portal0000.htm
 portquotes_new
 post.asp
 Post.aspx
@@ -3998,6 +4072,7 @@ ProduAdmin_PubProdu.asp
 ProduAdmin_Type.asp
 ProduAdmin_xiaoType.asp
 producao.ini
+product
 product.asp
 Product.aspx
 productcockpit
@@ -4008,6 +4083,7 @@ products.aspx
 .profile
 Profile.asp
 Profile.aspx
+_profiler
 profiles
 Profiles.aspx
 profiles_settings.xml
@@ -4096,11 +4172,13 @@ qa.js
 qql
 qq.php
 qsd-php-backdoor.php
+query
 query.asp
 Query.aspx
 query?db=db&q=SHOW%20DATABASES
 Query_get.asp
 query.log
+query?q=SHOW+DIAGNOSTICS
 QuickLook
 quikstore.cfg
 quiz-master-next
@@ -4300,6 +4378,7 @@ runtime
 runtime.jsp
 RushSite.xml
 .rvmrc
+s
 .s3backupstatus
 sa2.php
 sales.csv
@@ -4322,6 +4401,7 @@ Samples
 sample.txt
 sample.txt~
 sa.php
+sapi
 sass
 .sass-cache
 saveadmin.asp
@@ -4387,9 +4467,11 @@ security.txt
 .selected_editor
 selenium
 selimage.asp
+sellers.json
 Send.asp
 Send.aspx
 SendEmail.asp
+sendgrid
 sendgrid.env
 sendmail.asp
 sensorlist.htm
@@ -4448,6 +4530,7 @@ settings.asp
 Settings.aspx
 .settings.bak
 settings.bak
+SETTINGS.CFG
 settings.htm
 settings.inc
 settings.ini
@@ -4469,6 +4552,7 @@ settings.xml
 setup
 setup.asp
 Setup.aspx
+setup.cgi
 setup-config.php
 setup.data
 setup.log
@@ -4482,6 +4566,7 @@ Sh3ll.php
 sha1.asp
 shangchuan.asp
 share
+shared
 sharedir.php
 sheep.php
 shell
@@ -4503,6 +4588,7 @@ showerr.asp
 ShowHeadPic.asp
 ShowImg.asp
 showlogin
+showLogin.cc
 ShowNewsPic1.asp
 ShowNewsPic.asp
 ShowpinpaiPic1.asp
@@ -4548,6 +4634,8 @@ sitemanager.xml
 sitemanager.xml.xml
 sitemap.asp
 SiteMap.aspx
+sitemaps.xml
+sitemap.txt
 sitemap.xml
 site.old
 site.orig
@@ -4557,6 +4645,7 @@ sites
 Sites
 site.sav
 site.save
+sites/default/settings.php
 siteserver
 SiteServer
 SiteSettingsEdit.aspx
@@ -4697,6 +4786,7 @@ stas
 stash
 stat
 stat.asp
+_static
 static
 static..
 statistics
@@ -4823,6 +4913,7 @@ system32
 system-administration
 system_administration
 System.asp
+systembc
 systemcall.php?command=cat%20
 SystemErr.log
 system.log
@@ -4876,11 +4967,13 @@ templates2
 Templates.aspx
 templates_c
 templates_view.asp
+Temporary_Listen_Addresses
 temp.php
 temp.sql
 temp-testng-customsuite.xml
 tera-charts
 teraform
+tes
 _test
 test
 test_
@@ -4925,6 +5018,7 @@ testproxy.php
 test-report
 test-result
 TestResult.xml
+__tests__
 tests
 test.shtml
 test.sqlite
@@ -4970,6 +5064,7 @@ TMP
 tmp.php
 .tmproj
 .tmp_versions
+tmUnblock.cgi
 tmx.yml
 TODO
 token.json
@@ -5190,6 +5285,7 @@ v1.0
 v1.1
 v1beta1
 v2
+V2
 v2.0
 v3
 v4
@@ -5277,6 +5373,7 @@ vpns
 vqcache
 vqmod
 .vs
+.vscode
 _vti_adm
 _vti_aut
 _vti_bin
@@ -5327,6 +5424,7 @@ webdav
 webdav.password
 webdb
 web.Debug.config
+webfig
 WebForm1.aspx
 webgrind
 webhits.exe
@@ -5334,6 +5432,7 @@ web-inf
 _WEB_INF
 WEB-INF
 WEB-INF.
+WebInterface
 weblogs
 webmail
 webmaster
@@ -5366,6 +5465,7 @@ web.tgz
 webticket
 webticketservice.svc
 webtools
+webui
 web.xml
 web.xml?
 web.xml%C0%80.jsp
@@ -5399,6 +5499,7 @@ wordpress.tar
 wordpress.tar.bz2
 wordpress.tar.gz
 wordpress.zip
+works
 .workspace
 workspace
 workspace(2).xml
@@ -5429,10 +5530,12 @@ wp-config.php.zip
 wp-content
 wp-custom-pages
 wp-download.php?url=..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2fetc%2fpasswd
+wp-emoji-release.min.js
 _wpeprivate
 wp-hide-security-enhancer
 w.php
 wp-includes
+wp-info.php
 wp-json
 wp-login
 wp-login.php
@@ -5441,6 +5544,7 @@ wp.rar
 wp-register.php
 wp-statistics
 wp.zip
+ws
 wsadminListener.out
 wsadmin.traceout
 wsadmin.valout
@@ -5462,8 +5566,11 @@ _www
 www
 .www_acl
 .wwwacl
+www.baidu.com:443
 wwwboard
 www-error.log
+www.google.com:443
+www.google.com:80
 www.key
 wwwlog
 www.rar
@@ -5476,6 +5583,7 @@ wwwroot.tar.bz2
 wwwroot.tar.gz
 wwwroot.tgz
 wwwroot.zip
+www.shadowserver.org:443
 www.sql
 wwwstat
 wwwstats.htm
@@ -5492,6 +5600,7 @@ xbgl.asp
 xbnews.asp
 x.cfm
 xcuserdata
+?XDEBUG_SESSION_START=phps
 xd.php
 xferlog
 xgadmin.asp
@@ -5540,6 +5649,7 @@ yarn-debug.log
 yarn-error.log
 .yarn-integrity
 yarn.lock
+yii
 yiic.php
 ylwrap
 yonetici
@@ -5555,6 +5665,7 @@ yum.log
 zabbix
 zebra.conf
 zehir.php
+zend
 zeroclipboard
 ZeroClipboard10.swf
 zeroclipboard.swf
