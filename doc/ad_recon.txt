@@ -64,3 +64,10 @@ dcdiag # test domain controller
 dcdiag /s:DC1 # To run dcdiag on a specific domain controller use this command
 
 net stop spooler # stop and start the printer spooler service.
+
+tasklist # display running processes
+taskkill /pid 1808 /f # Terminate a process by the PID number
+
+robocopy c:\source \\srv-vm2\share /z /e /copyall # Copy files from one server to another
+
+ 
