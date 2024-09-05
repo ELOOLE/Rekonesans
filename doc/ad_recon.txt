@@ -1,0 +1,27 @@
+# This will display your domain name.
+echo %USERDOMAIN%
+# or
+systeminfo | findstr /B /C:"Domain"
+# or 
+reg query "HKLM\System\CurrentControlSet\Services\Tcpip\Parameters" /v "Domain"
+
+# This will display your username.
+echo %USERNAME%
+
+net user Admin Passw0rd /add /domain
+net localgroup administrators Admin /add
+
+net group “Domain Admins” /domain
+
+Dsquery group -name "Domain Admins" | dsget group -members 
+
+Get-ADGroupMember -Identity "Domain Admins"
+
+Find-LocalAdminAccess
+Get-NetUser -SPN | ?{$_.memberof -match 'Domain Admins'}
+Get-NetGroup 'Domain Admins'
+
+Get-DomainTrust
+
+nltest /domain_trusts
+
