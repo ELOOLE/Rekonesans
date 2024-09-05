@@ -1,17 +1,22 @@
-# This will display your domain name.
-echo %USERDOMAIN%
-# or
-systeminfo | findstr /B /C:"Domain"
-# or 
-reg query "HKLM\System\CurrentControlSet\Services\Tcpip\Parameters" /v "Domain"
 
-# This will display your username.
-echo %USERNAME%
+echo %USERDOMAIN% # This will display your domain name.
+systeminfo | findstr /B /C:"Domain" # This will display your domain name.
+reg query "HKLM\System\CurrentControlSet\Services\Tcpip\Parameters" /v "Domain" # This will display your domain name.
+
+echo %USERNAME% # This will display your username.
+
+whoami /groups # List groups your current user belongs to
+
+gpresult /V # List group policy information for the current user
 
 net user Admin Passw0rd /add /domain
 net localgroup administrators Admin /add
 
-net group “Domain Admins” /domain
+net group /domain # Get a list of groups on the domain
+net group “Domain Admins” /domain # List all users that are members of a given group
+net user TheUser /domain # List groups and other details for any given user.
+
+net view Hostname /domain # View information for a specific computer on the network.
 
 Dsquery group -name "Domain Admins" | dsget group -members 
 
@@ -24,4 +29,15 @@ Get-NetGroup 'Domain Admins'
 Get-DomainTrust
 
 nltest /domain_trusts
+
+dsget group "CN=GroupName,DC=domain,DC=name,DC=com" -members
+
+net group <your_groupname> /domain
+
+net localgroup <your_groupname> /domain
+
+dsquery group -samid "Group_SAM_Account_Name" | dsget group -members -expand
+dsquery group -name "Group Account Name" | dsget group -members -expand
+
+dsquery group -name UserGroup1 | dsget group -members | dsget user -display
 
