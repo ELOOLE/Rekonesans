@@ -5,9 +5,19 @@ reg query "HKLM\System\CurrentControlSet\Services\Tcpip\Parameters" /v "Domain" 
 
 echo %USERNAME% # This will display your username.
 
+whoami # Display the user name 
+whoami /upn # Display the user name in UPN format
+whoami /user # Displays current domain, username and users SID
+whoami /all # Displays all information for the current user
 whoami /groups # List groups your current user belongs to
 
-gpresult /V # List group policy information for the current user
+set # get system details
+gpresult /V /h c:\report.html # List group policy information for the current user
+
+net use z: \\srv-vm1\share # mount share
+net use z: /delete # umount share
+
+route print
 
 net user Admin Passw0rd /add /domain
 net localgroup administrators Admin /add
@@ -41,3 +51,16 @@ dsquery group -name "Group Account Name" | dsget group -members -expand
 
 dsquery group -name UserGroup1 | dsget group -members | dsget user -display
 
+nslookup
+
+tracert google.com
+
+netstat # display network connections
+
+netstat -a # Display all active and listening ports.
+netstat -a -n # Display all connections in numerical order.
+
+dcdiag # test domain controller
+dcdiag /s:DC1 # To run dcdiag on a specific domain controller use this command
+
+net stop spooler # stop and start the printer spooler service.
