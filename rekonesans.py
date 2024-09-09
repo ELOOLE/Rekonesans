@@ -7,6 +7,9 @@
 #---
 # services -u -O 1 -c  port,proto,name,info -o /home/user/targets_ports - sort by host
 # services -u -O 2 -c  port,proto,name,info -o /home/user/targets_ports - sort by port
+# cat msf_ports_inside2.txt|sed 's/"//g'|cut -d "," -f 1,2|sed "s/,/:/g" > host_ports2.txt
+# while read -r line;do l=$(printf "%s" "$line" |tr -d '\r'|tr -d '\n'); printf "$l;"; curl -m 5 -k -L http://$l -i -s -o /dev/null -w "%{http_code}";echo;done < host_ports2.txt 
+# ipinfo: while read -r line;do l=$(printf "%s" "$line" |tr -d '\r'|tr -d '\n'); echo "$l;"; curl -m 5 -k -L https://ipinfo.io/$line;echo;echo;done < Documents/PGE/outside/outside_addr_ip.txt > Documents/PGE/outside/ipinfo
 ###############################################################################
 import os
 import argparse
@@ -41,6 +44,7 @@ def f_odczyt_pliku(data_file, results_path):
     for service_info in handler_data_file:
         read_from_line+=1
         if (read_from_line >= todo_lines):
+            print(f"service_info: {service_info}")
             (ip, port, protokol, usluga, opis_nmap) = service_info.replace("\"","").lower().strip().split(',')
             
             with open(todo_file,"a+") as file_done:
@@ -78,7 +82,8 @@ def f_odczyt_pliku(data_file, results_path):
                             f_biblioteka.f_make_thread(f_biblioteka.f_get_links_from_web, ip, port, proto, usluga, opis_nmap, results_path)
                 elif(protokol == "udp"):             
                     # Get banner
-                    f_biblioteka.get_udp_banner(ip, port, protokol, usluga, opis_nmap, results_path)
+                    #f_biblioteka.get_udp_banner(ip, port, protokol, usluga, opis_nmap, results_path)
+                    pass
                     
                 f_biblioteka.f_make_index(data_file, results_path)          
 
