@@ -7,9 +7,10 @@
 #---
 # services -u -O 1 -c  port,proto,name,info -o /home/user/targets_ports - sort by host
 # services -u -O 2 -c  port,proto,name,info -o /home/user/targets_ports - sort by port
-# cat msf_ports_inside2.txt|sed 's/"//g'|cut -d "," -f 1,2|sed "s/,/:/g" > host_ports2.txt
+# eyewitnes: cat msf_ports_inside2.txt|sed 's/"//g'|cut -d "," -f 1,2|sed "s/,/:/g" > host_ports2.txt
 # while read -r line;do l=$(printf "%s" "$line" |tr -d '\r'|tr -d '\n'); printf "$l;"; curl -m 5 -k -L http://$l -i -s -o /dev/null -w "%{http_code}";echo;done < host_ports2.txt 
 # ipinfo: while read -r line;do l=$(printf "%s" "$line" |tr -d '\r'|tr -d '\n'); echo "$l;"; curl -m 5 -k -L https://ipinfo.io/$line;echo;echo;done < Documents/PGE/outside/outside_addr_ip.txt > Documents/PGE/outside/ipinfo
+# nmap: while read -r line;do l=$(printf "%s" "$line" |tr -d '\r'|tr -d '\n'|tr -d '\n'|tr -d '\t');nmap -n -Pn -p- $line -oA $line -v;done < ...
 ###############################################################################
 import os
 import argparse

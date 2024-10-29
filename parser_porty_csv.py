@@ -18,8 +18,7 @@ def f_odczyt_pliku(filePathData,filePathDataCSV):
     array_ip_udp = []
 
     for linijka in h_filePathData:
-        linijka = linijka.strip()
-        linijka = linijka.replace('"','')
+        linijka = linijka.replace('"','').strip()
         wynik = linijka.split(',')
 
         ip = wynik[0]
@@ -36,7 +35,7 @@ def f_odczyt_pliku(filePathData,filePathDataCSV):
                 'protokol': protokol
             }}
 
-            print(f">> ip: {ip}, port: {port}, protokol: {protokol}\n")
+            print(f"[*] ip: {ip}, port: {port}, protokol: {protokol}")
 
             try:
                 index_szukana = array_ip.index(ip)
@@ -47,8 +46,6 @@ def f_odczyt_pliku(filePathData,filePathDataCSV):
                         array_ip_tcp[index_szukana] = port
                     else:
                         array_ip_tcp[index_szukana] = port_tcp + ',' + port
-                    
-                    #print('arr tcp: ' + str(array_ip_tcp))
                 else:
                     port_udp = array_ip_udp[index_szukana]
 
@@ -56,11 +53,7 @@ def f_odczyt_pliku(filePathData,filePathDataCSV):
                         array_ip_udp[index_szukana] = port
                     else:
                         array_ip_udp[index_szukana] = port_udp + ',' + port
-                    
-                    #print('arr udp: '+str(array_ip_udp))
-                
             except Exception as e:
-                #print('wyjatek'+str(e))
                 array_ip.append(ip)
                 index_szukana = array_ip.index(ip)
 
@@ -69,15 +62,9 @@ def f_odczyt_pliku(filePathData,filePathDataCSV):
                 if(str.lower(protokol) == 'tcp'):              
                     array_ip_tcp.append(port)
                     array_ip_udp.append('')
-                    #print('tcp: '+port)
                 else:
                     array_ip_tcp.append('')
                     array_ip_udp.append(port)
-                    #print('udp: '+port)
-
-            #print(str(array_ip))
-
-            #input("")
             data['skan'].append(tmp_dict)
 
     plik_csv_dane = ''

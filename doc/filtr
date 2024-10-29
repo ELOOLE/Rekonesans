@@ -1,0 +1,4 @@
+ grep -a -E -o "\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}\b" all|sort|uniq > all_su
+ while read -r line;do ile=$(echo $line|wc -c);if [ $ile -eq 33 ];then echo $line; fi; done < patern1 > patern11
+ grep -v -Fwf patern11 all3 > all4  
+ cat all4 |tr [:upper:] [:lower:] > all5
