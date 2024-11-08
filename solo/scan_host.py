@@ -7,17 +7,35 @@ import requests
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+def port_table():
+    p_table = ["",":81",":82",":83",":6443",":7443",":8000",":8080",":8081",":8443",":9090",":9091",":9443"]
+    return p_table
+
+def proto_table():
+    pro_table = ["http://","https://"]
+    return pro_table
 
 def scan_host(addr):
     addr = addr.strip()
     if(validate_addr(addr)):
         print(f"[*] Start scaning {addr}")
         
-        http_code = get_http_code_respond(f"http://{addr}")
-        print(f"curl code {http_code}")
-        
-        https_code = get_http_code_respond(f"https://{addr}")
-        print(f"curl code {https_code}")
+        for protocol in proto_table():
+            #for port in range(1, 65535):
+            for port in port_table():
+                print(f"[*] {protocol}{addr}{port}")
+                respond = get_http_code_respond(f"{protocol}{addr}{port}")
+                try:
+                    http_code = respond.status_code
+                    if http_code != "000": 
+                        headers = respond.headers
+                        result = f"[+] http code {http_code} addr: {protocol}{addr}{port}, headers:{headers}"
+                        print(result)
+                        with open("log_http_code", "+a") as results_file:
+                            results_file.write(result)
+                            results_file.write("\n")
+                except:
+                    pass
     else:
         print(f"[-] Scaning ip addr {addr} isn't valid")
 
@@ -32,7 +50,7 @@ def validate_addr(addr):
 
 def get_http_code_respond(url):
     try:
-        return requests.get(url, verify=False, timeout=5).status_code
+        return requests.get(url, verify=False, timeout=5)
     except Exception as e:
         return "error"
 
