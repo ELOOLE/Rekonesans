@@ -3,10 +3,13 @@ import sys
 import ipaddress
 import requests
 import os
-
+import logging
+import threading
+import time
 
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+ 
 
 def port_table(prange):
     if prange:
@@ -30,7 +33,9 @@ def scan_host(addr, ports):
                 #print(f"[*] {protocol}{addr}:{port}")
                 sys.stdout.write("Current port: %s   \r" % (port) )
                 sys.stdout.flush()
-                respond = get_http_code_respond(f"{protocol}{addr}:{port}")
+                #respond = get_http_code_respond(f"{protocol}{addr}:{port}")
+                respond = threading.Thread(target=get_http_code_respond, args=(f"{protocol}{addr}:{port}",), daemon=True)
+                respond.start()
                 try:
                     http_code = respond.status_code
                     if http_code != "000": 
