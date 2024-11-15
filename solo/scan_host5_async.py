@@ -1,90 +1,13 @@
 import argparse
+import asyncio
 import random
 import sys
-import ipaddress
+import time 
+import aiohttp
+from aiohttp.client import ClientSession
 import requests
-import os
-import threading
-import ctypes
-libgcc_s = ctypes.CDLL('libgcc_s.so.1')
-import time
-import datetime
-
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
-
-def f_czas():
-    '''Zwraca w wyniku aktualny czas'''
-    return str(datetime.datetime.now())[:19]
-
-
-def port_table(prange):
-    if prange:
-        p_table = list(range(65536))
-    else:    
-        p_table = ["80","81","82","83","6443","7443","8000","8080","8081","8443","9090","9091","9443","18450","19712"]
-    return p_table
-
-def proto_table():
-    pro_table = ["https://"]
-    return pro_table
-
-def scan_host(addr, ports) -> None:
-    addr = addr.strip()
-    if(validate_addr(addr)):
-        print(f"[*] Start scaning {addr}")
-        threads = []
-
-        #for protocol in proto_table():
-        print(f"[*] Build threads")
-        for port in port_table(prange=ports):
-            #sys.stdout.write(f"[*] Current port: %s   \r" % (port) )
-            #sys.stdout.flush()
-            respond = threading.Thread(target=get_http_code_respond, args=(f"http://{addr}:{port}",))
-            threads.append(respond)
-            
-            respond = threading.Thread(target=get_http_code_respond, args=(f"https://{addr}:{port}",))
-            threads.append(respond)
-    
-        print(f"[*] Starting threads")
-        i = 0; 
-        for thread in threads:
-            procent = (i*100)/(65535*2)
-            sys.stdout.write(f"[*] progress %s %% \r" % (int(procent)) )
-            sys.stdout.flush()
-            thread.start()
-            i = i+1
-        
-        print(f"\n[*] Join threads")
-        for thread in threads:
-            thread.join()
-    else:
-        print(f"[-] Scaning ip addr {addr} isn't valid")
-
-
-def validate_addr(addr):
-    try:
-        ip_obj = ipaddress.ip_address(addr)
-        return True
-    except:
-        return False
-
-
-def get_http_code_respond(url) -> None:
-    try:    
-        respond = requests.get(url, verify=False, timeout=3)
-        http_code = respond.status_code
-        if http_code != "000": 
-            headers = respond.headers
-            result = f"[+] http code {http_code} addr: {url}, headers:{headers}"
-            print(result)
-            with open("log_http_code", "+a") as results_file:
-                results_file.write(result)
-                results_file.write("\n")
-    except Exception as e:
-        #print(f"error: {e}")
-        pass
 
 
 def random_ua():
@@ -167,36 +90,91 @@ def random_ua():
                 'details').pop())
     if 'extensions' in platform and platform.get('extensions'):
         ua_string = "%s %s" % (ua_string, random.choice(platform.get('extensions')))
-    return ua_string
+    return {'User-Agent': ua_string}
 
 
+def port_table(prange):
+    #if prange:
+    #    p_table = list(range(65536))
+    #else:    
+        #p_table = ["80","81","82","83","6443","7443","8000","8080","8081","8443","9090","9091","9443","18450","19712"]
+    return prange
+
+
+def proto_table() -> str:
+    pro_table = ["http://","https://"] 
+    return pro_table
+
+
+sem = asyncio.Semaphore(256)
+
+async def check_single_url(url:str,session:ClientSession,timeo:int):
+    async with sem:
+        sys.stdout.write(f"[*] url: %s   \r" % (url) )
+        sys.stdout.flush()
+        await asyncio.sleep(1)
+        async with session.get(url, timeout=timeo, ssl=False, allow_redirects=True, max_redirects=3, headers=random_ua()) as response:
+            result = await response.text()
+        
+            print(f"[+] Alive addr {url}")
+            
+            #print(f"[*] ----")
+            #print(f"[*] {result}")
+            #print(f"[*] ----")
+
+
+async def check_all_urls(urls:list,timeo:int):
+    my_conn = aiohttp.TCPConnector(ssl=False, limit=0, enable_cleanup_closed=True,keepalive_timeout=timeo)
+    async with aiohttp.ClientSession(connector=my_conn) as session:
+        tasks = []
+        for url in urls:
+            task = asyncio.create_task(check_single_url(url,session,timeo))
+            #asyncio.ensure_future()
+            tasks.append(task)           
+            sys.stdout.write(f"[*] Adding addr: %s   \r" % (url) )
+            sys.stdout.flush()
+        print("")
+        await asyncio.gather(*tasks,return_exceptions=True) # the await must be nest inside of the session
+
+        #while True:
+
+            # get the status of the task
+        #    status = task.done()
+            # report the status
+        #    sys.stdout.write(f"[-] Task done: %s, {url}   \r" % (task.done()) )
+        #    sys.stdout.flush()
+        #    sys.stdout.write(f"[!] Task done: %s, {url}   \r" % (task.done()) )
+        #    sys.stdout.flush()
+            #print(f'>task done: {task.done()}')
+            # check if the task is done
+        #    if status:
+        #        break 
+
+
+############################################################################################################
 if __name__ == "__main__":
-    script_path = os.path.abspath(__file__)
-    script_directory = os.path.dirname(script_path)
     parser = argparse.ArgumentParser()
     parser.add_argument('-sh', '--single-host', action='store', dest='single_host', type=str, help='scaning single host')
-    parser.add_argument('-sn', '--subnetwork', action='store', dest='subnetwork', type=str, help='scaning subnetwork')
-    parser.add_argument('-f', '--file', action='store', dest='file', type=str, help='scaning subnetwork/host from file')
-    parser.add_argument('-a', '--all-ports', action='store', dest='ports', type=bool, default=False, help='port range')
+    parser.add_argument('-t', '--timeout', action='store', dest='timeout', type=int, help='timeout', default=5)
     args = parser.parse_args()
 
-    if ('single_host' not in args or not args.single_host) and ('subnetwork' not in args or not args.subnetwork) and ('file' not in args or not args.file):
+    if ('single_host' not in args or not args.single_host):
         parser.print_help()
         sys.exit(1)
-    
-    if (args.single_host is not None) and (args.subnetwork is not None) and (args.file is not None):
-        print("Set single host or subnetwork or file as source do scan")
-        parser.print_help()
-        sys.exit(1)
-
-    print(f"[*] {f_czas()}")
-
-    if (args.single_host is not None):
-        scan_host(args.single_host, args.ports)
-    elif (args.subnetwork is not None):
-        scan_host(args.subnetwork, args.ports)
-    elif (args.file is not None):
-        scan_host(args.file, args.ports)
-    
-    print(f"[*] {f_czas()}")
-    
+    #with open("/home/user/Documents/zus/zus_addr.txt", "r") as dane:
+    #    for line in dane:
+    #        url = []
+    #        addr = line.strip()
+    #        for protocol in proto_table():
+    #            for port in port_table(prange=True):
+    #                url.append(f"{protocol}{addr}:{port}")
+    #        print(f"\n[*] Scanning address: {addr}")
+    #        asyncio.run(download_all(url))
+    addr = args.single_host
+    urls = []
+    for protocol in proto_table():
+        for port in port_table(list(range(65536))):
+            urls.append(f"{protocol}{addr}:{port}")
+    print(f"\n[*] Scanning address: {addr}")
+    print(f"[*] URLS list: {len(urls)}")
+    asyncio.run(check_all_urls(urls, args.timeout))

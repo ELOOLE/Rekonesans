@@ -21,7 +21,7 @@ def f_czas():
 
 def port_table(prange):
     if prange:
-        p_table = list(range(65536))
+        p_table = list(range(65535))
     else:    
         p_table = ["80","81","82","83","6443","7443","8000","8080","8081","8443","9090","9091","9443","18450","19712"]
     return p_table
@@ -30,7 +30,7 @@ def proto_table():
     pro_table = ["https://"]
     return pro_table
 
-def scan_host(addr, ports) -> None:
+def scan_host(addr, ports):
     addr = addr.strip()
     if(validate_addr(addr)):
         print(f"[*] Start scaning {addr}")
@@ -41,13 +41,13 @@ def scan_host(addr, ports) -> None:
         for port in port_table(prange=ports):
             #sys.stdout.write(f"[*] Current port: %s   \r" % (port) )
             #sys.stdout.flush()
+
             respond = threading.Thread(target=get_http_code_respond, args=(f"http://{addr}:{port}",))
             threads.append(respond)
-            
             respond = threading.Thread(target=get_http_code_respond, args=(f"https://{addr}:{port}",))
             threads.append(respond)
     
-        print(f"[*] Starting threads")
+        print(f"\n[*] Starting threads")
         i = 0; 
         for thread in threads:
             procent = (i*100)/(65535*2)
@@ -71,7 +71,7 @@ def validate_addr(addr):
         return False
 
 
-def get_http_code_respond(url) -> None:
+def get_http_code_respond(url):
     try:    
         respond = requests.get(url, verify=False, timeout=3)
         http_code = respond.status_code
