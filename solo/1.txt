@@ -1,0 +1,153 @@
+\documentclass{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[polish]{babel}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{positioning} % Dodanie biblioteki positioning
+\geometry{a4paper, margin=1in}
+
+\begin{document}
+	
+	% Strona tytułowa
+	\begin{titlepage}
+		\centering
+		\vspace*{3cm}
+		{\Huge \textbf{Raport z testu bezpieczeństwa serwera pocztowego}}\\[1.5cm]
+		{\Large Wykonany przez firmę \textbf{PentestFirm}}\\[1.5cm]
+		\textbf{Data:} \today\\[5cm]
+		\vfill
+	\end{titlepage}
+	
+	% Sekcja z poziomem podatności
+	%\noindent\rule{\textwidth}{1pt}\\
+	%\textbf{Podatność średnia: Serwer pocztowy - Exchange}\\
+	%\noindent\rule{\textwidth}{1pt}
+	
+	\section{Wprowadzenie}
+	
+	Celem niniejszego testu było sprawdzenie poziomu zabezpieczeń serwera pocztowego Microsoft Exchange w organizacji. Testy przeprowadzono w ramach oceny ryzyka wewnętrznych ataków socjotechnicznych i ewentualnego nadużycia funkcjonalności systemu.
+	
+	\section{Podstawowe informacje}
+	
+	\begin{itemize}
+		\item \textbf{Nazwa serwera:} mail.abc.pl
+		\item \textbf{System operacyjny:} Windows Server 2019
+		\item \textbf{Oprogramowanie pocztowe:} Microsoft Exchange
+		\item \textbf{Port podatny:} 25 (SMTP)
+		\item \textbf{Adres IP wewnętrzny:} 172.24.24.1
+	\end{itemize}
+	
+	\section{Opis wykrytej podatności}
+	
+	Podczas testów bezpieczeństwa stwierdzono, że serwer pocztowy Exchange jest podatny na atak polegający na nieautoryzowanym wysyłaniu wiadomości e-mail (Open Relay). Atakujący, mając dostęp do serwera SMTP na porcie 25, może:
+	
+	\begin{itemize}
+		\item Wysyłać e-maile do dowolnej liczby odbiorców w organizacji,
+		\item Podszywać się pod dowolnego użytkownika w domenie,
+		\item Maskować swoją prawdziwą tożsamość, co umożliwia phishing i oszustwa.
+	\end{itemize}
+	
+	Ważne jest jednak, że Open Relay działa \textbf{wyłącznie w obrębie organizacji}, co oznacza, że serwer nie może być wykorzystywany do rozsyłania wiadomości na zewnątrz.
+	
+	\section{Zagrożenia wynikające z podatności}
+	
+	\begin{itemize}
+		\item \textbf{Phishing i oszustwa wewnętrzne}: Możliwość wysyłania e-maili jako dowolny użytkownik zwiększa ryzyko ataków socjotechnicznych w organizacji.
+		\item \textbf{Dezinformacja i eskalacja uprawnień}: Atakujący może podszywać się pod przełożonych lub dział IT, co może prowadzić do wyłudzeń danych lub eskalacji uprawnień.
+		\item \textbf{Ujawnienie wewnętrznej infrastruktury}: Adres IP 172.24.24.1 wskazuje na wewnętrzną adresację serwera, co może być wykorzystane przez atakujących do dalszej eksploracji sieci.
+		\item \textbf{Ryzyko wewnętrznego spamu}: Możliwość masowej wysyłki wiadomości może zakłócić działanie systemów komunikacyjnych i prowadzić do przeciążenia serwera pocztowego.
+	\end{itemize}
+	
+	\subsection{Przykładowy log ataku}
+	\begin{verbatim}
+		EHLO attacker.com
+		MAIL FROM:<hacker@abc.pl>
+		RCPT TO:<oficer.it@abc.pl>
+		DATA
+		Subject: Pilna aktualizacja bezpieczeństwa
+		Drogi użytkowniku, prosimy o natychmiastowe zalogowanie się na stronie intranetowej.
+		http://fake-link.com
+		.
+		QUIT
+	\end{verbatim}
+	
+	\subsection{Schemat architektury sieciowej}
+	\begin{figure}[h]
+		\centering
+		\begin{tikzpicture}
+			\node[draw, rectangle] (internet) {Internet};
+			\node[draw, rectangle, below=1cm of internet] (firewall) {Firewall};
+			\node[draw, rectangle, below=1cm of firewall] (mailserver) {Serwer pocztowy Exchange};
+			\node[draw, rectangle, left=2cm of mailserver] (attacker) {Atakujący};
+			\node[draw, rectangle, below=1cm of mailserver] (internal) {Sieć wewnętrzna (172.24.24.x)};
+			
+			\draw[->] (internet) -- (firewall);
+			\draw[->] (firewall) -- (mailserver);
+			\draw[->] (attacker) -- (mailserver);
+			\draw[->] (mailserver) -- (internal);
+		\end{tikzpicture}
+		\caption{Schemat architektury sieciowej z podatnym serwerem Exchange}
+	\end{figure}
+	
+	\section{Rekomendacje dotyczące zabezpieczeń}
+	
+	\subsection{Konfiguracja serwera SMTP}
+	
+	\begin{itemize}
+		\item \textbf{Wyłączenie Open Relay} – Należy skonfigurować serwer SMTP tak, aby akceptował wiadomości tylko od zaufanych źródeł i użytkowników domeny.
+		\item \textbf{Wdrożenie uwierzytelniania SMTP (AUTH SMTP)} – Wymuszenie uwierzytelniania przy wysyłaniu wiadomości.
+		\item \textbf{Ograniczenie dostępu do portu 25} – Zezwolenie na dostęp tylko z określonych adresów IP lub połączeń wewnętrznych.
+		\item \textbf{Wdrożenie SPF, DKIM i DMARC} – Mechanizmy te zapobiegają fałszowaniu nadawcy wiadomości i zwiększają wiarygodność korespondencji.
+	\end{itemize}
+	
+	\section{Podsumowanie}
+	
+	Wykryta podatność na serwerze Exchange (Open Relay) stanowi zagrożenie dla organizacji, choć jej wpływ jest ograniczony do wewnętrznej infrastruktury. Zaleca się natychmiastowe wdrożenie przedstawionych rekomendacji, aby zapobiec potencjalnym atakom socjotechnicznym i wewnętrznym zagrożeniom. Dalsze testy powinny być przeprowadzone po wprowadzeniu zmian, aby zweryfikować skuteczność wdrożonych zabezpieczeń.
+	
+\end{document}
+
+
+
+
+Raport z testu bezpieczeństwa serwera pocztowego
+1. Podstawowe informacje
+Nazwa serwera: mail.abc.pl
+System operacyjny: Windows Server 2019
+Oprogramowanie pocztowe: Microsoft Exchange
+Port podatny: 25 (SMTP)
+Adres IP wewnętrzny: 172.24.24.1
+2. Opis wykrytej podatności
+Podczas testów bezpieczeństwa stwierdzono, że serwer pocztowy Exchange jest podatny na atak polegający na nieautoryzowanym wysyłaniu wiadomości e-mail (Open Relay). Atakujący, mając dostęp do serwera SMTP na porcie 25, może:
+    • Wysyłać e-maile do dowolnej liczby odbiorców w wewnątrz organizacji, 
+    • Podszywać się pod dowolnego użytkownika w domenie, 
+    • Maskować swoją prawdziwą tożsamość, co umożliwia phishing i oszustwa. 
+Ważne jest jednak, że Open Relay działa wyłącznie w obrębie organizacji, co oznacza, że serwer nie może być wykorzystywany do rozsyłania wiadomości na zewnątrz.
+3. Zagrożenia wynikające z podatności
+    • Phishing i oszustwa wewnętrzne: Możliwość wysyłania e-maili jako dowolny użytkownik zwiększa ryzyko ataków socjotechnicznych w organizacji. 
+    • Dezinformacja i eskalacja uprawnień: Atakujący może podszywać się pod przełożonych lub dział IT, co może prowadzić do wyłudzeń danych lub eskalacji uprawnień. 
+    • Ujawnienie wewnętrznej infrastruktury: Adres IP 172.24.24.1 wskazuje na wewnętrzną adresację serwera, co może być wykorzystane przez atakujących do dalszej eksploracji sieci. 
+    • Ryzyko wewnętrznego spamu: Możliwość masowej wysyłki wiadomości może zakłócić działanie systemów komunikacyjnych i prowadzić do przeciążenia serwera pocztowego. 
+Klasyfikacja ryzyka
+Na podstawie standardu CVSS podatność można sklasyfikować jako średnie zagrożenie (Medium Severity), z oceną w zakresie 5.5 - 6.5. Główne czynniki wpływające na tę ocenę to:
+    • Ograniczenie ataku do wewnętrznych adresatów, 
+    • Możliwość przeprowadzenia ataków phishingowych w obrębie organizacji, 
+    • Brak możliwości wykorzystania serwera do masowego spamu na zewnątrz. 
+4. Rekomendacje dotyczące zabezpieczeń
+4.1. Konfiguracja serwera SMTP
+    • Wyłączenie Open Relay – Należy skonfigurować serwer SMTP tak, aby akceptował wiadomości tylko od zaufanych źródeł i użytkowników domeny. 
+    • Wdrożenie uwierzytelniania SMTP (AUTH SMTP) – Wymuszenie uwierzytelniania przy wysyłaniu wiadomości. 
+    • Ograniczenie dostępu do portu 25 – Zezwolenie na dostęp tylko z określonych adresów IP lub połączeń wewnętrznych. 
+    • Wdrożenie SPF, DKIM i DMARC – Mechanizmy te zapobiegają fałszowaniu nadawcy wiadomości i zwiększają wiarygodność korespondencji. 
+4.2. Monitorowanie i reakcja na incydenty
+    • Regularne audyty i logowanie – Monitorowanie logów SMTP w celu wykrycia anomalii. 
+    • Konfiguracja SIEM – Wdrożenie systemu zbierającego logi i analizującego zagrożenia w czasie rzeczywistym. 
+    • Blokowanie podejrzanych adresów IP – Wdrożenie systemu filtrowania niepożądanych połączeń. 
+4.3. Zabezpieczenie wewnętrznej adresacji
+    • Maskowanie IP wewnętrznego – Konfiguracja serwera tak, aby nie ujawniał wewnętrznych adresów IP w nagłówkach wiadomości. 
+    • Segmentacja sieci – Ograniczenie dostępu do krytycznych zasobów poprzez odpowiednią konfigurację VLAN i firewalli. 
+5. Podsumowanie
+Wykryta podatność na serwerze Exchange (Open Relay) stanowi zagrożenie dla organizacji, choć jej wpływ jest ograniczony do wewnętrznej infrastruktury. Zaleca się natychmiastowe wdrożenie przedstawionych rekomendacji, aby zapobiec potencjalnym atakom socjotechnicznym i wewnętrznym zagrożeniom. Dalsze testy powinny być przeprowadzone po wprowadzeniu zmian, aby zweryfikować skuteczność wdrożonych zabezpieczeń.
+
