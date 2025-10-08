@@ -6,34 +6,31 @@ import socket
 import requests
 requests.packages.urllib3.disable_warnings()
 
-def write_file(file_location, content):
-    with open(file_location, "+a") as h_file:
-        h_file.write(content+'\n')
+def http_request(url, verify=True):
+    try:
+        response = requests.get(url, timeout=5, verify=verify)
+        return response.status_code
+    except Exception:
+        return "-"
 
 def read_file(file_location):
     with open(file_location) as h_file:
         for line in h_file:
-            #nline = line.strip().split(".")[-3:]
-            nline = line.strip().split(".")
-            domena = '.'.join(nline)
+            domena = line.strip()
             http_code = http_request(f'http://{domena}')
-            https_code = http_request(f'https://{domena}, verify=False')
+            https_code = http_request(f'https://{domena}', verify=False)
             try:
                 ip = socket.gethostbyname(domena)
-            except Exception as e:
+            except Exception:
                 ip = "-"
 
-            print(f'[*] {domena}, http: {http_code}, https: {https_code}, ip: {ip}')
-            #write_file(dst_data_file, domena)
+            content = f'[*] {domena}, http: {http_code}, https: {https_code}, ip: {ip}'
+            print(content)
+            write_file(destination_data_file, content)
 
-def http_request(url):
-    try:
-        response = requests.get(url, timeout=5)
-        #return response.text
-        return response.status_code
-    except Exception as e:
-        #print(f'[*] Error: {e}')
-        return "-"
+def write_file(file_location, content):
+    with open(file_location, "a") as h_file:
+        h_file.write(content + '\n')
 
 '''
 MAIN
@@ -60,7 +57,7 @@ if __name__ == '__main__':
     if ('file_output' not in args or not args.file_output):
         dst_data_file = source_data_file + '.out'
     else:
-        source_data_file = args.file_output
+        destination_data_file = args.file_output
 
     read_file(source_data_file)
     print('[*] Done!')
