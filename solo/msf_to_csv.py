@@ -30,8 +30,8 @@ def main():
         writer.writerow(['adres ip', 'porty TCP', 'porty UDP'])
 
         for ip in sorted(ip_ports):
-            tcp_ports = ','.join(sorted(ip_ports[ip]['tcp'], key=int))
-            udp_ports = ','.join(sorted(ip_ports[ip]['udp'], key=int))
+            tcp_ports = ', '.join(sorted(ip_ports[ip]['tcp'], key=int))
+            udp_ports = ', '.join(sorted(ip_ports[ip]['udp'], key=int))
             writer.writerow([ip, tcp_ports, udp_ports])
 
 if __name__ == '__main__':
