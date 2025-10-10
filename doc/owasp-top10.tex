@@ -1,0 +1,303 @@
+% owasp_top10_burp.tex
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[polish]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{geometry}
+\usepackage{longtable}
+\usepackage{titlesec}
+\usepackage{color}
+
+\geometry{left=25mm,right=25mm,top=25mm,bottom=25mm}
+
+\titleformat{\section}{\large\bfseries}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection.}{0.5em}{}
+
+\hypersetup{
+	pdftitle={OWASP Top 10 - Techniczna lista testów (Burp Suite)},
+	pdfauthor={Automatycznie wygenerowany dokument},
+	colorlinks=true,
+	linkcolor=blue,
+	urlcolor=blue,
+	citecolor=blue
+}
+
+\title{OWASP Top 10 — Techniczna lista testów (Burp Suite)}
+\author{Wersja techniczna \\ (skoncentrowana na realizacji testów)}
+\date{\today}
+
+\begin{document}
+	\maketitle
+	\tableofcontents
+	\bigskip
+	
+	\section*{Wstęp}
+	\addcontentsline{toc}{section}{Wstęp}
+	Poniższy dokument to skondensowany, operacyjny playbook testów dla OWASP Top 10 skoncentrowany na technicznych czynnościach wykonywanych głównie przy użyciu Burp Suite (Proxy, Repeater, Intruder, Scanner, Collaborator oraz przydatne wtyczki). Dokument zawiera dla każdego punktu: cel, konkretne testy do wykonania, używane funkcje Burp oraz sygnały potwierdzające podatność i zalecenia naprawcze.
+	
+	\vspace{1em}
+	\noindent\textbf{Uwaga:} dokument nie zawiera opisów formalnych — zakładamy, że zgody, zakres i warunki testów są ustalone poza tym playbookiem.
+	
+	\newpage
+	
+	\section{A1 --- Injection (SQL/NoSQL/OS/LDAP)}
+	\subsection*{Cel}
+	Wykryć punkty, w których wejście użytkownika trafia do zapytań/systemów wykonawczych bez odpowiedniej walidacji lub parametryzacji.
+	
+	\subsection*{Techniczne testy}
+	\begin{enumerate}[leftmargin=*,label=\arabic*)]
+		\item Zmapuj wszystkie wejścia: \texttt{GET query}, \texttt{POST body} (form-data, x-www-form-urlencoded, JSON), nagłówki, cookies, multipart.
+		\item Dla każdego parametru:
+		\begin{itemize}
+			\item Wyślij kontrolowane modyfikacje (apostrof, cudzysłów, zmiana typu wartości, dłuższe stringi) w \texttt{Repeater}.
+			\item Porównuj odpowiedzi używając \texttt{Comparer} (status, długość, body).
+		\end{itemize}
+		\item Użyj \texttt{Intruder} w trybie niskiego tempa (throttling) z krótką listą testowych payloadów wykrywczych; ustaw \texttt{Grep-Match} na wzorce błędów SQL/DB.
+		\item Dla blind SQLi użyj \texttt{Burp Collaborator} (OOB); preferuj OOB zamiast time-based na produkcji.
+		\item W razie konieczności (zgoda) wykonaj bardzo ograniczone time-based testy monitorując opóźnienia.
+	\end{enumerate}
+	
+	\subsection*{Burp --- używane funkcje}
+	\texttt{Proxy}, \texttt{Repeater}, \texttt{Intruder}, \texttt{Scanner} (jeśli dozwolone), \texttt{Collaborator}, \texttt{Comparer}, \texttt{Grep-Match}.
+	
+	\subsection*{Sygnały potwierdzające}
+	\begin{itemize}
+		\item Błędy SQL/DB w odpowiedzi (np. \texttt{syntax error}, \texttt{ORA-}, \texttt{SQLSTATE}).
+		\item Zmiana logiczna wyników (np. zwrócenie dodatkowych rekordów).
+		\item Callback z Collaboratora (OOB).
+		\item Powtarzalne time-based opóźnienie zależne od payloadu.
+	\end{itemize}
+	
+	\subsection*{Zalecenia naprawcze}
+	Użycie prepared statements / parametrów / ORM; walidacja po stronie serwera (whitelist); minimalne uprawnienia DB; ukrywanie szczegółów błędów.
+	
+	\newpage
+	\section{A2 --- Broken Authentication}
+	\subsection*{Cel}
+	Wykryć słabości mechanizmów uwierzytelniania, zarządzania sesją i resetu haseł.
+	
+	\subsection*{Techniczne testy}
+	\begin{enumerate}[leftmargin=*,label=\arabic*)]
+		\item Analiza tokenów sesji: modyfikacja/klonowanie cookie, manipulacja tokenami w nagłówkach.
+		\item Testy resetu hasła: sprawdź, czy token resetu jest jednorazowy i nieprzewidywalny.
+		\item Testy rate limiting: kontrolowane próby logowania (niskie tempo) w \texttt{Intruder} lub skrypcie.
+		\item Testy logout/session invalidation: użyj tego samego tokena po wylogowaniu.
+		\item Sprawdź flagi cookie: \texttt{Secure}, \texttt{HttpOnly}, \texttt{SameSite}.
+		\item Sprawdź TTL tokenów (czas życia) i zawartość tokenów (czy nie zawierają wprost danych).
+	\end{enumerate}
+	
+	\subsection*{Burp --- używane funkcje}
+	\texttt{Proxy}, \texttt{Repeater}, \texttt{Intruder} (kontrolowane), \texttt{Logger++}, \texttt{AuthMatrix (plugin)}.
+	
+	\subsection*{Sygnały potwierdzające}
+	\begin{itemize}
+		\item Akceptacja zmodyfikowanego lub sklonowanego tokena.
+		\item Brak blokady/protekcji po wielokrotnych nieudanych próbach.
+		\item Możliwość resetu hasła bez odpowiedniej weryfikacji.
+	\end{itemize}
+	
+	\subsection*{Zalecenia naprawcze}
+	Rate limiting / lockout, HttpOnly/Secure/SameSite flags, krótsze TTL, MFA, bezpieczne tokeny.
+	
+	\newpage
+	\section{A3 --- Sensitive Data Exposure}
+	\subsection*{Cel}
+	Wykryć przesyłanie lub przechowywanie danych wrażliwych bez odpowiedniej ochrony.
+	
+	\subsection*{Techniczne testy}
+	\begin{enumerate}[leftmargin=*,label=\arabic*)]
+		\item Przeszukaj wszystkie requesty/responses pod kątem danych wrażliwych (PESEL, numery kart, hasła, tokeny).
+		\item Sprawdź czy dane wrażliwe nie są w query stringach (URL).
+		\item Sprawdź nagłówki i flagi cookie (\texttt{Secure}, \texttt{HttpOnly}); sprawdź HSTS i CSP.
+		\item Zweryfikuj konfigurację TLS (zewnętrzne narzędzie) i obecność słabych cipher suites (pasywna inspekcja nagłówków).
+		\item Sprawdź, czy odpowiedzi zawierają stack trace lub inne wycieki konfiguracji.
+	\end{enumerate}
+	
+	\subsection*{Burp --- używane funkcje}
+	\texttt{Proxy}, \texttt{Response inspector}, \texttt{Scanner (passive)}, \texttt{Extender plugins} (np. Retire.js dla frontend deps).
+	
+	\subsection*{Sygnały potwierdzające}
+	Dane wrażliwe w odpowiedziach/URL, brak HSTS, brak flag cookie, zwrócone stack trace.
+	
+	\subsection*{Zalecenia naprawcze}
+	TLS + HSTS, szyfrowanie w spoczynku, flagi cookie, minimalizacja ujawnianych informacji, maskowanie danych.
+	
+	\newpage
+	\section{A4 --- XML External Entities (XXE)}
+	\subsection*{Cel}
+	Zidentyfikować parsery XML, które akceptują zewnętrzne encje.
+	
+	\subsection*{Techniczne testy}
+	\begin{enumerate}[leftmargin=*,label=\arabic*)]
+		\item Znajdź endpointy przyjmujące XML (SOAP, import, upload).
+		\item Wysyłaj kontrolowane zmiany w strukturze XML i obserwuj parser (przez \texttt{Repeater}).
+		\item Użyj \texttt{Collaborator} do testów OOB (jeśli dostępny).
+		\item Szukaj sygnałów w postaci błędów parsera lub treści zwróconej z zewnętrznych źródeł.
+	\end{enumerate}
+	
+	\subsection*{Burp --- używane funkcje}
+	\texttt{Proxy}, \texttt{Repeater}, \texttt{Collaborator}.
+	
+	\subsection*{Sygnały potwierdzające}
+	Błędy parsera, odpowiedzi zawierające treści spoza oczekiwanego zakresu, OOB callbacks.
+	
+	\subsection*{Zalecenia naprawcze}
+	Wyłączyć/ograniczyć XXE w konfiguracjach parserów, używać bezpiecznych ustawień parsera, walidacja wejścia.
+	
+	\newpage
+	\section{A5 --- Broken Access Control}
+	\subsection*{Cel}
+	Wykryć brak lub naruszenie zasad kontroli dostępu (IDOR, escalacje uprawnień).
+	
+	\subsection*{Techniczne testy}
+	\begin{enumerate}[leftmargin=*,label=\arabic*)]
+		\item IDOR: modyfikuj identyfikatory zasobów (ID w URL/body) i sprawdź, czy zasoby innych użytkowników są dostępne.
+		\item Testy ról: wysyłaj żądania admin-only z konta zwykłego użytkownika (modyfikacja cookie/header/role param).
+		\item Testy CRUD: próbuj operacji poza uprawnieniami (create/read/update/delete).
+		\item Sprawdź, czy serwer weryfikuje ownership (np. resource.owner == current\_user).
+	\end{enumerate}
+	
+	\subsection*{Burp --- używane funkcje}
+	\texttt{Repeater}, \texttt{Proxy}, \texttt{AuthMatrix (plugin)}, \texttt{Comparer}.
+	
+	\subsection*{Sygnały potwierdzające}
+	Dostęp do zasobów bez poprawnych uprawnień, brak walidacji ownership, różne odpowiedzi po modyfikacji ID.
+	
+	\subsection*{Zalecenia naprawcze}
+	Weryfikacja uprawnień po stronie serwera, check ownership, deny-by-default, granular ACL.
+	
+	\newpage
+	\section{A6 --- Security Misconfiguration}
+	\subsection*{Cel}
+	Wykryć nieprawidłowe konfiguracje serwera/aplikacji, które ujawniają informacje lub umożliwiają nieautoryzowany dostęp.
+	
+	\subsection*{Techniczne testy}
+	\begin{enumerate}[leftmargin=*,label=\arabic*)]
+		\item Przegląd nagłówków (\texttt{Server}, \texttt{X-Powered-By}), sprawdź informację o wersjach.
+		\item Sprawdź dostępność paneli admin, directory listing, plików backup (\texttt{.env}, \texttt{.bak}) używając delikatnego content discovery.
+		\item Testy HTTP methods: sprawdź reakcję na \texttt{OPTIONS}, \texttt{PUT}, \texttt{DELETE}.
+		\item Sprawdź ustawienia CORS (czy \texttt{Access-Control-Allow-Origin} jest nadmiernie liberalny).
+		\item Sprawdź obecność debug/stack trace w odpowiedziach.
+	\end{enumerate}
+	
+	\subsection*{Burp --- używane funkcje}
+	\texttt{Target/Site map}, \texttt{Spider}, delikatny \texttt{Intruder} (discovery), \texttt{Proxy}, \texttt{Scanner}.
+	
+	\subsection*{Sygnały potwierdzające}
+	Exposed admin panels, dostępne pliki backup, permissive CORS, debug output, informacje o wersjach.
+	
+	\subsection*{Zalecenia naprawcze}
+	Wyłączenie debug w prod, ukrywanie informacji o wersjach, poprawne ustawienia CORS, blokada niepotrzebnych metod HTTP, ograniczenie dostępu do admin paneli.
+	
+	\newpage
+	\section{A7 --- Cross‑Site Scripting (XSS)}
+	\subsection*{Cel}
+	Zidentyfikować miejsca, gdzie wejście trafia do HTML/JS bez kontekstowego enkodowania.
+	
+	\subsection*{Techniczne testy}
+	\begin{enumerate}[leftmargin=*,label=\arabic*)]
+		\item Zmapuj miejsca, gdzie input jest echo'd w odpowiedzi (HTML text, attributes, JS context, URL).
+		\item W \texttt{Repeater} wstrzykuj kontrolowane dane i sprawdzaj, czy pojawiają się w odpowiedzi (bez wykonywania kodu).
+		\item Analizuj kontekst (HTML text vs attribute vs JS) i sprawdź, czy enkodowanie jest stosowane.
+		\item Sprawdź potencjał DOM XSS przez analizę plików JS (gdzie JSON jest renderowane do DOM).
+	\end{enumerate}
+	
+	\subsection*{Burp --- używane funkcje}
+	\texttt{Proxy}, \texttt{Repeater}, \texttt{Scanner} (jeśli dozwolone), przeglądarkowy DOM inspector.
+	
+	\subsection*{Sygnały potwierdzające}
+	Echo inputu w HTML/JS bez enkodowania, możliwość osadzenia atrybutów/elementów HTML, brak CSP.
+	
+	\subsection*{Zalecenia naprawcze}
+	Kontekstowe enkodowanie wyjścia, Content-Security-Policy, walidacja danych wejściowych.
+	
+	\newpage
+	\section{A8 --- Insecure Deserialization}
+	\subsection*{Cel}
+	Wykryć pola/parametry, gdzie aplikacja deserializuje dane otrzymane od klienta.
+	
+	\subsection*{Techniczne testy}
+	\begin{enumerate}[leftmargin=*,label=\arabic*)]
+		\item Zidentyfikuj miejsca przyjmujące sformatowane/serializowane dane (cookies, hidden fields, API fields).
+		\item Użyj \texttt{Decoder} by rozpoznać format serializacji (JSON, XML, binary).
+		\item Wysyłaj bezpieczne modyfikacje serialized data i obserwuj błędy deserializacji lub zmiany zachowania.
+		\item Szukaj stack trace i nieoczekiwanych efektów po modyfikacji serialized payload.
+	\end{enumerate}
+	
+	\subsection*{Burp --- używane funkcje}
+	\texttt{Decoder}, \texttt{Repeater}, \texttt{Proxy}, \texttt{Comparer}.
+	
+	\subsection*{Sygnały potwierdzające}
+	Błędy deserializacji, zmiana zachowania aplikacji po modyfikacji serialized data, stack traces.
+	
+	\subsection*{Zalecenia naprawcze}
+	Unikać deserializacji nieufnych danych, używać bezpiecznych formatów, podpisywanie/uwierzytelnianie payloadów, whitelist klas.
+	
+	\newpage
+	\section{A9 --- Using Components with Known Vulnerabilities}
+	\subsection*{Cel}
+	Wykryć użycie bibliotek/komponentów z publicznymi podatnościami.
+	
+	\subsection*{Techniczne testy}
+	\begin{enumerate}[leftmargin=*,label=\arabic*)]
+		\item Zbierz informacje o wersjach komponentów z nagłówków, footerów, plików manifestu (jeśli dostępne).
+		\item Analizuj pliki JS/front-end source w celu wykrycia wersji bibliotek.
+		\item Użyj narzędzi do analizy zależności (Retire.js, dependency-check) — dostępne też jako pluginy Burp.
+		\item Sprawdź wyniki z narzędzi typu Snyk/OSV (zewnętrznie) po zidentyfikowaniu wersji.
+	\end{enumerate}
+	
+	\subsection*{Burp --- używane funkcje}
+	\texttt{Proxy (passive)}, \texttt{Extender (Retire.js)}, \texttt{Response inspector}.
+	
+	\subsection*{Sygnały potwierdzające}
+	Wykrycie przestarzałych bibliotek z powiązanymi CVE.
+	
+	\subsection*{Zalecenia naprawcze}
+	Aktualizacje bibliotek, skanowanie zależności w CI, minimalizacja komponentów.
+	
+	\newpage
+	\section{A10 --- Insufficient Logging \& Monitoring}
+	\subsection*{Cel}
+	Sprawdzić, czy aplikacja loguje i monitoruje zdarzenia bezpieczeństwa oraz czy istnieje możliwość korelacji i alertowania.
+	
+	\subsection*{Techniczne testy}
+	\begin{enumerate}[leftmargin=*,label=\arabic*)]
+		\item Wykonaj kontrolowane, nieinwazyjne akcje (login fail, nietypowy request) i zweryfikuj (współpraca z zespołem) czy zdarzenia są logowane.
+		\item Sprawdź, czy odpowiedzi zawierają trace ids / request ids do korelacji logów.
+		\item Sprawdź istnienie alertów/reakcji (rate limiting, WAF) dla oczywistych anomalii.
+		\item Oceń szczegółowość logów pod kątem informacji niezbędnych do śledzenia incydentów (bez wycieku wrażliwych danych).
+	\end{enumerate}
+	
+	\subsection*{Burp --- używane funkcje}
+	\texttt{Proxy}, \texttt{Repeater}, \texttt{Logger++}, \texttt{Reporter}.
+	
+	\subsection*{Sygnały potwierdzające}
+	Brak korelacji zdarzeń, brak trace ids, brak reakcji systemu na oczywiste anomalie.
+	
+	\subsection*{Zalecenia naprawcze}
+	Wdrożenie szczegółowego logowania, korelacja logów, alertowanie, retention policy, testy detekcji.
+	
+	\newpage
+	\section*{Dodatkowe praktyczne wskazówki}
+	\addcontentsline{toc}{section}{Dodatkowe praktyczne wskazówki}
+	\begin{itemize}[leftmargin=*]
+		\item Porównuj zawsze \textbf{baseline} z testowym requestem (użyj \texttt{Comparer}).
+		\item Przy automatycznych testach (Intruder/Scanner) ogranicz prędkość i liczbę równoległych żądań.
+		\item Preferuj \texttt{Burp Collaborator} dla blind/OOB testów zamiast time-based tam, gdzie to możliwe.
+		\item Eksportuj i opisz wszystkie podejrzane request/response: endpoint + data + krótka notatka.
+		\item Traktuj wyniki automatycznych skanerów jako wskazówki — zawsze ręcznie weryfikuj w \texttt{Repeater}.
+		\item Przydatne pluginy: \texttt{Logger++}, \texttt{AuthMatrix}, \texttt{Retire.js}, \texttt{ActiveScan++} — testuj wpływ przed uruchomieniem.
+	\end{itemize}
+	
+	\bigskip
+	\noindent Jeśli chcesz, mogę:
+	\begin{itemize}[leftmargin=*]
+		\item wygenerować ten dokument w formacie PDF (jeżeli chcesz, wkleić go do pliku) — podaj preferencję kompilatora, lub
+		\item przygotować gotowe, krótkie skrypty payloadów wykrywczych (bez destrukcyjnych ładunków) do wklejenia do Intrudera/Repeatera.
+	\end{itemize}
+	
+\end{document}
