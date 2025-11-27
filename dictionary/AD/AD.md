@@ -1,7 +1,6 @@
 # Rekonesans MS AD
-Uruchamiamy CMD lub powershell
-
-Przykład jak uruchomić za pomocą wmic:
+# Jak inaczej uruchomić powershell lub cmd, przykład:
+    wmic
     process call create "powershell.exe"
 
 # Utwórz folder na wyniki
