@@ -1,4 +1,8 @@
 # Rekonesans MS AD
+Uruchamiamy CMD lub powershell
+
+Przykład jak uruchomić za pomocą wmic:
+    process call create "powershell.exe"
 
 # Utwórz folder na wyniki
     $OutputFolder = "rekonesans_wyniki"
@@ -44,3 +48,4 @@
     Get-Service | Sort-Object Status | Out-File "$OutputFolder\12_uslugi.txt"
     Write-Host "-------------------------------------------"
     Write-Host "Wszystko gotowe. Wyniki zapisano w folderze: $OutputFolder"
+
